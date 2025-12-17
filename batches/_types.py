@@ -14,6 +14,7 @@ BatchStatuses = Literal[
     "invalid",
 ]
 
+
 class BatchStatus(Enum):
     OPEN = "open"
     QUEUED = "queued"
@@ -25,27 +26,24 @@ class BatchStatus(Enum):
     INVALID = "invalid"
 
 
-
 BatchLabelLayouts = Literal["4x6", "letter"]
+
 
 class BatchLabelLayout(Enum):
     LAYOUT_4X6 = "4x6"
     LAYOUT_LETTER = "letter"
 
 
-
-BatchLabelFormat = Literal["pdf", "zpl", "png"]
-
+BatchLabelFormats = Literal["pdf", "zpl", "png"]
 class BatchLabelFormat(Enum):
     PDF = "pdf"
     ZPL = "zpl"
     PNG = "png"
 
 
-
 class Batch(TypedDict):
     label_layout: BatchLabelLayouts
-    label_format: str
+    label_format: BatchLabelFormats
     batch_id: str
     batch_number: str
     external_batch_id: str

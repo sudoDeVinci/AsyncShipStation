@@ -1,6 +1,6 @@
 from typing import Literal, cast
 
-from requests import get, post
+from requests import delete, get, post, put
 
 from ..common._types import (  # type: ignore[import-not-found]
     Endpoints,
@@ -138,3 +138,177 @@ class BatchPortal(ShipPortal):
             )
 
         return (res.status_code, cast(Batch, json))
+
+    async def get_by_external_id(
+        cls: "BatchPortal",
+        external_batch_id: str,
+    ) -> tuple[int, Batch | Error]:
+        """
+        Retrieve a batch by its external ID.
+        https://docs.shipstation.com/openapi/batches/get_batch_by_external_id#batches/get_batch_by_external_id/request
+
+        Args:
+            external_batch_id (str): The external ID of the batch to retrieve.
+
+        Returns:
+            tuple[int, Batch | Error]: A tuple containing the status code and either a Batch or an Error.
+        """
+        endpoint = (
+            f"{API_ENDPOINT}/{Endpoints.BATCHES}/by-external-id/{external_batch_id}"
+        )
+
+        try:
+            res = await req(
+                fn=get,
+                url=endpoint,
+            )
+            json = res.json()
+            if res.status_code != 200:
+                if "error_code" in json:
+                    return (res.status_code, cast(Error, json))
+                else:
+                    raise Exception(f"Unexpected response: {json}")
+        except Exception as e:
+            return (
+                500,
+                cast(
+                    Error,
+                    {
+                        "error_source": "ShipStation",
+                        "error_type": "integrations",
+                        "error_code": "unknown",
+                        "message": str(e),
+                    },
+                ),
+            )
+
+        return (res.status_code, cast(Batch, json))
+
+    async def get_by_id(
+        cls: "BatchPortal",
+        batch_id: str,
+    ) -> tuple[int, Batch | Error]:
+        """
+        Retrieve a batch by its ID.
+        https://docs.shipstation.com/openapi/batches/get_batch#batches/get_batch/request
+
+        Args:
+            batch_id (str): The ID of the batch to retrieve.
+
+        Returns:
+            tuple[int, Batch | Error]: A tuple containing the status code and either a Batch or an Error.
+        """
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}"
+
+        try:
+            res = await req(
+                fn=get,
+                url=endpoint,
+            )
+            json = res.json()
+            if res.status_code != 200:
+                if "error_code" in json:
+                    return (res.status_code, cast(Error, json))
+                else:
+                    raise Exception(f"Unexpected response: {json}")
+        except Exception as e:
+            return (
+                500,
+                cast(
+                    Error,
+                    {
+                        "error_source": "ShipStation",
+                        "error_type": "integrations",
+                        "error_code": "unknown",
+                        "message": str(e),
+                    },
+                ),
+            )
+
+        return (res.status_code, cast(Batch, json))
+
+    async def delete_by_id(
+        cls: "BatchPortal",
+        batch_id: str,
+    ) -> tuple[int, None | Error]:
+        """
+        Delete a batch by its ID.
+        https://docs.shipstation.com/openapi/batches/delete_batch#batches/delete_batch/request
+
+        Args:
+            batch_id (str): The ID of the batch to delete.
+
+        Returns:
+            tuple[int, None | Error]: A tuple containing the status code and either None or an Error.
+        """
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}"
+
+        try:
+            res = await req(
+                fn=delete,
+                url=endpoint,
+            )
+            if res.status_code != 204:
+                json = res.json()
+                if "error_code" in json:
+                    return (res.status_code, cast(Error, json))
+                else:
+                    raise Exception(f"Unexpected response: {json}")
+        except Exception as e:
+            return (
+                500,
+                cast(
+                    Error,
+                    {
+                        "error_source": "ShipStation",
+                        "error_type": "integrations",
+                        "error_code": "unknown",
+                        "message": str(e),
+                    },
+                ),
+            )
+
+        return (res.status_code, None)
+
+    async def archive_by_id(
+        cls: "BatchPortal",
+        batch_id: str,
+    ) -> tuple[int, None | Error]:
+        """
+        Archive a batch by its ID.
+        https://docs.shipstation.com/openapi/batches/archive_batch#batches/archive_batch/request
+
+        Args:
+            batch_id (str): The ID of the batch to archive.
+
+        Returns:
+            tuple[int, None | Error]: A tuple containing the status code and either None or an Error.
+        """
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}"
+
+        try:
+            res = await req(
+                fn=put,
+                url=endpoint,
+            )
+            if res.status_code != 204:
+                json = res.json()
+                if "error_code" in json:
+                    return (res.status_code, cast(Error, json))
+                else:
+                    raise Exception(f"Unexpected response: {json}")
+        except Exception as e:
+            return (
+                500,
+                cast(
+                    Error,
+                    {
+                        "error_source": "ShipStation",
+                        "error_type": "integrations",
+                        "error_code": "unknown",
+                        "message": str(e),
+                    },
+                ),
+            )
+
+        return (res.status_code, None)

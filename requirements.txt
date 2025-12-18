@@ -2,3 +2,4 @@ requests
 black
 pydantic
 pytest
+mypy

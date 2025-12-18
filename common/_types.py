@@ -137,44 +137,33 @@ class ErrorCode(Enum):
     NO_RATES_RETURNED = "no_rates_returned"
 
 
+class URL(TypedDict):
+    href: str
+    type: str
+
+
+class LabelDownload(TypedDict):
+    href: str
+    pdf: str
+    png: str
+    zpl: str
+
+
+class PaperlessDownload(TypedDict):
+    href: str
+    instructions: str | None  # default is None
+    handoff_code: str | None  # default is None
+
+
+class PaginationLink(TypedDict):
+    first: URL
+    last: URL
+    prev: URL | None  # default is None
+    next: URL | None  # default is None
+
+
 class Error(TypedDict):
     error_source: ErrorSources
     errors_type: ErrorTypes
     error_code: ErrorCodes
     message: str
-
-
-class ErrorMessage:
-    """
-    Represents an error message with a code and description.
-
-    Attributes:
-        code (int): The error code.
-        message (str): A description of the error.
-        endpoint (str | None): The API endpoint where the error occurred, if applicable.
-    """
-
-    __slots__ = ("code", "message", "endpoint")
-
-    def __init__(self, code: int, message: str, endpoint: str | None = None):
-        self.code = code
-        self.message = message
-        self.endpoint = endpoint
-
-    def model_dump(self, **kwargs) -> JSONDict:
-        """
-        Converts the error message to a JSON-compatible dictionary.
-
-        Returns:
-            JSONDict: A dictionary representation of the error message.
-        """
-        return {"code": self.code, "message": self.message, "endpoint": self.endpoint}
-
-    def dict(self) -> JSONDict:
-        """
-        Alias for model_dump to maintain compatibility with Pydantic's dict method.
-
-        Returns:
-            JSONDict: A dictionary representation of the error message.
-        """
-        return self.model_dump()

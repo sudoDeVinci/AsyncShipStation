@@ -1,6 +1,14 @@
 from enum import Enum
 from typing import Literal, TypedDict
 
+from ..common._types import (  # type: ignore[import-not-found]
+    URL,
+    Error,
+    LabelDownload,
+    PaginationLink,
+    PaperlessDownload,
+)
+
 BatchStatuses = Literal[
     "open",
     "queued",
@@ -51,11 +59,23 @@ class Batch(TypedDict):
     created_at: str
     processed_at: str
     errors: int
+    process_errors: list[Error]
+    warnings: int
+    completed: int
+    forms: int
+    count: int
+    batch_shipments_url: URL
+    batch_labels_url: URL
+    batch_errors_url: URL
+    label_download: LabelDownload
+    form_download: URL
+    paperless_download: PaperlessDownload
+    status: BatchStatuses
 
 
 class BatchListResponse(TypedDict):
-    batches: list[dict]
+    batches: list[Batch]
     total: int
     page: int
     pages: int
-    links: dict
+    links: PaginationLink

@@ -1,8 +1,6 @@
 from enum import Enum
 from typing import Literal, TypedDict
 
-from ..common._types import Endpoints, ShipPortal
-
 BatchStatuses = Literal[
     "open",
     "queued",
@@ -35,6 +33,8 @@ class BatchLabelLayout(Enum):
 
 
 BatchLabelFormats = Literal["pdf", "zpl", "png"]
+
+
 class BatchLabelFormat(Enum):
     PDF = "pdf"
     ZPL = "zpl"

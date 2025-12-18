@@ -13,7 +13,7 @@ class ShipPortal(ABCMeta): ...
 
 
 class Endpoints(Enum):
-    BATCHES = "/v2/batches/"
+    BATCHES = "/v2/batches"
 
 
 ErrorSources = Literal["carrier", "order_source", "ShipStation"]

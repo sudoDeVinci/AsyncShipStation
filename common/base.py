@@ -18,7 +18,7 @@ CACHE_DIR: Final[Path] = CWD / "__github_cache__"
 makedirs(CACHE_DIR, exist_ok=True)
 
 CACHE_LOCK: Lock = Lock()
-BASE_URL = Literal["https://api.shipstation.com"]
+API_ENDPOINT = Literal["https://api.shipstation.com"]
 API_KEY: str | None = None
 
 
@@ -93,10 +93,8 @@ async def req(fn: Callable, url: str, **kwargs) -> Response:
     kwargs["timeout"] = 30
     kwargs.setdefault("headers", {}).update(
         {
-            "Authorization": f"Bearer {TOKEN}",
-            "X-GitHub-Api-Version": API_VERSION,
-            "User-Agent": "asyncPyGithub/1.0.0",
-            "Accept": "application/vnd.github.v3+json",
+            "User-Agent": "asyncShipStation/1.0.0",
+            "API-Key": API_KEY,
         }
     )
     r = await asyncio.to_thread(fn, f"{API_ENDPOINT}{url}", **kwargs)

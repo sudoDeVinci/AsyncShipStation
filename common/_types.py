@@ -13,7 +13,8 @@ class ShipPortal(ABCMeta): ...
 
 
 class Endpoints(Enum):
-    BATCHES = "/v2/batches"
+    BATCHES = "/batches"
+    CARRIERS = "/carriers"
 
 
 ErrorSources = Literal["carrier", "order_source", "ShipStation"]
@@ -172,3 +173,10 @@ class Error(TypedDict):
     errors_type: ErrorTypes
     error_code: ErrorCodes
     message: str
+
+
+class Dimensions(TypedDict):
+    unit: Literal["inch", "centimeters"]  # default "inch"
+    length: float
+    width: float
+    height: float

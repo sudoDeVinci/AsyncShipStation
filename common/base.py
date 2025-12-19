@@ -18,7 +18,7 @@ CACHE_DIR: Final[Path] = CWD / "__github_cache__"
 makedirs(CACHE_DIR, exist_ok=True)
 
 CACHE_LOCK: Lock = Lock()
-API_ENDPOINT = Literal["https://api.shipstation.com"]
+API_ENDPOINT = Literal["https://api.shipstation.com/v2"]
 API_KEY: str | None = None
 
 

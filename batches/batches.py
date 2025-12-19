@@ -1,13 +1,12 @@
 from typing import Literal, cast
 
-from requests import delete, get, post, put
+from httpx._types import QueryParamTypes
 
-from ..common._types import (  # type: ignore[import-not-found]
-    Endpoints,
-    Error,
-    ShipPortal,
+from ..common._types import Endpoints, Error  # type: ignore[import-not-found]
+from ..common.base import (  # type: ignore[import-not-found]
+    API_ENDPOINT,
+    ShipStationClient,
 )
-from ..common.base import API_ENDPOINT, req  # type: ignore[import-not-found]
 from ._types import (
     Batch,
     BatchLabel,
@@ -21,9 +20,10 @@ from ._types import (
 )
 
 
-class BatchPortal(ShipPortal):
+class BatchPortal(ShipStationClient):
+    @classmethod
     async def list_batches(
-        cls: "BatchPortal",
+        cls: type[ShipStationClient],
         status: BatchStatuses,
         batch_number: str,
         sort_by: Literal["ship_date", "processed_at", "created_at"],
@@ -46,7 +46,7 @@ class BatchPortal(ShipPortal):
         Returns:
             tuple[int, BatchListResponse | Error]: A tuple containing the status code and either a BatchListResponse or an Error.
         """
-        params = {
+        params: QueryParamTypes = {
             "status": status,
             "batch_number": batch_number,
             "sort_by": sort_by,
@@ -57,9 +57,9 @@ class BatchPortal(ShipPortal):
         endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}"
 
         try:
-            res = await req(
-                fn=get,
-                url=endpoint,
+            res = await cls.request(
+                "GET",
+                endpoint,
                 params=params,
             )
             json = res.json()
@@ -84,8 +84,9 @@ class BatchPortal(ShipPortal):
 
         return (res.status_code, cast(BatchListResponse, json))
 
+    @classmethod
     async def create_batch(
-        cls: "BatchPortal",
+        cls: type[ShipStationClient],
         external_batch_id: str,
         shipment_ids: list[str],
         rate_ids: list[str] | None,
@@ -104,7 +105,7 @@ class BatchPortal(ShipPortal):
         Returns:
             tuple[int, Batch | Error]: A tuple containing the status code and either a Batch or an Error.
         """
-        payload = {
+        payload: QueryParamTypes = {
             "external_batch_id": external_batch_id,
             "shipment_ids": shipment_ids,
             "rate_ids": rate_ids,
@@ -113,9 +114,9 @@ class BatchPortal(ShipPortal):
         endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}"
 
         try:
-            res = await req(
-                fn=post,
-                url=endpoint,
+            res = await cls.request(
+                "POST",
+                endpoint,
                 json=payload,
             )
             json = res.json()
@@ -140,8 +141,9 @@ class BatchPortal(ShipPortal):
 
         return (res.status_code, cast(Batch, json))
 
+    @classmethod
     async def get_by_external_id(
-        cls: "BatchPortal",
+        cls: type[ShipStationClient],
         external_batch_id: str,
     ) -> tuple[int, Batch | Error]:
         """
@@ -159,9 +161,9 @@ class BatchPortal(ShipPortal):
         )
 
         try:
-            res = await req(
-                fn=get,
-                url=endpoint,
+            res = await cls.request(
+                "GET",
+                endpoint,
             )
             json = res.json()
             if res.status_code != 200:
@@ -185,8 +187,9 @@ class BatchPortal(ShipPortal):
 
         return (res.status_code, cast(Batch, json))
 
+    @classmethod
     async def get_by_id(
-        cls: "BatchPortal",
+        cls: type[ShipStationClient],
         batch_id: str,
     ) -> tuple[int, Batch | Error]:
         """
@@ -202,9 +205,9 @@ class BatchPortal(ShipPortal):
         endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}"
 
         try:
-            res = await req(
-                fn=get,
-                url=endpoint,
+            res = await cls.request(
+                "GET",
+                endpoint,
             )
             json = res.json()
             if res.status_code != 200:
@@ -228,8 +231,9 @@ class BatchPortal(ShipPortal):
 
         return (res.status_code, cast(Batch, json))
 
+    @classmethod
     async def delete_by_id(
-        cls: "BatchPortal",
+        cls: type[ShipStationClient],
         batch_id: str,
     ) -> tuple[int, None | Error]:
         """
@@ -245,9 +249,9 @@ class BatchPortal(ShipPortal):
         endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}"
 
         try:
-            res = await req(
-                fn=delete,
-                url=endpoint,
+            res = await cls.request(
+                "DELETE",
+                endpoint,
             )
             if res.status_code != 204:
                 json = res.json()
@@ -271,8 +275,9 @@ class BatchPortal(ShipPortal):
 
         return (res.status_code, None)
 
+    @classmethod
     async def archive_by_id(
-        cls: "BatchPortal",
+        cls: type[ShipStationClient],
         batch_id: str,
     ) -> tuple[int, None | Error]:
         """
@@ -288,9 +293,9 @@ class BatchPortal(ShipPortal):
         endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}"
 
         try:
-            res = await req(
-                fn=put,
-                url=endpoint,
+            res = await cls.request(
+                "PUT",
+                endpoint,
             )
             if res.status_code != 204:
                 json = res.json()
@@ -314,8 +319,9 @@ class BatchPortal(ShipPortal):
 
         return (res.status_code, None)
 
+    @classmethod
     async def add_to_batch(
-        cls: "BatchPortal",
+        cls: type[ShipStationClient],
         batch_id: str,
         external_batch_id: str,
         batch_notes: str,
@@ -348,9 +354,9 @@ class BatchPortal(ShipPortal):
         endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}/add"
 
         try:
-            res = await req(
-                fn=post,
-                url=endpoint,
+            res = await cls.request(
+                "POST",
+                endpoint,
                 json=payload,
             )
             if res.status_code != 204:
@@ -375,8 +381,9 @@ class BatchPortal(ShipPortal):
 
         return (res.status_code, None)
 
+    @classmethod
     async def get_batch_errors(
-        cls: "BatchPortal",
+        cls: type[ShipStationClient],
         batch_id: str,
         page: int = 1,
         page_size: int = 25,
@@ -389,9 +396,9 @@ class BatchPortal(ShipPortal):
         endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}/errors"
 
         try:
-            res = await req(
-                fn=get,
-                url=endpoint,
+            res = await cls.request(
+                "GET",
+                endpoint,
                 params=params,
             )
             json = res.json()
@@ -416,8 +423,9 @@ class BatchPortal(ShipPortal):
 
         return (res.status_code, cast(BatchProcessErrorResponse, json))
 
+    @classmethod
     async def process_batch_id_labels(
-        cls: "BatchPortal",
+        cls: type[ShipStationClient],
         ship_date: str,
         label_layout: BatchLabelLayouts = "4x6",
         label_format: BatchLabelFormats = "pdf",
@@ -443,9 +451,9 @@ class BatchPortal(ShipPortal):
         endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/process/labels"
 
         try:
-            res = await req(
-                fn=post,
-                url=endpoint,
+            res = await cls.request(
+                "POST",
+                endpoint,
                 json=payload,
             )
             if res.status_code != 204:
@@ -470,8 +478,9 @@ class BatchPortal(ShipPortal):
 
         return (res.status_code, None)
 
+    @classmethod
     async def remove_from_batch(
-        cls: "BatchPortal",
+        cls: type[ShipStationClient],
         batch_id: str,
         shipment_ids: list[str],
         rate_ids: list[str],
@@ -484,9 +493,9 @@ class BatchPortal(ShipPortal):
         endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}/remove"
 
         try:
-            res = await req(
-                fn=post,
-                url=endpoint,
+            res = await cls.request(
+                "POST",
+                endpoint,
                 json=params,
             )
             if res.status_code != 204:

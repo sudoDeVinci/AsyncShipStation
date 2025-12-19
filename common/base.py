@@ -4,10 +4,11 @@ from logging import Logger, getLogger
 from os import environ, makedirs
 from pathlib import Path
 from threading import Lock
-from typing import Any, Callable, Final, Literal
+from typing import Any, Callable, Final, Literal, cast
 
 from dotenv import load_dotenv  # type: ignore
-from requests import Response
+from httpx import AsyncClient, Response
+from httpx._types import HeaderTypes, QueryParamTypes
 
 LOGGER: Logger = getLogger(__name__)
 LOGGER.setLevel("INFO")
@@ -21,7 +22,6 @@ CACHE_LOCK: Lock = Lock()
 API_ENDPOINT = Literal["https://api.shipstation.com/v2"]
 API_KEY: str | None = None
 
-
 try:
     assert load_dotenv(
         verbose=True,
@@ -33,6 +33,81 @@ try:
 
 except (AssertionError, AttributeError, OSError) as err:
     LOGGER.error(f"Error during global configuration:::{err}")
+
+
+class APIError(Exception):
+    """
+    Returned for local ShipStation responses such as during configuration.
+    """
+
+    __slots__ = ("status_code", "details")
+
+    def __init__(self, status: int, detail: str | dict[str, object]):
+        self.status_code = status
+        self.details = detail
+
+    def json(self) -> dict[str, object]:
+        return {"status_code": self.status_code, "detail": self.details}
+
+
+class ShipStationClient:
+    __slots__ = ()
+
+    _api_key = API_KEY
+    _endpoint = API_ENDPOINT
+    _headers: HeaderTypes = {
+        "User-Agent": "asyncShipStation/1.0.0",
+        "API-Key": API_KEY if API_KEY else "",
+    }
+    _client: AsyncClient | None = None
+
+    @classmethod
+    async def start(
+        cls: type["ShipStationClient"],
+    ) -> None:
+        """
+        Initializes the asynchronous HTTP client session.
+        """
+        if cls._client is None:
+            cls._client = AsyncClient(
+                base_url=cast(str, cls._endpoint),
+                headers=cls._headers,
+                timeout=30,
+            )
+
+    @classmethod
+    async def request(
+        cls: type["ShipStationClient"],
+        method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
+        url: str,
+        **kwargs,
+    ) -> Response | APIError:
+        """
+        Makes an asynchronous HTTP request to the ShipStation API.
+        Args:
+            method (str): The HTTP method to use (e.g., 'GET', 'POST').
+            url (str): The endpoint URL to which the request will be made.
+            **kwargs: Additional keyword arguments to pass to the request.
+        Returns:
+            Response: The response object returned by the request.
+        Raises:
+            RequestError: If an error occurs while making the request.
+        """
+        if not cls._client:
+            return APIError(401, "API key is not configured properly.")
+        resp = await cls._client.request(method, url, **kwargs)
+        return resp
+
+    @classmethod
+    async def close(
+        cls: type["ShipStationClient"],
+    ) -> None:
+        """
+        Closes the asynchronous HTTP client session.
+        """
+        if cls._client is not None:
+            await cls._client.aclose()
+            cls._client = None
 
 
 def write_json(fp: Path, data: dict[str, Any] | None) -> bool:
@@ -78,25 +153,3 @@ def read_json(fp: Path) -> dict[str, Any] | None:
     except (IOError, OSError, JSONDecodeError) as err:
         LOGGER.error(f"read_json:::Failed to read data from {fp} with error: {err}")
         return None
-
-
-async def req(fn: Callable, url: str, **kwargs) -> Response:
-    """
-    Asynchronously makes a request to the GitHub API using the provided function and URL.
-    Args:
-        fn (Callable): The function to use for making the request (e.g., requests.get).
-        url (str): The endpoint URL to which the request will be made.
-        **kwargs: Additional keyword arguments to pass to the request function.
-    Returns:
-        Response: The response object returned by the request function.
-    """
-    kwargs["timeout"] = 30
-    kwargs.setdefault("headers", {}).update(
-        {
-            "User-Agent": "asyncShipStation/1.0.0",
-            "API-Key": API_KEY,
-        }
-    )
-    r = await asyncio.to_thread(fn, f"{API_ENDPOINT}{url}", **kwargs)
-    await asyncio.sleep(0.10)
-    return r

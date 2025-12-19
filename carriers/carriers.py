@@ -1,7 +1,5 @@
 from typing import Literal, cast
 
-from requests import delete, get, post, put
-
 from ..common._types import (  # type: ignore[import-not-found]
     Endpoints,
     Error,

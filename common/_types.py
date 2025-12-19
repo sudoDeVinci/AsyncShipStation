@@ -9,7 +9,9 @@ from pydantic import EmailStr, HttpUrl, PastDatetime
 JSONDict = dict[str, str | int | bool | EmailStr | HttpUrl | PastDatetime | None]
 
 
-class ShipPortal(ABCMeta): ...
+class ShipStationPortal(ABCMeta):
+    __slots__ = ()
+    ...
 
 
 class Endpoints(Enum):

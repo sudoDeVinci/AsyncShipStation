@@ -18,3 +18,6 @@ ShipStation has bulk op endpoints. These only count as a single request.
 [/batches](/batches/_types.py)
 Process labels in bulk and receive a large number of labels and customs forms in bulk responses. Batching is ideal for workflows that need to process hundreds or thousands of labels quickly.
 200
+
+[/carriers](/carriers/_types.py)
+Retreive useful details about the carriers connected to your accounts, including carrier IDs, service IDs, advanced options, and available carrier package types.

@@ -10,13 +10,14 @@ from ..common._types import (  # type: ignore[import-not-found]
 from ..common.base import API_ENDPOINT, req  # type: ignore[import-not-found]
 from ._types import (
     Batch,
-    BatchLabelFormat,
+    BatchLabel,
     BatchLabelFormats,
-    BatchLabelLayout,
     BatchLabelLayouts,
     BatchListResponse,
-    BatchStatus,
+    BatchProcessErrorResponse,
     BatchStatuses,
+    DisplayFormatScheme,
+    ProcessLabels,
 )
 
 
@@ -290,6 +291,203 @@ class BatchPortal(ShipPortal):
             res = await req(
                 fn=put,
                 url=endpoint,
+            )
+            if res.status_code != 204:
+                json = res.json()
+                if "error_code" in json:
+                    return (res.status_code, cast(Error, json))
+                else:
+                    raise Exception(f"Unexpected response: {json}")
+        except Exception as e:
+            return (
+                500,
+                cast(
+                    Error,
+                    {
+                        "error_source": "ShipStation",
+                        "error_type": "integrations",
+                        "error_code": "unknown",
+                        "message": str(e),
+                    },
+                ),
+            )
+
+        return (res.status_code, None)
+
+    async def add_to_batch(
+        cls: "BatchPortal",
+        batch_id: str,
+        external_batch_id: str,
+        batch_notes: str,
+        shipment_ids: list[str],
+        rate_ids: list[str],
+        process_labels: ProcessLabels,
+    ) -> tuple[int, None | Error]:
+        """
+        Add shipments to an existing batch.
+        https://docs.shipstation.com/openapi/batches/add_to_batch#batches/add_to_batch/request
+
+        Args:
+            batch_id (str): The ID of the batch to which shipments will be added.
+            external_batch_id (str): An external identifier for the batch.
+            batch_notes (str): Notes for the batch.
+            shipment_ids (list[str]): A list of shipment IDs to add to the batch.
+            rate_ids (list[str]): A list of rate IDs to use for the shipments in the batch.
+            process_labels (ProcessLabels): Instructions for processing labels for the shipments.
+
+        Returns:
+            tuple[int, None | Error]: A tuple containing the status code and either None or an Error.
+        """
+        payload = {
+            "external_batch_id": external_batch_id,
+            "batch_notes": batch_notes,
+            "shipment_ids": shipment_ids,
+            "rate_ids": rate_ids,
+            "process_labels": process_labels,
+        }
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}/add"
+
+        try:
+            res = await req(
+                fn=post,
+                url=endpoint,
+                json=payload,
+            )
+            if res.status_code != 204:
+                json = res.json()
+                if "error_code" in json:
+                    return (res.status_code, cast(Error, json))
+                else:
+                    raise Exception(f"Unexpected response: {json}")
+        except Exception as e:
+            return (
+                500,
+                cast(
+                    Error,
+                    {
+                        "error_source": "ShipStation",
+                        "error_type": "integrations",
+                        "error_code": "unknown",
+                        "message": str(e),
+                    },
+                ),
+            )
+
+        return (res.status_code, None)
+
+    async def get_batch_errors(
+        cls: "BatchPortal",
+        batch_id: str,
+        page: int = 1,
+        page_size: int = 25,
+    ) -> tuple[int, BatchProcessErrorResponse | Error]:
+        params = {
+            "page": page,
+            "page_size": page_size,
+        }
+
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}/errors"
+
+        try:
+            res = await req(
+                fn=get,
+                url=endpoint,
+                params=params,
+            )
+            json = res.json()
+            if res.status_code != 200:
+                if "error_code" in json:
+                    return (res.status_code, cast(Error, json))
+                else:
+                    raise Exception(f"Unexpected response: {json}")
+        except Exception as e:
+            return (
+                500,
+                cast(
+                    Error,
+                    {
+                        "error_source": "ShipStation",
+                        "error_type": "integrations",
+                        "error_code": "unknown",
+                        "message": str(e),
+                    },
+                ),
+            )
+
+        return (res.status_code, cast(BatchProcessErrorResponse, json))
+
+    async def process_batch_id_labels(
+        cls: "BatchPortal",
+        ship_date: str,
+        label_layout: BatchLabelLayouts = "4x6",
+        label_format: BatchLabelFormats = "pdf",
+        display_scheme: DisplayFormatScheme = "label",
+    ) -> tuple[int, None | Error]:
+        """
+        Process labels for a batch by its ID.
+        https://docs.shipstation.com/openapi/batches/process_batch_labels#batches/process_batch_labels/request
+
+        Args:
+            batch_id (str): The ID of the batch to process labels for.
+            ship_date (str): The ship date for the labels.
+            label_layout (BatchLabelLayouts, optional): The layout of the labels. Defaults to "4x6".
+            label_format (BatchLabelFormats, optional): The format of the labels. Defaults to "pdf".
+            display_scheme (DisplayFormatScheme, optional): The display scheme for the labels. Defaults to "label".
+        """
+        payload: BatchLabel = {
+            "ship_date": ship_date,
+            "label_layout": label_layout,
+            "label_format": label_format,
+            "display_scheme": display_scheme,
+        }
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/process/labels"
+
+        try:
+            res = await req(
+                fn=post,
+                url=endpoint,
+                json=payload,
+            )
+            if res.status_code != 204:
+                json = res.json()
+                if "error_code" in json:
+                    return (res.status_code, cast(Error, json))
+                else:
+                    raise Exception(f"Unexpected response: {json}")
+        except Exception as e:
+            return (
+                500,
+                cast(
+                    Error,
+                    {
+                        "error_source": "ShipStation",
+                        "error_type": "integrations",
+                        "error_code": "unknown",
+                        "message": str(e),
+                    },
+                ),
+            )
+
+        return (res.status_code, None)
+
+    async def remove_from_batch(
+        cls: "BatchPortal",
+        batch_id: str,
+        shipment_ids: list[str],
+        rate_ids: list[str],
+    ) -> tuple[int, None | Error]:
+        params = {
+            "shipment_ids": shipment_ids,
+            "rate_ids": rate_ids,
+        }
+
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}/remove"
+
+        try:
+            res = await req(
+                fn=post,
+                url=endpoint,
+                json=params,
             )
             if res.status_code != 204:
                 json = res.json()

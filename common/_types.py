@@ -137,6 +137,11 @@ class ErrorCode(Enum):
     NO_RATES_RETURNED = "no_rates_returned"
 
 
+DisplayFormatScheme = Literal[
+    "label", "qr_code", "label_and_qr_code", "paperless", "label_and_paperless"
+]
+
+
 class URL(TypedDict):
     href: str
     type: str

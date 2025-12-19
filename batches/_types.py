@@ -3,6 +3,7 @@ from typing import Literal, TypedDict
 
 from ..common._types import (  # type: ignore[import-not-found]
     URL,
+    DisplayFormatScheme,
     Error,
     LabelDownload,
     PaginationLink,
@@ -49,6 +50,17 @@ class BatchLabelFormat(Enum):
     PNG = "png"
 
 
+class BatchLabel(TypedDict):
+    ship_date: str
+    label_layout: BatchLabelLayouts  # default "4x6"
+    label_format: BatchLabelFormats  # default "pdf"
+    display_scheme: DisplayFormatScheme  # default "label"
+
+
+class ProcessLabels(BatchLabel):
+    create_batch_and_process_labels: bool
+
+
 class Batch(TypedDict):
     label_layout: BatchLabelLayouts
     label_format: BatchLabelFormats
@@ -78,4 +90,15 @@ class BatchListResponse(TypedDict):
     total: int
     page: int
     pages: int
+    links: PaginationLink
+
+
+class BatchResponseError(TypedDict):
+    error: str
+    shipment_id: str
+    external_shipment_id: str
+
+
+class BatchProcessErrorResponse(PaginationLink):
+    errors: list[BatchResponseError]  # default is []
     links: PaginationLink

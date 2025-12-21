@@ -1,21 +1,21 @@
-import asyncio
+from contextlib import asynccontextmanager
 from json import JSONDecodeError, dump, load
 from logging import Logger, getLogger
 from os import environ, makedirs
 from pathlib import Path
 from threading import Lock
-from typing import Any, Callable, Final, Literal, cast
+from typing import Any, AsyncGenerator, Final, Literal, cast
 
 from dotenv import load_dotenv  # type: ignore
 from httpx import AsyncClient, Response
-from httpx._types import HeaderTypes, QueryParamTypes
+from httpx._types import HeaderTypes
 
 LOGGER: Logger = getLogger(__name__)
 LOGGER.setLevel("INFO")
 
 load_dotenv()
 CWD: Final[Path] = Path(__file__).parent.resolve()
-CACHE_DIR: Final[Path] = CWD / "__github_cache__"
+CACHE_DIR: Final[Path] = CWD / "__cache__"
 makedirs(CACHE_DIR, exist_ok=True)
 
 CACHE_LOCK: Lock = Lock()
@@ -57,7 +57,7 @@ class ShipStationClient:
     _endpoint = API_ENDPOINT
     _headers: HeaderTypes = {
         "User-Agent": "asyncShipStation/1.0.0",
-        "API-Key": API_KEY if API_KEY else "",
+        "api-key": API_KEY if API_KEY else "",
     }
     _client: AsyncClient | None = None
 
@@ -74,6 +74,33 @@ class ShipStationClient:
                 headers=cls._headers,
                 timeout=30,
             )
+
+    @classmethod
+    async def close(
+        cls: type["ShipStationClient"],
+    ) -> None:
+        """
+        Closes the asynchronous HTTP client session.
+        """
+        if cls._client is not None:
+            await cls._client.aclose()
+            cls._client = None
+
+    @classmethod
+    @asynccontextmanager
+    async def scoped_client(
+        cls: type["ShipStationClient"],
+    ) -> AsyncGenerator[AsyncClient, None]:
+        """
+        Asynchronous context manager for the HTTP client session.
+        Yields:
+            AsyncClient: The asynchronous HTTP client session.
+        """
+        await cls.start()
+        try:
+            yield cls._client  # type: ignore
+        finally:
+            await cls.close()
 
     @classmethod
     async def request(
@@ -94,20 +121,9 @@ class ShipStationClient:
             RequestError: If an error occurs while making the request.
         """
         if not cls._client:
-            return APIError(401, "API key is not configured properly.")
+            return APIError(401, "Connection client is not configured properly.")
         resp = await cls._client.request(method, url, **kwargs)
         return resp
-
-    @classmethod
-    async def close(
-        cls: type["ShipStationClient"],
-    ) -> None:
-        """
-        Closes the asynchronous HTTP client session.
-        """
-        if cls._client is not None:
-            await cls._client.aclose()
-            cls._client = None
 
 
 def write_json(fp: Path, data: dict[str, Any] | None) -> bool:

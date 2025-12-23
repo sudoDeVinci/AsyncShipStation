@@ -194,5 +194,3 @@ class CarrierPortal(ShipStationClient):
             )
 
         return (res.status_code, cast(ServiceList, json))
-        
-    

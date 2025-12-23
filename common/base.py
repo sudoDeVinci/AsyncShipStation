@@ -4,7 +4,7 @@ from logging import Logger, getLogger
 from os import environ, makedirs
 from pathlib import Path
 from threading import Lock
-from typing import Any, AsyncGenerator, Final, Literal, cast
+from typing import Any, AsyncGenerator, Literal, cast
 
 from dotenv import load_dotenv  # type: ignore
 from httpx import AsyncClient, Response
@@ -14,12 +14,13 @@ LOGGER: Logger = getLogger(__name__)
 LOGGER.setLevel("INFO")
 
 load_dotenv()
-CWD: Final[Path] = Path(__file__).parent.resolve()
-CACHE_DIR: Final[Path] = CWD / "__cache__"
+CWD: Path = Path(__file__).parent.resolve()
+CACHE_DIR: Path = CWD / "__cache__"
 makedirs(CACHE_DIR, exist_ok=True)
 
 CACHE_LOCK: Lock = Lock()
-API_ENDPOINT = Literal["https://api.shipstation.com/v2"]
+API_ENDPOINT = "https://api.shipstation.com/v2"
+
 API_KEY: str | None = None
 
 try:
@@ -60,6 +61,7 @@ class ShipStationClient:
         "api-key": API_KEY if API_KEY else "",
     }
     _client: AsyncClient | None = None
+    _connection_lock: Lock = Lock()
 
     @classmethod
     async def start(
@@ -68,12 +70,13 @@ class ShipStationClient:
         """
         Initializes the asynchronous HTTP client session.
         """
-        if cls._client is None:
-            cls._client = AsyncClient(
-                base_url=cast(str, cls._endpoint),
-                headers=cls._headers,
-                timeout=30,
-            )
+        with cls._connection_lock:
+            if cls._client is None:
+                cls._client = AsyncClient(
+                    base_url=cast(str, cls._endpoint),
+                    headers=cls._headers,
+                    timeout=30,
+                )
 
     @classmethod
     async def close(
@@ -82,9 +85,10 @@ class ShipStationClient:
         """
         Closes the asynchronous HTTP client session.
         """
-        if cls._client is not None:
-            await cls._client.aclose()
-            cls._client = None
+        with cls._connection_lock:
+            if cls._client is not None:
+                await cls._client.aclose()
+                cls._client = None
 
     @classmethod
     @asynccontextmanager
@@ -120,10 +124,27 @@ class ShipStationClient:
         Raises:
             RequestError: If an error occurs while making the request.
         """
-        if not cls._client:
-            return APIError(401, "Connection client is not configured properly.")
-        resp = await cls._client.request(method, url, **kwargs)
-        return resp
+        if cls._client is None:
+            await cls.start()
+
+        if cls._client is None:
+            raise APIError(500, "HTTP client could not be initialized.")
+
+        response = await cls._client.request(method, url, **kwargs)
+
+        # Handle rate limiting - return as error to match union pattern
+        if response.status_code == 429:
+            retry_after = response.headers.get("Retry-After", "60")
+            return APIError(
+                429,
+                {
+                    "error": "rate_limit_exceeded",
+                    "retry_after": retry_after,
+                    "message": f"Rate limited. Retry after {retry_after}s",
+                },
+            )
+
+        return response
 
 
 def write_json(fp: Path, data: dict[str, Any] | None) -> bool:

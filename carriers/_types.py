@@ -13,6 +13,10 @@ class Service(TypedDict):
     is_multi_package_supported: bool
 
 
+class ServiceList(TypedDict):
+    services: list[Service]
+
+
 class Package(TypedDict):
     package_id: str
     package_code: str
@@ -21,10 +25,18 @@ class Package(TypedDict):
     description: str
 
 
+class PackageList(TypedDict):
+    packages: list[Package]
+
+
 class AdvancedCarrierOption(TypedDict):
     name: str
     default_value: str
     description: str
+
+
+class AdvancedCarrierOptionList(TypedDict):
+    options: list[AdvancedCarrierOption]
 
 
 class Carrier(TypedDict):

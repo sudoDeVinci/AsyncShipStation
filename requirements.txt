@@ -1,3 +1,5 @@
 httpx
 black
 pydantic
+python-dotenv
+mypy

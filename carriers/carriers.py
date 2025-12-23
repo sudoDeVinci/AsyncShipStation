@@ -1,4 +1,4 @@
-from typing import Literal, cast
+from typing import cast
 
 from ..common._types import Endpoints, Error  # type: ignore[import-not-found]
 from ..common.base import (  # type: ignore[import-not-found]

@@ -50,6 +50,10 @@ class APIError(Exception):
     def json(self) -> dict[str, object]:
         return {"status_code": self.status_code, "detail": self.details}
 
+    @property
+    def content(self) -> bytes:
+        return str(self.details).encode("utf-8")
+
 
 class ShipStationClient:
     __slots__ = ()

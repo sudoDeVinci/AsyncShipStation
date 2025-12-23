@@ -17,6 +17,7 @@ class ShipStationPortal(ABCMeta):
 class Endpoints(Enum):
     BATCHES = "batches"
     CARRIERS = "carriers"
+    DOWNLOADS = "downloads"
 
 
 ErrorSources = Literal["carrier", "order_source", "ShipStation"]

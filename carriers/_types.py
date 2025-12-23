@@ -1,4 +1,4 @@
-from typing import Literal, TypedDict
+from typing import TypedDict
 
 from ..common._types import Dimensions, Error  # type: ignore[import-not-found]
 

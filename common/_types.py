@@ -18,6 +18,7 @@ class Endpoints(Enum):
     BATCHES = "batches"
     CARRIERS = "carriers"
     DOWNLOADS = "downloads"
+    FULFILLMENTS = "fulfillments"
 
 
 ErrorSources = Literal["carrier", "order_source", "ShipStation"]
@@ -148,7 +149,7 @@ DisplayFormatScheme = Literal[
 
 class URL(TypedDict):
     href: str
-    type: str
+    type: str | None
 
 
 class LabelDownload(TypedDict):

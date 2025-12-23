@@ -1,4 +1,4 @@
-from typing import Literal, cast
+from typing import List, Literal, cast
 
 from httpx._types import QueryParamTypes
 
@@ -22,7 +22,7 @@ from ._types import (
 
 class BatchPortal(ShipStationClient):
     @classmethod
-    async def list_batches(
+    async def list(
         cls: type[ShipStationClient],
         status: BatchStatuses,
         batch_number: str,
@@ -85,11 +85,11 @@ class BatchPortal(ShipStationClient):
         return (res.status_code, cast(BatchListResponse, json))
 
     @classmethod
-    async def create_batch(
+    async def create(
         cls: type[ShipStationClient],
         external_batch_id: str,
-        shipment_ids: list[str],
-        rate_ids: list[str] | None,
+        shipment_ids: List[str],
+        rate_ids: List[str] | None,
         batch_notes: str = "",
     ) -> tuple[int, Batch | Error]:
         """
@@ -325,8 +325,8 @@ class BatchPortal(ShipStationClient):
         batch_id: str,
         external_batch_id: str,
         batch_notes: str,
-        shipment_ids: list[str],
-        rate_ids: list[str],
+        shipment_ids: List[str],
+        rate_ids: List[str],
         process_labels: ProcessLabels,
     ) -> tuple[int, None | Error]:
         """
@@ -482,8 +482,8 @@ class BatchPortal(ShipStationClient):
     async def remove_from_batch(
         cls: type[ShipStationClient],
         batch_id: str,
-        shipment_ids: list[str],
-        rate_ids: list[str],
+        shipment_ids: List[str],
+        rate_ids: List[str],
     ) -> tuple[int, None | Error]:
         params = {
             "shipment_ids": shipment_ids,

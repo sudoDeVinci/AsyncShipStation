@@ -1,6 +1,6 @@
-from typing import TypedDict
+from typing import NotRequired, TypedDict
 
-from ..common._types import PaginationLink  # type: ignore[import-not-found, misc]
+from ..common._types import Fee, PaginationLink  # type: ignore[import-not-found, misc]
 
 
 class Address(TypedDict):
@@ -15,11 +15,6 @@ class Address(TypedDict):
     state_province: str
     postal_code: str
     country_code: str
-
-
-class Fee(TypedDict):
-    amount: float
-    currency: str
 
 
 class Fulfillment(TypedDict):
@@ -49,9 +44,9 @@ class FulfillmentGist(TypedDict):
     shipment_id: str
     tracking_number: str
     carrier_code: str
-    ship_date: str
-    notify_customer: bool
-    notify_order_source: bool
+    ship_date: NotRequired[str]
+    notify_customer: NotRequired[bool]
+    notify_order_source: NotRequired[bool]
 
 
 class FulfillmentGistRequest(TypedDict):

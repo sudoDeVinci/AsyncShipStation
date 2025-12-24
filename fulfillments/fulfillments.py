@@ -17,19 +17,19 @@ class Fulfillment(ShipStationClient):
     @classmethod
     async def list(
         cls: type[ShipStationClient],
-        ship_to_name: str,
-        ship_to_country_code: str,
-        shipment_number: str,
-        shipment_id: str,
-        fulfillment_id: str,
-        batch_id: str,
-        order_source_id: str,
-        fulfillment_provider_code: str,
-        tracking_number: str,
-        ship_date_start: str,
-        ship_date_end: str,
-        create_date_start: str,
-        create_date_end: str,
+        ship_to_name: str | None,
+        ship_to_country_code: str | None,
+        shipment_number: str | None,
+        shipment_id: str | None,
+        fulfillment_id: str | None,
+        batch_id: str | None,
+        order_source_id: str | None,
+        fulfillment_provider_code: str | None,
+        tracking_number: str | None,
+        ship_date_start: str | None,
+        ship_date_end: str | None,
+        create_date_start: str | None,
+        create_date_end: str | None,
         page: int = 1,
         page_size: int = 25,
         sort_dir: Literal["asc", "desc"] = "asc",
@@ -55,13 +55,15 @@ class Fulfillment(ShipStationClient):
             "sort_by": sort_by,
         }
 
-        endpoint = f"{API_ENDPOINT}/{Endpoints.FULFILLMENTS}"
+        data = {k: v for k, v in data.items() if v is not None}
+
+        endpoint = f"{API_ENDPOINT}/{Endpoints.FULFILLMENTS.value}"
 
         try:
             res = await cls.request(
                 "GET",
                 endpoint,
-                json=data,
+                params=data,
             )
             if res.status_code != 200:
                 if "error_code" in res.json():
@@ -69,8 +71,8 @@ class Fulfillment(ShipStationClient):
                         res.status_code,
                         cast(Error, res.json()),
                     )
-                else:
-                    raise Exception(f"Unexpected response: {res.json()}")
+
+                raise Exception(f"Unexpected response: {res.json()}")
 
         except Exception as e:
             return (
@@ -100,7 +102,7 @@ class Fulfillment(ShipStationClient):
 
         data: FulfillmentGistRequest = {"fulfillments": fulfillments}
 
-        endpoint = f"{API_ENDPOINT}/{Endpoints.FULFILLMENTS}"
+        endpoint = f"{API_ENDPOINT}/{Endpoints.FULFILLMENTS.value}"
 
         try:
             res = await cls.request(

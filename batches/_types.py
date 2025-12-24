@@ -5,7 +5,10 @@ from ..common._types import (  # type: ignore[import-not-found]
     URL,
     DisplayFormatScheme,
     Error,
+    Label,
     LabelDownload,
+    LabelFormats,
+    LabelLayouts,
     PaginationLink,
     PaperlessDownload,
 )
@@ -33,37 +36,17 @@ class BatchStatus(Enum):
     INVALID = "invalid"
 
 
-BatchLabelLayouts = Literal["4x6", "letter"]
-
-
-class BatchLabelLayout(Enum):
-    LAYOUT_4X6 = "4x6"
-    LAYOUT_LETTER = "letter"
-
-
-BatchLabelFormats = Literal["pdf", "zpl", "png"]
-
-
-class BatchLabelFormat(Enum):
-    PDF = "pdf"
-    ZPL = "zpl"
-    PNG = "png"
-
-
-class BatchLabel(TypedDict):
-    ship_date: str
-    label_layout: BatchLabelLayouts  # default "4x6"
-    label_format: BatchLabelFormats  # default "pdf"
+class BatchLabel(Label):
     display_scheme: DisplayFormatScheme  # default "label"
 
 
-class ProcessLabels(BatchLabel):
+class ProcessLabel(BatchLabel):
     create_batch_and_process_labels: bool
 
 
 class Batch(TypedDict):
-    label_layout: BatchLabelLayouts
-    label_format: BatchLabelFormats
+    label_layout: LabelLayouts
+    label_format: LabelFormats
     batch_id: str
     batch_number: str
     external_batch_id: str

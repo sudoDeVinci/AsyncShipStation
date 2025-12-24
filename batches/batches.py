@@ -2,21 +2,23 @@ from typing import List, Literal, cast
 
 from httpx._types import QueryParamTypes
 
-from ..common._types import Endpoints, Error  # type: ignore[import-not-found]
+from ..common._types import (  # type: ignore[import-not-found]
+    Endpoints,
+    Error,
+    LabelFormats,
+    LabelLayouts,
+)
 from ..common.base import (  # type: ignore[import-not-found]
     API_ENDPOINT,
     ShipStationClient,
 )
 from ._types import (
     Batch,
-    BatchLabel,
-    BatchLabelFormats,
-    BatchLabelLayouts,
     BatchListResponse,
     BatchProcessErrorResponse,
     BatchStatuses,
     DisplayFormatScheme,
-    ProcessLabels,
+    ProcessLabel,
 )
 
 
@@ -24,9 +26,9 @@ class BatchPortal(ShipStationClient):
     @classmethod
     async def list(
         cls: type[ShipStationClient],
-        status: BatchStatuses,
-        batch_number: str,
-        sort_by: Literal["ship_date", "processed_at", "created_at"],
+        status: BatchStatuses | None = None,
+        batch_number: str | None = None,
+        sort_by: Literal["ship_date", "processed_at", "created_at"] | None = None,
         page: int = 1,
         page_size: int = 25,
         sort_dir: Literal["asc", "desc"] = "desc",
@@ -46,7 +48,7 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, BatchListResponse | Error]: A tuple containing the status code and either a BatchListResponse or an Error.
         """
-        params: QueryParamTypes = {
+        params = {
             "status": status,
             "batch_number": batch_number,
             "sort_by": sort_by,
@@ -54,7 +56,10 @@ class BatchPortal(ShipStationClient):
             "page_size": page_size,
             "sort_dir": sort_dir,
         }
-        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}"
+
+        params = {k: v for k, v in params.items() if v is not None}
+
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES.value}"
 
         try:
             res = await cls.request(
@@ -66,8 +71,8 @@ class BatchPortal(ShipStationClient):
             if res.status_code != 200:
                 if "error_code" in json:
                     return (res.status_code, cast(Error, json))
-                else:
-                    raise Exception(f"Unexpected response: {json}")
+
+                raise Exception(f"Unexpected response: {json}")
         except Exception as e:
             return (
                 500,
@@ -87,10 +92,11 @@ class BatchPortal(ShipStationClient):
     @classmethod
     async def create(
         cls: type[ShipStationClient],
-        external_batch_id: str,
-        shipment_ids: List[str],
+        external_batch_id: str | None,
+        shipment_ids: List[str] | None,
         rate_ids: List[str] | None,
-        batch_notes: str = "",
+        batch_notes: str | None = None,
+        process_labels: ProcessLabel | None = None,
     ) -> tuple[int, Batch | Error]:
         """
         Create a new batch in your ShipStation account.
@@ -105,13 +111,17 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, Batch | Error]: A tuple containing the status code and either a Batch or an Error.
         """
-        payload: QueryParamTypes = {
+        payload = {
             "external_batch_id": external_batch_id,
             "shipment_ids": shipment_ids,
             "rate_ids": rate_ids,
             "batch_notes": batch_notes,
+            "process_labels": process_labels,
         }
-        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}"
+
+        payload = {k: v for k, v in payload.items() if v is not None}
+
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES.value}"
 
         try:
             res = await cls.request(
@@ -120,11 +130,11 @@ class BatchPortal(ShipStationClient):
                 json=payload,
             )
             json = res.json()
-            if res.status_code not in (201, 207):
+            if res.status_code not in (200, 207):
                 if "error_code" in json:
                     return (res.status_code, cast(Error, json))
-                else:
-                    raise Exception(f"Unexpected response: {json}")
+
+                raise Exception(f"Unexpected response: {json}")
         except Exception as e:
             return (
                 500,
@@ -143,8 +153,7 @@ class BatchPortal(ShipStationClient):
 
     @classmethod
     async def get_by_external_id(
-        cls: type[ShipStationClient],
-        external_batch_id: str,
+        cls: type[ShipStationClient], external_batch_id: str
     ) -> tuple[int, Batch | Error]:
         """
         Retrieve a batch by its external ID.
@@ -156,9 +165,7 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, Batch | Error]: A tuple containing the status code and either a Batch or an Error.
         """
-        endpoint = (
-            f"{API_ENDPOINT}/{Endpoints.BATCHES}/by-external-id/{external_batch_id}"
-        )
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES.value}/external_batch_id/{external_batch_id}"
 
         try:
             res = await cls.request(
@@ -169,8 +176,8 @@ class BatchPortal(ShipStationClient):
             if res.status_code != 200:
                 if "error_code" in json:
                     return (res.status_code, cast(Error, json))
-                else:
-                    raise Exception(f"Unexpected response: {json}")
+
+                raise Exception(f"Unexpected response: {json}")
         except Exception as e:
             return (
                 500,
@@ -202,7 +209,7 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, Batch | Error]: A tuple containing the status code and either a Batch or an Error.
         """
-        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}"
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES.value}/{batch_id}"
 
         try:
             res = await cls.request(
@@ -213,8 +220,7 @@ class BatchPortal(ShipStationClient):
             if res.status_code != 200:
                 if "error_code" in json:
                     return (res.status_code, cast(Error, json))
-                else:
-                    raise Exception(f"Unexpected response: {json}")
+                raise Exception(f"Unexpected response: {json}")
         except Exception as e:
             return (
                 500,
@@ -246,7 +252,7 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, None | Error]: A tuple containing the status code and either None or an Error.
         """
-        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}"
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES.value}/{batch_id}"
 
         try:
             res = await cls.request(
@@ -257,8 +263,7 @@ class BatchPortal(ShipStationClient):
                 json = res.json()
                 if "error_code" in json:
                     return (res.status_code, cast(Error, json))
-                else:
-                    raise Exception(f"Unexpected response: {json}")
+                raise Exception(f"Unexpected response: {json}")
         except Exception as e:
             return (
                 500,
@@ -290,7 +295,7 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, None | Error]: A tuple containing the status code and either None or an Error.
         """
-        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}"
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES.value}/{batch_id}"
 
         try:
             res = await cls.request(
@@ -301,8 +306,7 @@ class BatchPortal(ShipStationClient):
                 json = res.json()
                 if "error_code" in json:
                     return (res.status_code, cast(Error, json))
-                else:
-                    raise Exception(f"Unexpected response: {json}")
+                raise Exception(f"Unexpected response: {json}")
         except Exception as e:
             return (
                 500,
@@ -324,10 +328,10 @@ class BatchPortal(ShipStationClient):
         cls: type[ShipStationClient],
         batch_id: str,
         external_batch_id: str,
-        batch_notes: str,
-        shipment_ids: List[str],
-        rate_ids: List[str],
-        process_labels: ProcessLabels,
+        batch_notes: str | None = None,
+        shipment_ids: List[str] | None = None,
+        rate_ids: List[str] | None = None,
+        process_labels: ProcessLabel | None = None,
     ) -> tuple[int, None | Error]:
         """
         Add shipments to an existing batch.
@@ -351,7 +355,10 @@ class BatchPortal(ShipStationClient):
             "rate_ids": rate_ids,
             "process_labels": process_labels,
         }
-        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}/add"
+
+        payload = {k: v for k, v in payload.items() if v is not None}
+
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES.value}/{batch_id}/add"
 
         try:
             res = await cls.request(
@@ -363,8 +370,7 @@ class BatchPortal(ShipStationClient):
                 json = res.json()
                 if "error_code" in json:
                     return (res.status_code, cast(Error, json))
-                else:
-                    raise Exception(f"Unexpected response: {json}")
+                raise Exception(f"Unexpected response: {json}")
         except Exception as e:
             return (
                 500,
@@ -393,7 +399,7 @@ class BatchPortal(ShipStationClient):
             "page_size": page_size,
         }
 
-        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}/errors"
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES.value}/{batch_id}/errors"
 
         try:
             res = await cls.request(
@@ -426,10 +432,11 @@ class BatchPortal(ShipStationClient):
     @classmethod
     async def process_batch_id_labels(
         cls: type[ShipStationClient],
-        ship_date: str,
-        label_layout: BatchLabelLayouts = "4x6",
-        label_format: BatchLabelFormats = "pdf",
+        batch_id: str,
+        label_layout: LabelLayouts = "4x6",
+        label_format: LabelFormats = "pdf",
         display_scheme: DisplayFormatScheme = "label",
+        ship_date: str | None = None,
     ) -> tuple[int, None | Error]:
         """
         Process labels for a batch by its ID.
@@ -442,13 +449,16 @@ class BatchPortal(ShipStationClient):
             label_format (BatchLabelFormats, optional): The format of the labels. Defaults to "pdf".
             display_scheme (DisplayFormatScheme, optional): The display scheme for the labels. Defaults to "label".
         """
-        payload: BatchLabel = {
-            "ship_date": ship_date,
+        payload = {
             "label_layout": label_layout,
             "label_format": label_format,
             "display_scheme": display_scheme,
         }
-        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/process/labels"
+
+        if ship_date is not None:
+            payload["ship_date"] = ship_date
+
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES.value}/{batch_id}/process/labels"
 
         try:
             res = await cls.request(
@@ -482,15 +492,30 @@ class BatchPortal(ShipStationClient):
     async def remove_from_batch(
         cls: type[ShipStationClient],
         batch_id: str,
-        shipment_ids: List[str],
-        rate_ids: List[str],
+        shipment_ids: List[str] | None = None,
+        rate_ids: List[str] | None = None,
     ) -> tuple[int, None | Error]:
-        params = {
-            "shipment_ids": shipment_ids,
-            "rate_ids": rate_ids,
-        }
+        params = {}
+        if shipment_ids is not None:
+            params["shipment_ids"] = shipment_ids
+        if rate_ids is not None:
+            params["rate_ids"] = rate_ids
 
-        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES}/{batch_id}/remove"
+        if not params:
+            return (
+                400,
+                cast(
+                    Error,
+                    {
+                        "error_source": "ShipStation",
+                        "error_type": "integrations",
+                        "error_code": "invalid_request",
+                        "message": "At least one of shipment_ids or rate_ids must be provided.",
+                    },
+                ),
+            )
+
+        endpoint = f"{API_ENDPOINT}/{Endpoints.BATCHES.value}/{batch_id}/remove"
 
         try:
             res = await cls.request(

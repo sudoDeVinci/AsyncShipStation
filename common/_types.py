@@ -1,6 +1,3 @@
-from __future__ import annotations
-
-from abc import ABCMeta
 from enum import Enum
 from typing import Literal, TypedDict
 
@@ -9,16 +6,12 @@ from pydantic import EmailStr, HttpUrl, PastDatetime
 JSONDict = dict[str, str | int | bool | EmailStr | HttpUrl | PastDatetime | None]
 
 
-class ShipStationPortal(ABCMeta):
-    __slots__ = ()
-    ...
-
-
 class Endpoints(Enum):
     BATCHES = "batches"
     CARRIERS = "carriers"
     DOWNLOADS = "downloads"
     FULFILLMENTS = "fulfillments"
+    INVENTORY = "inventory"
 
 
 ErrorSources = Literal["carrier", "order_source", "ShipStation"]
@@ -146,6 +139,22 @@ DisplayFormatScheme = Literal[
     "label", "qr_code", "label_and_qr_code", "paperless", "label_and_paperless"
 ]
 
+LabelLayouts = Literal["4x6", "letter"]
+
+
+class LabelLayout(Enum):
+    LAYOUT_4X6 = "4x6"
+    LAYOUT_LETTER = "letter"
+
+
+LabelFormats = Literal["pdf", "zpl", "png"]
+
+
+class LabelFormat(Enum):
+    PDF = "pdf"
+    ZPL = "zpl"
+    PNG = "png"
+
 
 class URL(TypedDict):
     href: str
@@ -157,6 +166,12 @@ class LabelDownload(TypedDict):
     pdf: str
     png: str
     zpl: str
+
+
+class Label(TypedDict):
+    ship_date: str
+    label_layout: LabelLayouts  # default "4x6"
+    label_format: LabelFormats  # default "pdf"
 
 
 class PaperlessDownload(TypedDict):
@@ -184,3 +199,8 @@ class Dimensions(TypedDict):
     length: float
     width: float
     height: float
+
+
+class Fee(TypedDict):
+    amount: float
+    currency: str

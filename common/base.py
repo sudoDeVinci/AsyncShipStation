@@ -1,14 +1,16 @@
+from asyncio import Lock
 from contextlib import asynccontextmanager
 from json import JSONDecodeError, dump, load
 from logging import Logger, getLogger
-from os import environ, makedirs
+from os import makedirs
 from pathlib import Path
-from threading import Lock
-from typing import Any, AsyncGenerator, Literal, cast
+from typing import Any, AsyncGenerator, Final, Literal, cast
 
-from dotenv import load_dotenv  # type: ignore
-from httpx import AsyncClient, Response
+from dotenv import load_dotenv
+from httpx import AsyncClient, Limits, Response
 from httpx._types import HeaderTypes
+
+from ._types import Error
 
 LOGGER: Logger = getLogger(__name__)
 LOGGER.setLevel("INFO")
@@ -17,23 +19,6 @@ load_dotenv()
 CWD: Path = Path(__file__).parent.resolve()
 CACHE_DIR: Path = CWD / "__cache__"
 makedirs(CACHE_DIR, exist_ok=True)
-
-CACHE_LOCK: Lock = Lock()
-API_ENDPOINT = "https://api.shipstation.com/v2"
-
-API_KEY: str | None = None
-
-try:
-    assert load_dotenv(
-        verbose=True,
-    ), "Failed to load variables from .env file"
-
-    API_KEY = environ.get("API_KEY", None)
-
-    assert API_KEY is not None, "API_KEY must be set in environment variables."
-
-except (AssertionError, AttributeError, OSError) as err:
-    LOGGER.error(f"Error during global configuration:::{err}")
 
 
 class APIError(Exception):
@@ -47,8 +32,16 @@ class APIError(Exception):
         self.status_code = status
         self.details = detail
 
-    def json(self) -> dict[str, object]:
-        return {"status_code": self.status_code, "detail": self.details}
+    def json(self) -> Error:
+        return cast(
+            Error,
+            {
+                "error_source": "ShipStation",
+                "errors_type": "integrations",
+                "error_code": self.status_code,
+                "message": self.details,
+            },
+        )
 
     @property
     def content(self) -> bytes:
@@ -58,14 +51,24 @@ class APIError(Exception):
 class ShipStationClient:
     __slots__ = ()
 
-    _api_key = API_KEY
-    _endpoint = API_ENDPOINT
-    _headers: HeaderTypes = {
-        "User-Agent": "asyncShipStation/1.0.0",
-        "api-key": API_KEY if API_KEY else "",
-    }
+    _api_key: str | None = None
+    _endpoint: Final[str] = "https://api.shipstation.com/v2"
+    _headers = {"User-Agent": "asyncShipStation/1.0.0"}
     _client: AsyncClient | None = None
     _connection_lock: Lock = Lock()
+
+    @classmethod
+    def configure(
+        cls: type["ShipStationClient"],
+        api_key: str,
+    ) -> None:
+        """
+        Configures the ShipStation client with the provided API key.
+        Args:
+            api_key (str): The API key for authenticating requests.
+        """
+        cls._api_key = api_key
+        cls._headers["api-key"] = api_key
 
     @classmethod
     async def start(
@@ -74,12 +77,17 @@ class ShipStationClient:
         """
         Initializes the asynchronous HTTP client session.
         """
-        with cls._connection_lock:
+        async with cls._connection_lock:
             if cls._client is None:
                 cls._client = AsyncClient(
-                    base_url=cast(str, cls._endpoint),
-                    headers=cls._headers,
+                    base_url=cls._endpoint,
+                    headers=cast(HeaderTypes, cls._headers),
                     timeout=30,
+                    http2=False,  # Disable HTTP/2
+                    limits=Limits(
+                        max_connections=20,
+                        max_keepalive_connections=10,
+                    ),
                 )
 
     @classmethod
@@ -89,7 +97,7 @@ class ShipStationClient:
         """
         Closes the asynchronous HTTP client session.
         """
-        with cls._connection_lock:
+        async with cls._connection_lock:
             if cls._client is not None:
                 await cls._client.aclose()
                 cls._client = None
@@ -132,21 +140,9 @@ class ShipStationClient:
             await cls.start()
 
         if cls._client is None:
-            raise APIError(500, "HTTP client could not be initialized.")
+            return APIError(500, "HTTP client could not be initialized.")
 
         response = await cls._client.request(method, url, **kwargs)
-
-        # Handle rate limiting - return as error to match union pattern
-        if response.status_code == 429:
-            retry_after = response.headers.get("Retry-After", "60")
-            return APIError(
-                429,
-                {
-                    "error": "rate_limit_exceeded",
-                    "retry_after": retry_after,
-                    "message": f"Rate limited. Retry after {retry_after}s",
-                },
-            )
 
         return response
 

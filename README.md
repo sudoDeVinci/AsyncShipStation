@@ -25,6 +25,5 @@ Retreive useful details about the carriers connected to your accounts, including
 [/fulfillments](/fulfillments/_types.py)
 Manage fulfillments which represent completed shipments. Create fulfillments to mark orders as shipped with tracking information and notify customers and marketplaces.
 
-
 [/inventory](/inventory/_types.py)
 Manage inventory, adjust quantities, and handle warehouses and locations.

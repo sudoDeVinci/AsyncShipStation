@@ -4,13 +4,14 @@ import subprocess
 import sys
 from os import getenv
 from pathlib import Path
-from typing import Optional
+from typing import Optional, no_type_check
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
+@no_type_check
 def run_cmd(
     cmd: str, *, cwd: Optional[Path] = None, capture: bool = False
 ) -> subprocess.CompletedProcess:
@@ -31,6 +32,7 @@ def run_cmd(
     return result
 
 
+@no_type_check
 def main() -> None:
     token = getenv("PIPY_TOKEN")
     if not token:

@@ -1,0 +1,70 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "AsyncShipStation"
+version = "0.1.0.0"
+description = "Async Python wrapper for the ShipStation API"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+authors = [
+    { name = "sudoDeVinci" },
+]
+keywords = ["github", "api", "async", "asyncio", "httpx"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Framework :: AsyncIO",
+    "Typing :: Typed",
+]
+dependencies = [
+    "httpx>=0.28.0",
+    "pydantic>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "email-validator>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=1.0.0",
+    "respx>=0.22.0",
+    "mypy>=1.10.0",
+    "black>=24.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/sudoDeVinci/AsyncShipStation"
+Repository = "https://github.com/sudoDeVinci/AsyncShipStation"
+Issues = "https://github.com/sudoDeVinci/AsyncShipStation/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["AsyncShipStation"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "AsyncShipStation/**/*.py",
+    "README.md",
+    "LICENSE",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_return_any = true
+warn_unused_ignores = true
+
+[tool.black]
+line-length = 88
+target-version = ["py312", "py313"]

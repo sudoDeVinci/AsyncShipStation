@@ -9,6 +9,8 @@ from typing import Any, AsyncGenerator, Final, Literal, cast
 from dotenv import load_dotenv
 from httpx import AsyncClient, Limits, Response
 from httpx._types import HeaderTypes
+from pydantic import EmailStr, HttpUrl
+from pydantic.datetime_parse import PastDatetime
 
 from ._types import Error
 
@@ -130,7 +132,9 @@ class ShipStationClient:
         cls: type["ShipStationClient"],
         method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
         url: str,
-        **kwargs,
+        **kwargs: dict[
+            str, str | int | bool | EmailStr | HttpUrl | PastDatetime | None
+        ],
     ) -> Response | APIError:
         """
         Makes an asynchronous HTTP request to the ShipStation API.
@@ -149,7 +153,7 @@ class ShipStationClient:
         if cls._client is None:
             return APIError(500, "HTTP client could not be initialized.")
 
-        response = await cls._client.request(method, url, **kwargs)
+        response = await cls._client.request(method, url, **kwargs)  # type: ignore[arg-type]
 
         return response
 
@@ -193,7 +197,7 @@ def read_json(fp: Path) -> dict[str, Any] | None:
         with open(fp, "r", encoding="utf-8") as f:
             data = load(f)
             LOGGER.info(f"read_json:::{fp} read successfully")
-            return data
+            return cast(dict[str, Any], data)
     except (IOError, OSError, JSONDecodeError) as err:
         LOGGER.error(f"read_json:::Failed to read data from {fp} with error: {err}")
         return None

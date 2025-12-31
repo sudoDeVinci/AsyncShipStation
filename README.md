@@ -27,3 +27,8 @@ Manage fulfillments which represent completed shipments. Create fulfillments to 
 
 [/inventory](/inventory/_types.py)
 Manage inventory, adjust quantities, and handle warehouses and locations.
+  - [/inventory_warehouses](/inventory._types.py)
+  - [/inventory_locations](/inventory._types.py)
+
+[/orders](/orders/_types.py)
+Purchase and print shipping labels for any carrier active on your account. The labels endpoint also supports creating return labels, voiding labels, and getting label details like tracking.

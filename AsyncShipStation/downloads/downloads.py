@@ -1,6 +1,6 @@
 from typing import cast
 
-from ..common import (  # type: ignore[import-not-found]
+from ..common import (
     Endpoints,
     Error,
     ShipStationClient,
@@ -55,4 +55,4 @@ class DownloadPortal(ShipStationClient):
                 ),
             )
 
-        return (res.status_code, cast(bytes, res.content))
+        return (res.status_code, res.content)

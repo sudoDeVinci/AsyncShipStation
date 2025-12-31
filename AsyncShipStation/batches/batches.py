@@ -1,6 +1,7 @@
 from typing import List, Literal, cast
 
-from ..common import (  # type: ignore[import-not-found]
+from ..common import (
+    DisplayFormatScheme,
     Endpoints,
     Error,
     LabelFormats,
@@ -12,7 +13,6 @@ from ._types import (
     BatchListResponse,
     BatchProcessErrorResponse,
     BatchStatuses,
-    DisplayFormatScheme,
     ProcessLabel,
 )
 
@@ -60,7 +60,7 @@ class BatchPortal(ShipStationClient):
             res = await cls.request(
                 "GET",
                 endpoint,
-                params=params,
+                params=params,  # type: ignore[arg-type]
             )
             json = res.json()
             if res.status_code != 200:
@@ -122,7 +122,7 @@ class BatchPortal(ShipStationClient):
             res = await cls.request(
                 "POST",
                 endpoint,
-                json=payload,
+                json=payload,  # type: ignore[arg-type]
             )
             json = res.json()
             if res.status_code not in (200, 207):
@@ -359,7 +359,7 @@ class BatchPortal(ShipStationClient):
             res = await cls.request(
                 "POST",
                 endpoint,
-                json=payload,
+                json=payload,  # type: ignore[arg-type]
             )
             if res.status_code != 204:
                 json = res.json()
@@ -400,7 +400,7 @@ class BatchPortal(ShipStationClient):
             res = await cls.request(
                 "GET",
                 endpoint,
-                params=params,
+                params=params,  # type: ignore[arg-type]
             )
             json = res.json()
             if res.status_code != 200:
@@ -444,7 +444,7 @@ class BatchPortal(ShipStationClient):
             label_format (BatchLabelFormats, optional): The format of the labels. Defaults to "pdf".
             display_scheme (DisplayFormatScheme, optional): The display scheme for the labels. Defaults to "label".
         """
-        payload = {
+        payload: dict[str, object] = {
             "label_layout": label_layout,
             "label_format": label_format,
             "display_scheme": display_scheme,
@@ -492,7 +492,7 @@ class BatchPortal(ShipStationClient):
         shipment_ids: List[str] | None = None,
         rate_ids: List[str] | None = None,
     ) -> tuple[int, None | Error]:
-        params = {}
+        params: dict[str, object] = {}
         if shipment_ids is not None:
             params["shipment_ids"] = shipment_ids
         if rate_ids is not None:

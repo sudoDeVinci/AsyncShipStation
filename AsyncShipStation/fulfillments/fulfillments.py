@@ -1,11 +1,11 @@
 from typing import List, Literal, cast
 
-from ..common import (  # type: ignore[import-not-found, misc]
+from ..common import (
     Endpoints,
     Error,
     ShipStationClient,
 )
-from ._types import (  # type: ignore[import-not-found, misc]
+from ._types import (
     BatchFulfillmentCreationResponse,
     FulfillmentGist,
     FulfillmentGistRequest,
@@ -63,7 +63,7 @@ class FulfillmentPortal(ShipStationClient):
             res = await cls.request(
                 "GET",
                 endpoint,
-                params=data,
+                params=data,  # type: ignore[arg-type]
             )
             if res.status_code != 200:
                 if "error_code" in res.json():
@@ -108,7 +108,7 @@ class FulfillmentPortal(ShipStationClient):
             res = await cls.request(
                 "POST",
                 endpoint,
-                json=data,
+                json=data,  # type: ignore[arg-type]
             )
             if res.status_code != 200:
                 if "error_code" in res.json():

@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from ..common._types import Fee, PaginationLink  # type: ignore[import-not-found]
+from ..common import Fee, PaginationLink
 
 
 class InventoryItem(TypedDict):

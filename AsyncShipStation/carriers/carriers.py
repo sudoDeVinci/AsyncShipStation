@@ -1,6 +1,6 @@
 from typing import cast
 
-from ..common import (  # type: ignore[import-not-found]
+from ..common import (
     Endpoints,
     Error,
     ShipStationClient,

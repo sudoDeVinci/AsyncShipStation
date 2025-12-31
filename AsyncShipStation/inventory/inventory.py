@@ -1,12 +1,12 @@
 from typing import Literal, cast
 
-from ..common import (  # type: ignore[import-not-found, misc]
+from ..common import (
     Endpoints,
     Error,
     Fee,
     ShipStationClient,
 )
-from ._types import (  # type: ignore[import-not-found, misc]
+from ._types import (
     Inventory,
     Location,
     LocationListResponse,
@@ -140,7 +140,34 @@ class InventoryPortal(ShipStationClient):
     async def list_warehouses(
         cls: type[ShipStationClient], page_size: int
     ) -> tuple[int, Error | WarehouseListResponse]:
-        raise NotImplementedError("This method is not yet implemented.")
+        params = {"page_size": page_size}
+        endpoint = f"{cls._endpoint}/{Endpoints.INVENTORY_WAREHOUSES.value}"
+
+        try:
+            response = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
+
+            if response.status_code != 200:
+                if "error_code" in response.json():
+                    return response.status_code, cast(Error, response.json())
+
+                raise Exception(
+                    f"Unexpected response: {response.status_code} - {response.json()}"
+                )
+        except Exception as e:
+            return (
+                500,
+                cast(
+                    Error,
+                    {
+                        "error_source": "ShipStation",
+                        "error_type": "integrations",
+                        "error_code": "unknown",
+                        "message": str(e),
+                    },
+                ),
+            )
+
+        return response.status_code, cast(WarehouseListResponse, response.json())
 
     @classmethod
     async def create_warehouse(

@@ -12,6 +12,9 @@ class Endpoints(Enum):
     DOWNLOADS = "downloads"
     FULFILLMENTS = "fulfillments"
     INVENTORY = "inventory"
+    INVENTORY_WAREHOUSES = "inventory_warehouses"
+    INVENTORY_LOCATIONS = "inventory_locations"
+    ORDERS = "orders"
 
 
 ErrorSources = Literal["carrier", "order_source", "ShipStation"]

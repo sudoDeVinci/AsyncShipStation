@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Literal, TypedDict
 
-from ..common._types import (  # type: ignore[import-not-found]
+from ..common import (
     URL,
     DisplayFormatScheme,
     Error,

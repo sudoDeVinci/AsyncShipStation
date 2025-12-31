@@ -3,3 +3,7 @@ black
 pydantic
 python-dotenv
 mypy
+build
+twine
+pytest
+pytest-asyncio

@@ -1,12 +1,3 @@
-#!/usr/bin/env python3
-"""Build and upload a package to PyPI.
-
-This script:
-1. Cleans the ``dist`` directory.
-2. Builds a source distribution and a wheel.
-3. Uploads the distribution to PyPI using a token stored in the ``PIPY_TOKEN`` environment variable.
-"""
-
 from __future__ import annotations
 
 import subprocess

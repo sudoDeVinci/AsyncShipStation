@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from ..common._types import Dimensions, Error  # type: ignore[import-not-found]
+from ..common import Dimensions, Error  # type: ignore[import-not-found]
 
 
 class Service(TypedDict):

@@ -1,6 +1,6 @@
 from typing import NotRequired, TypedDict
 
-from ..common._types import Fee, PaginationLink  # type: ignore[import-not-found, misc]
+from ..common import Fee, PaginationLink  # type: ignore[import-not-found, misc]
 
 
 class Address(TypedDict):

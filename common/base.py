@@ -1,6 +1,6 @@
 from asyncio import Lock
 from contextlib import asynccontextmanager
-from json import JSONDecodeError, dump, load
+from json import JSONDecodeError, dump, dumps, load
 from logging import Logger, getLogger
 from os import makedirs
 from pathlib import Path
@@ -16,7 +16,7 @@ LOGGER: Logger = getLogger(__name__)
 LOGGER.setLevel("INFO")
 
 load_dotenv()
-CWD: Path = Path(__file__).parent.resolve()
+CWD: Path = Path(__file__).parent.parent.resolve()
 CACHE_DIR: Path = CWD / "__cache__"
 makedirs(CACHE_DIR, exist_ok=True)
 
@@ -43,9 +43,16 @@ class APIError(Exception):
             },
         )
 
+    def __str__(self) -> str:
+        outdict = {
+            "status_code": self.status_code,
+            "details": self.json(),
+        }
+        return dumps(outdict, indent=4, ensure_ascii=False)
+
     @property
     def content(self) -> bytes:
-        return str(self.details).encode("utf-8")
+        return self.__str__().encode("utf-8")
 
 
 class ShipStationClient:

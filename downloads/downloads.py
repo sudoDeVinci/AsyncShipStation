@@ -1,8 +1,8 @@
 from typing import cast
 
-from ..common._types import Endpoints, Error  # type: ignore[import-not-found, misc]
-from ..common.base import (  # type: ignore[import-not-found, misc]
-    API_ENDPOINT,
+from ..common import (  # type: ignore[import-not-found]
+    Endpoints,
+    Error,
     ShipStationClient,
 )
 
@@ -17,7 +17,9 @@ class DownloadPortal(ShipStationClient):
         download: str,
         rotation: int = 0,
     ) -> tuple[int, bytes | Error]:
-        endpoint = f"{API_ENDPOINT}/{Endpoints.DOWNLOADS}/{dir}/{subdir}/{filename}"
+        endpoint = (
+            f"{cls._endpoint}/{Endpoints.DOWNLOADS.value}/{dir}/{subdir}/{filename}"
+        )
         params = {
             "download": download,
             "rotation": rotation,

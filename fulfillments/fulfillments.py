@@ -1,8 +1,8 @@
 from typing import List, Literal, cast
 
-from ..common._types import Endpoints, Error  # type: ignore[import-not-found, misc]
-from ..common.base import (  # type: ignore[import-not-found, misc]
-    API_ENDPOINT,
+from ..common import (  # type: ignore[import-not-found, misc]
+    Endpoints,
+    Error,
     ShipStationClient,
 )
 from ._types import (  # type: ignore[import-not-found, misc]
@@ -13,7 +13,7 @@ from ._types import (  # type: ignore[import-not-found, misc]
 )
 
 
-class Fulfillment(ShipStationClient):
+class FulfillmentPortal(ShipStationClient):
     @classmethod
     async def list(
         cls: type[ShipStationClient],
@@ -57,7 +57,7 @@ class Fulfillment(ShipStationClient):
 
         data = {k: v for k, v in data.items() if v is not None}
 
-        endpoint = f"{API_ENDPOINT}/{Endpoints.FULFILLMENTS.value}"
+        endpoint = f"{cls._endpoint}/{Endpoints.FULFILLMENTS.value}"
 
         try:
             res = await cls.request(
@@ -102,7 +102,7 @@ class Fulfillment(ShipStationClient):
 
         data: FulfillmentGistRequest = {"fulfillments": fulfillments}
 
-        endpoint = f"{API_ENDPOINT}/{Endpoints.FULFILLMENTS.value}"
+        endpoint = f"{cls._endpoint}/{Endpoints.FULFILLMENTS.value}"
 
         try:
             res = await cls.request(

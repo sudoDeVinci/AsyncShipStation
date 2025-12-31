@@ -19,3 +19,30 @@ class Inventory(TypedDict):
     page: int
     pages: int
     links: list[PaginationLink]
+
+
+class Warehouse(TypedDict):
+    inventory_warehouse_id: str
+    name: str
+    created_at: str
+    updated_at: str
+
+
+class Location(Warehouse):
+    inventory_location_id: str
+
+
+class WarehouseListResponse(TypedDict):
+    inventory_warehouses: list[Warehouse]
+    total: int
+    page: int
+    pages: int
+    links: list[PaginationLink]
+
+
+class LocationListResponse(TypedDict):
+    inventory_locations: list[Location]
+    total: int
+    page: int
+    pages: int
+    links: list[PaginationLink]

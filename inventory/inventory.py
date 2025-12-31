@@ -1,15 +1,18 @@
 from typing import Literal, cast
 
-from ..common._types import (  # type: ignore[import-not-found, misc]
+from ..common import (  # type: ignore[import-not-found, misc]
     Endpoints,
     Error,
     Fee,
-)
-from ..common.base import (  # type: ignore[import-not-found, misc]
-    API_ENDPOINT,
     ShipStationClient,
 )
-from ._types import Inventory  # type: ignore[import-not-found, misc]
+from ._types import (  # type: ignore[import-not-found, misc]
+    Inventory,
+    Location,
+    LocationListResponse,
+    Warehouse,
+    WarehouseListResponse,
+)
 
 
 class InventoryPortal(ShipStationClient):
@@ -30,7 +33,7 @@ class InventoryPortal(ShipStationClient):
             "page_size": page_size,
         }
 
-        endpoint = f"{API_ENDPOINT}/{Endpoints.INVENTORY.value}"
+        endpoint = f"{cls._endpoint}/{Endpoints.INVENTORY.value}"
 
         try:
             response = await cls.request("GET", endpoint, params=params)
@@ -104,7 +107,7 @@ class InventoryPortal(ShipStationClient):
             filtered = {k: v for k, v in optionals.items() if v is not None}
             payload.update(filtered)
 
-        endpoint = f"{API_ENDPOINT}/{Endpoints.INVENTORY.value}"
+        endpoint = f"{cls._endpoint}/{Endpoints.INVENTORY.value}"
 
         try:
             response = await cls.request("POST", endpoint, json=payload)
@@ -132,3 +135,106 @@ class InventoryPortal(ShipStationClient):
             )
 
         return response.status_code, None
+
+    @classmethod
+    async def list_warehouses(
+        cls: type[ShipStationClient], page_size: int
+    ) -> tuple[int, Error | WarehouseListResponse]:
+        raise NotImplementedError("This method is not yet implemented.")
+
+    @classmethod
+    async def create_warehouse(
+        cls: type[ShipStationClient], name: str
+    ) -> tuple[int, Error | Warehouse]:
+        raise NotImplementedError("This method is not yet implemented.")
+
+    @classmethod
+    async def get_warehouse_by_id(
+        cls: type[ShipStationClient], inventory_warehouse_id: str
+    ) -> tuple[int, Error | Warehouse]:
+        raise NotImplementedError("This method is not yet implemented.")
+
+    @classmethod
+    async def update_warehouse_name(
+        cls: type[ShipStationClient],
+        inventory_warehouse_id: str,
+        name: str,
+    ) -> tuple[int, Error | None]:
+        raise NotImplementedError("This method is not yet implemented.")
+
+    @classmethod
+    async def delete_warehouse(
+        cls: type[ShipStationClient],
+        inventory_warehouse_id: str,
+        remove_inventory: Literal["0", "1"],
+    ) -> tuple[int, Error | None]:
+        f"""
+        GET a warehouse by its ID.
+        /v2/inventory_warehouses/{inventory_warehouse_id}?remove_inventory={remove_inventory}'
+
+        Parameters:
+            inventory_warehouse_id (str): The ID of the warehouse to delete.
+            remove_inventory (str): If 1, remove all inventory from the warehouse before deleting it. If 0 or missing and the warehouse has On Hand inventory, the request will fail.
+        """
+        raise NotImplementedError("This method is not yet implemented.")
+
+    @classmethod
+    async def list_locations(
+        cls: type[ShipStationClient],
+        page_size: int,
+    ) -> tuple[int, Error | LocationListResponse]:
+        """
+        GET a list of inventory locations.
+        /v2/inventory_locations?page_size={page_size}
+        """
+        raise NotImplementedError("This method is not yet implemented.")
+
+    @classmethod
+    async def create_new_location(
+        cls: type[ShipStationClient],
+        name: str,
+        inventory_warehouse_id: str,
+    ) -> tuple[int, Error | Warehouse]:
+        """
+        POST a new inventory location.
+        /v2/inventory_locations
+        """
+        raise NotImplementedError("This method is not yet implemented.")
+
+    @classmethod
+    async def get_location_by_id(
+        cls: type[ShipStationClient], inventory_location_id: str
+    ) -> tuple[int, Error | Location]:
+        """
+        GET an inventory location by its ID.
+        /v2/inventory_locations/{inventory_location_id}
+        """
+        raise NotImplementedError("This method is not yet implemented.")
+
+    @classmethod
+    async def update_location_name(
+        cls: type[ShipStationClient],
+        inventory_location_id: str,
+        name: str,
+    ) -> tuple[int, Error | None]:
+        """
+        PUT an inventory location's name.
+        /v2/inventory_locations/{inventory_location_id}
+        """
+        raise NotImplementedError("This method is not yet implemented.")
+
+    @classmethod
+    async def delete_location(
+        cls: type[ShipStationClient],
+        inventory_location_id: str,
+        remove_inventory: Literal["0", "1"],
+    ) -> tuple[int, Error | None]:
+        """
+        DELETE an inventory location.
+        /v2/inventory_locations/{inventory_location_id}?remove_inventory={remove_inventory}
+
+        Args:
+            inventory_location_id (str): The ID of the inventory location to delete.
+            remove_inventory (str): If 1, remove all inventory from the location before deleting it. If 0 or missing and the location has On Hand inventory, the request will fail.
+        """
+        raise NotImplementedError("This method is not yet implemented.")

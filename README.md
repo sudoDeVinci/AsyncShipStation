@@ -30,5 +30,8 @@ Manage inventory, adjust quantities, and handle warehouses and locations.
   - [/inventory_warehouses](/inventory._types.py)
   - [/inventory_locations](/inventory._types.py)
 
-[/orders](/orders/_types.py)
+[/labels](/labels/_types.py)
 Purchase and print shipping labels for any carrier active on your account. The labels endpoint also supports creating return labels, voiding labels, and getting label details like tracking.
+
+[/manifests](/manifests/_types.py)
+A manifest is a document that provides a list of the day's shipments. It typically contains a barcode that allows the pickup driver to scan a single document to register all shipments, rather than scanning each shipment individually.

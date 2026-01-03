@@ -2,7 +2,7 @@ from typing import List, Literal, cast
 
 from ..common import (
     Endpoints,
-    Error,
+    ErrorResponse,
     ShipStationClient,
 )
 from ._types import (
@@ -34,7 +34,7 @@ class FulfillmentPortal(ShipStationClient):
         page_size: int = 25,
         sort_dir: Literal["asc", "desc"] = "asc",
         sort_by: Literal["created_at", "modified_at", "shipped_at"] = "created_at",
-    ) -> tuple[int, FulfillmentListResponse | Error]:
+    ) -> tuple[int, FulfillmentListResponse | ErrorResponse]:
         data = {
             "ship_to_name": ship_to_name,
             "ship_to_country_code": ship_to_country_code,
@@ -65,36 +65,20 @@ class FulfillmentPortal(ShipStationClient):
                 endpoint,
                 params=data,  # type: ignore[arg-type]
             )
-            if res.status_code != 200:
-                if "error_code" in res.json():
-                    return (
-                        res.status_code,
-                        cast(Error, res.json()),
-                    )
 
-                raise Exception(f"Unexpected response: {res.json()}")
-
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
+            return cls.validate_response(
+                res,
+                (200,),
+                FulfillmentListResponse,
             )
-
-        return (res.status_code, cast(FulfillmentListResponse, res.json()))
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def create(
         cls: type[ShipStationClient],
         fulfillments: List[FulfillmentGist],
-    ) -> tuple[int, Error | BatchFulfillmentCreationResponse]:
+    ) -> tuple[int, ErrorResponse | BatchFulfillmentCreationResponse]:
         """
         Create one or more fulfillments by marking shipments as shipped with tracking information.
         This will notify customers and marketplaces according to your configuration.
@@ -110,27 +94,11 @@ class FulfillmentPortal(ShipStationClient):
                 endpoint,
                 json=data,  # type: ignore[arg-type]
             )
-            if res.status_code != 200:
-                if "error_code" in res.json():
-                    return (
-                        res.status_code,
-                        cast(Error, res.json()),
-                    )
-                else:
-                    raise Exception(f"Unexpected response: {res.json()}")
 
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
+            return cls.validate_response(
+                res,
+                (200,),
+                BatchFulfillmentCreationResponse,
             )
-
-        return (res.status_code, cast(BatchFulfillmentCreationResponse, res.json()))
+        except Exception as e:
+            return cls.parse_unknown_exception(e)

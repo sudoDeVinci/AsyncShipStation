@@ -2,7 +2,7 @@ from typing import Literal, cast
 
 from ..common import (
     Endpoints,
-    Error,
+    ErrorResponse,
     Fee,
     ShipStationClient,
 )
@@ -24,7 +24,7 @@ class InventoryPortal(ShipStationClient):
         inventory_location_id: str,
         group_by: Literal["warehouse", "location"],
         page_size: int,
-    ) -> tuple[int, Error | Inventory]:
+    ) -> tuple[int, ErrorResponse | Inventory]:
         params = {
             "sku": sku,
             "inventory_warehouse_id": inventory_warehouse_id,
@@ -36,31 +36,15 @@ class InventoryPortal(ShipStationClient):
         endpoint = f"{cls._endpoint}/{Endpoints.INVENTORY.value}"
 
         try:
-            response = await cls.request("GET", endpoint, params=params)
+            res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
 
-            if response.status_code != 200:
-                if "error_code" in response.json():
-                    return response.status_code, cast(Error, response.json())
-
-                raise Exception(
-                    f"Unexpected response: {response.status_code} - {response.json()}"
-                )
-
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
+            return cls.validate_response(
+                res,
+                (200,),
+                Inventory,
             )
-
-        return response.status_code, cast(Inventory, response.json())
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def update(
@@ -82,7 +66,7 @@ class InventoryPortal(ShipStationClient):
         new_condition: (
             Literal["sellable", "damaged", "expired", "qa_hold"] | None
         ) = None,
-    ) -> tuple[int, Error | None]:
+    ) -> tuple[int, ErrorResponse | None]:
         payload = {
             "transaction_type": transaction_type,
             "inventory_location_id": inventory_location_id,
@@ -110,75 +94,48 @@ class InventoryPortal(ShipStationClient):
         endpoint = f"{cls._endpoint}/{Endpoints.INVENTORY.value}"
 
         try:
-            response = await cls.request("POST", endpoint, json=payload)
+            res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
 
-            if response.status_code != 204:
-                if "error_code" in response.json():
-                    return response.status_code, cast(Error, response.json())
+            if res.status_code == 204:
+                return res.status_code, None
 
-                raise Exception(
-                    f"Unexpected response: {response.status_code} - {response.json()}"
-                )
-
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
+            status_code, result = cls.validate_response(
+                res,
+                (204,),
+                type(None),
             )
-
-        return response.status_code, None
+            return status_code, cast(ErrorResponse, result)
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def list_warehouses(
         cls: type[ShipStationClient], page_size: int
-    ) -> tuple[int, Error | WarehouseListResponse]:
+    ) -> tuple[int, ErrorResponse | WarehouseListResponse]:
         params = {"page_size": page_size}
         endpoint = f"{cls._endpoint}/{Endpoints.INVENTORY_WAREHOUSES.value}"
 
         try:
-            response = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
+            res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
 
-            if response.status_code != 200:
-                if "error_code" in response.json():
-                    return response.status_code, cast(Error, response.json())
-
-                raise Exception(
-                    f"Unexpected response: {response.status_code} - {response.json()}"
-                )
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
+            return cls.validate_response(
+                res,
+                (200,),
+                WarehouseListResponse,
             )
-
-        return response.status_code, cast(WarehouseListResponse, response.json())
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def create_warehouse(
         cls: type[ShipStationClient], name: str
-    ) -> tuple[int, Error | Warehouse]:
+    ) -> tuple[int, ErrorResponse | Warehouse]:
         raise NotImplementedError("This method is not yet implemented.")
 
     @classmethod
     async def get_warehouse_by_id(
         cls: type[ShipStationClient], inventory_warehouse_id: str
-    ) -> tuple[int, Error | Warehouse]:
+    ) -> tuple[int, ErrorResponse | Warehouse]:
         raise NotImplementedError("This method is not yet implemented.")
 
     @classmethod
@@ -186,7 +143,7 @@ class InventoryPortal(ShipStationClient):
         cls: type[ShipStationClient],
         inventory_warehouse_id: str,
         name: str,
-    ) -> tuple[int, Error | None]:
+    ) -> tuple[int, ErrorResponse | None]:
         raise NotImplementedError("This method is not yet implemented.")
 
     @classmethod
@@ -194,7 +151,7 @@ class InventoryPortal(ShipStationClient):
         cls: type[ShipStationClient],
         inventory_warehouse_id: str,
         remove_inventory: Literal["0", "1"],
-    ) -> tuple[int, Error | None]:
+    ) -> tuple[int, ErrorResponse | None]:
         f"""
         GET a warehouse by its ID.
         /v2/inventory_warehouses/{inventory_warehouse_id}?remove_inventory={remove_inventory}'
@@ -209,7 +166,7 @@ class InventoryPortal(ShipStationClient):
     async def list_locations(
         cls: type[ShipStationClient],
         page_size: int,
-    ) -> tuple[int, Error | LocationListResponse]:
+    ) -> tuple[int, ErrorResponse | LocationListResponse]:
         """
         GET a list of inventory locations.
         /v2/inventory_locations?page_size={page_size}
@@ -221,7 +178,7 @@ class InventoryPortal(ShipStationClient):
         cls: type[ShipStationClient],
         name: str,
         inventory_warehouse_id: str,
-    ) -> tuple[int, Error | Warehouse]:
+    ) -> tuple[int, ErrorResponse | Warehouse]:
         """
         POST a new inventory location.
         /v2/inventory_locations
@@ -231,7 +188,7 @@ class InventoryPortal(ShipStationClient):
     @classmethod
     async def get_location_by_id(
         cls: type[ShipStationClient], inventory_location_id: str
-    ) -> tuple[int, Error | Location]:
+    ) -> tuple[int, ErrorResponse | Location]:
         """
         GET an inventory location by its ID.
         /v2/inventory_locations/{inventory_location_id}
@@ -243,7 +200,7 @@ class InventoryPortal(ShipStationClient):
         cls: type[ShipStationClient],
         inventory_location_id: str,
         name: str,
-    ) -> tuple[int, Error | None]:
+    ) -> tuple[int, ErrorResponse | None]:
         """
         PUT an inventory location's name.
         /v2/inventory_locations/{inventory_location_id}
@@ -255,7 +212,7 @@ class InventoryPortal(ShipStationClient):
         cls: type[ShipStationClient],
         inventory_location_id: str,
         remove_inventory: Literal["0", "1"],
-    ) -> tuple[int, Error | None]:
+    ) -> tuple[int, ErrorResponse | None]:
         """
         DELETE an inventory location.
         /v2/inventory_locations/{inventory_location_id}?remove_inventory={remove_inventory}

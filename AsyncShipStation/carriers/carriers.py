@@ -2,7 +2,7 @@ from typing import cast
 
 from ..common import (
     Endpoints,
-    Error,
+    ErrorResponse,
     ShipStationClient,
 )
 from ._types import (
@@ -18,7 +18,7 @@ class CarrierPortal(ShipStationClient):
     @classmethod
     async def list_carriers(
         cls: type[ShipStationClient],
-    ) -> tuple[int, CarrierListResponse | Error]:
+    ) -> tuple[int, CarrierListResponse | ErrorResponse]:
         endpoint = f"{cls._endpoint}/{Endpoints.CARRIERS}"
 
         try:
@@ -26,35 +26,19 @@ class CarrierPortal(ShipStationClient):
                 "GET",
                 endpoint,
             )
-            json = res.json()
-            if res.status_code not in (200, 207):
-                if "error_code" in json:
-                    return (
-                        res.status_code,
-                        cast(Error, json),
-                    )
-                else:
-                    raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
 
-        return (res.status_code, cast(CarrierListResponse, json))
+            return cls.validate_response(
+                res,
+                (200, 207),
+                CarrierListResponse,
+            )
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def get_by_id(
         cls: type[ShipStationClient], carrier_id: str
-    ) -> tuple[int, Carrier | Error]:
+    ) -> tuple[int, Carrier | ErrorResponse]:
         endpoint = f"{cls._endpoint}/{Endpoints.CARRIERS}/{carrier_id}"
 
         try:
@@ -62,35 +46,19 @@ class CarrierPortal(ShipStationClient):
                 "GET",
                 endpoint,
             )
-            json = res.json()
-            if res.status_code != 200:
-                if "error_code" in json:
-                    return (
-                        res.status_code,
-                        cast(Error, json),
-                    )
-                else:
-                    raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
 
-        return (res.status_code, cast(Carrier, json))
+            return cls.validate_response(
+                res,
+                (200,),
+                Carrier,
+            )
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def get_options(
         cls: type[ShipStationClient], carrier_id: str
-    ) -> tuple[int, Error | AdvancedCarrierOptionList]:
+    ) -> tuple[int, ErrorResponse | AdvancedCarrierOptionList]:
         endpoint = f"{cls._endpoint}/{Endpoints.CARRIERS}/{carrier_id}/options"
 
         try:
@@ -98,35 +66,19 @@ class CarrierPortal(ShipStationClient):
                 "GET",
                 endpoint,
             )
-            json = res.json()
-            if res.status_code != 200:
-                if "error_code" in json:
-                    return (
-                        res.status_code,
-                        cast(Error, json),
-                    )
-                else:
-                    raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
 
-        return (res.status_code, cast(AdvancedCarrierOptionList, json))
+            return cls.validate_response(
+                res,
+                (200,),
+                AdvancedCarrierOptionList,
+            )
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def get_packages(
         cls: type[ShipStationClient], carrier_id: str
-    ) -> tuple[int, Error | PackageList]:
+    ) -> tuple[int, ErrorResponse | PackageList]:
         endpoint = f"{cls._endpoint}/{Endpoints.CARRIERS}/{carrier_id}/packages"
 
         try:
@@ -134,35 +86,19 @@ class CarrierPortal(ShipStationClient):
                 "GET",
                 endpoint,
             )
-            json = res.json()
-            if res.status_code != 200:
-                if "error_code" in json:
-                    return (
-                        res.status_code,
-                        cast(Error, json),
-                    )
-                else:
-                    raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
 
-        return (res.status_code, cast(PackageList, json))
+            return cls.validate_response(
+                res,
+                (200,),
+                PackageList,
+            )
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def get_services(
         cls: type[ShipStationClient], carrier_id: str
-    ) -> tuple[int, Error | ServiceList]:
+    ) -> tuple[int, ErrorResponse | ServiceList]:
         endpoint = f"{cls._endpoint}/{Endpoints.CARRIERS}/{carrier_id}/services"
 
         try:
@@ -170,27 +106,11 @@ class CarrierPortal(ShipStationClient):
                 "GET",
                 endpoint,
             )
-            json = res.json()
-            if res.status_code != 200:
-                if "error_code" in json:
-                    return (
-                        res.status_code,
-                        cast(Error, json),
-                    )
-                else:
-                    raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
 
-        return (res.status_code, cast(ServiceList, json))
+            return cls.validate_response(
+                res,
+                (200,),
+                ServiceList,
+            )
+        except Exception as e:
+            return cls.parse_unknown_exception(e)

@@ -1,11 +1,9 @@
-from ast import Add
 from enum import Enum
-from tkinter.constants import N, S
 from typing import Literal, TypedDict
 
-from pydantic import EmailStr, HttpUrl, PastDatetime
+from pydantic import EmailStr, HttpUrl
 
-JSONDict = dict[str, str | int | bool | EmailStr | HttpUrl | PastDatetime | None]
+JSONDict = dict[str, str | int | bool | EmailStr | HttpUrl | None]
 
 
 class Endpoints(Enum):
@@ -18,6 +16,7 @@ class Endpoints(Enum):
     INVENTORY_LOCATIONS = "inventory_locations"
     ORDERS = "orders"
     LABELS = "labels"
+    MANIFESTS = "manifests"
 
 
 ErrorSources = Literal["carrier", "order_source", "ShipStation"]
@@ -310,6 +309,11 @@ class Error(TypedDict):
     errors_type: ErrorTypes
     error_code: ErrorCodes
     message: str
+
+
+class ErrorResponse(TypedDict):
+    errors: list[Error]
+    request_id: str | None
 
 
 class Dimensions(TypedDict):

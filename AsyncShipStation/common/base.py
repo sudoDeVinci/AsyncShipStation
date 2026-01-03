@@ -4,15 +4,14 @@ from json import JSONDecodeError, dump, dumps, load
 from logging import Logger, getLogger
 from os import makedirs
 from pathlib import Path
-from typing import Any, AsyncGenerator, Final, Literal, cast
+from typing import Any, AsyncGenerator, Final, Generic, Literal, TypeVar, cast
 
 from dotenv import load_dotenv
 from httpx import AsyncClient, Limits, Response
 from httpx._types import HeaderTypes
 from pydantic import EmailStr, HttpUrl
-from pydantic.datetime_parse import PastDatetime
 
-from ._types import Error
+from ._types import Error, ErrorResponse
 
 LOGGER: Logger = getLogger(__name__)
 LOGGER.setLevel("INFO")
@@ -21,6 +20,8 @@ load_dotenv()
 CWD: Path = Path(__file__).parent.parent.resolve()
 CACHE_DIR: Path = CWD / "__cache__"
 makedirs(CACHE_DIR, exist_ok=True)
+
+T = TypeVar("T")
 
 
 class APIError(Exception):
@@ -34,14 +35,19 @@ class APIError(Exception):
         self.status_code = status
         self.details = detail
 
-    def json(self) -> Error:
+    def json(self) -> ErrorResponse:
         return cast(
-            Error,
+            ErrorResponse,
             {
-                "error_source": "ShipStation",
-                "errors_type": "integrations",
-                "error_code": self.status_code,
-                "message": self.details,
+                "request_id": None,
+                "errors": [
+                    {
+                        "error_source": "ShipStation",
+                        "errors_type": "integrations",
+                        "error_code": self.status_code,
+                        "message": self.details,
+                    }
+                ],
             },
         )
 
@@ -65,6 +71,65 @@ class ShipStationClient:
     _headers = {"User-Agent": "asyncShipStation/1.0.0"}
     _client: AsyncClient | None = None
     _connection_lock: Lock = Lock()
+
+    @classmethod
+    def validate_response(
+        cls: type["ShipStationClient"],
+        res: Response | APIError,
+        accepted_statuses: tuple[int, ...],
+        return_type: type[T],
+    ) -> tuple[int, ErrorResponse | T]:
+        """
+        Validates the HTTP response from the ShipStation API.
+        Args:
+            res (Response | APIError): The response object or APIError to validate.
+            accepted_statuses (tuple[int, ...]): A tuple of accepted HTTP status codes.
+        Returns:
+            tuple[int, ErrorResponse | T]: A tuple containing the status code and either an error dict or a response.
+
+        Raises:
+            APIError: If the response status code is not in the accepted statuses.
+        """
+        json = cast(str | dict[str, object], res.json())
+        if res.status_code not in accepted_statuses:
+            if "errors" in json:
+                return res.status_code, cast(ErrorResponse, json)
+
+            raise APIError(
+                res.status_code,
+                json,
+            )
+
+        return res.status_code, cast(T, json)
+
+    @classmethod
+    def parse_unknown_exception(
+        cls: type["ShipStationClient"], exception: Exception
+    ) -> tuple[Literal[500], ErrorResponse]:
+        """
+        Parses an unknown exception and returns a standardized error response.
+        Args:
+            exception (Exception): The exception to parse.
+        Returns:
+            tuple[Literal[500], ErrorResponse]: A tuple containing the status code and the error details.
+        """
+        return (
+            500,
+            cast(
+                ErrorResponse,
+                {
+                    "request_id": None,
+                    "errors": [
+                        {
+                            "error_source": "ShipStation",
+                            "error_type": "integrations",
+                            "error_code": "unknown",
+                            "message": str(exception),
+                        }
+                    ],
+                },
+            ),
+        )
 
     @classmethod
     def configure(
@@ -132,9 +197,7 @@ class ShipStationClient:
         cls: type["ShipStationClient"],
         method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
         url: str,
-        **kwargs: dict[
-            str, str | int | bool | EmailStr | HttpUrl | PastDatetime | None
-        ],
+        **kwargs: dict[str, str | int | bool | EmailStr | HttpUrl | None],
     ) -> Response | APIError:
         """
         Makes an asynchronous HTTP request to the ShipStation API.

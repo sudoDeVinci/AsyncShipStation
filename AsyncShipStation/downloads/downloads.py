@@ -2,7 +2,7 @@ from typing import cast
 
 from ..common import (
     Endpoints,
-    Error,
+    ErrorResponse,
     ShipStationClient,
 )
 
@@ -16,7 +16,7 @@ class DownloadPortal(ShipStationClient):
         filename: str,
         download: str,
         rotation: int = 0,
-    ) -> tuple[int, bytes | Error]:
+    ) -> tuple[int, bytes | ErrorResponse]:
         endpoint = (
             f"{cls._endpoint}/{Endpoints.DOWNLOADS.value}/{dir}/{subdir}/{filename}"
         )
@@ -29,30 +29,16 @@ class DownloadPortal(ShipStationClient):
             res = await cls.request(
                 "GET",
                 endpoint,
-                params=params,
+                params=params,  # type: ignore[arg-type]
                 headers={"content-type": "application/pdf"},
             )
             if res.status_code != 200:
-                if "error_code" in res.json():
-                    return (
-                        res.status_code,
-                        cast(Error, res.json()),
-                    )
-                else:
-                    raise Exception(f"Unexpected response: {res.json()}")
+                json = res.json()
+                if "errors" in json:
+                    return (res.status_code, cast(ErrorResponse, json))
+                raise Exception(f"Unexpected response: {json}")
 
         except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
+            return cls.parse_unknown_exception(e)
 
         return (res.status_code, res.content)

@@ -1,10 +1,9 @@
 from typing import List, Literal, cast
 
 from ..common import (
-    DisplayFormatScheme,
     DisplayFormatSchemes,
     Endpoints,
-    Error,
+    ErrorResponse,
     LabelFormats,
     LabelLayouts,
     ShipStationClient,
@@ -28,7 +27,7 @@ class BatchPortal(ShipStationClient):
         page: int = 1,
         page_size: int = 25,
         sort_dir: Literal["asc", "desc"] = "desc",
-    ) -> tuple[int, BatchListResponse | Error]:
+    ) -> tuple[int, BatchListResponse | ErrorResponse]:
         """
         List the batches associated with your ShipStation account.
         https://docs.shipstation.com/openapi/batches/list_batches#batches/list_batches/request
@@ -42,7 +41,7 @@ class BatchPortal(ShipStationClient):
             sort_dir (Literal["asc", "desc"], optional): The direction to sort the results. Defaults to "desc".
 
         Returns:
-            tuple[int, BatchListResponse | Error]: A tuple containing the status code and either a BatchListResponse or an Error.
+            tuple[int, BatchListResponse | ErrorResponse]: A tuple containing the status code and either a BatchListResponse or an ErrorResponse.
         """
         params = {
             "status": status,
@@ -63,27 +62,14 @@ class BatchPortal(ShipStationClient):
                 endpoint,
                 params=params,  # type: ignore[arg-type]
             )
-            json = res.json()
-            if res.status_code != 200:
-                if "error_code" in json:
-                    return (res.status_code, cast(Error, json))
 
-                raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
+            return cls.validate_response(
+                res,
+                (200,),
+                BatchListResponse,
             )
-
-        return (res.status_code, cast(BatchListResponse, json))
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def create(
@@ -93,7 +79,7 @@ class BatchPortal(ShipStationClient):
         rate_ids: List[str] | None,
         batch_notes: str | None = None,
         process_labels: ProcessLabel | None = None,
-    ) -> tuple[int, Batch | Error]:
+    ) -> tuple[int, Batch | ErrorResponse]:
         """
         Create a new batch in your ShipStation account.
         https://docs.shipstation.com/openapi/batches/create_batch#batches/create_batch/request
@@ -105,7 +91,7 @@ class BatchPortal(ShipStationClient):
             batch_notes (str, optional): Notes for the batch. Defaults to "".
 
         Returns:
-            tuple[int, Batch | Error]: A tuple containing the status code and either a Batch or an Error.
+            tuple[int, Batch | ErrorResponse]: A tuple containing the status code and either a Batch or an ErrorResponse.
         """
         payload = {
             "external_batch_id": external_batch_id,
@@ -125,32 +111,19 @@ class BatchPortal(ShipStationClient):
                 endpoint,
                 json=payload,  # type: ignore[arg-type]
             )
-            json = res.json()
-            if res.status_code not in (200, 207):
-                if "error_code" in json:
-                    return (res.status_code, cast(Error, json))
 
-                raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
+            return cls.validate_response(
+                res,
+                (200, 207),
+                Batch,
             )
-
-        return (res.status_code, cast(Batch, json))
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def get_by_external_id(
         cls: type[ShipStationClient], external_batch_id: str
-    ) -> tuple[int, Batch | Error]:
+    ) -> tuple[int, Batch | ErrorResponse]:
         """
         Retrieve a batch by its external ID.
         https://docs.shipstation.com/openapi/batches/get_batch_by_external_id#batches/get_batch_by_external_id/request
@@ -159,7 +132,7 @@ class BatchPortal(ShipStationClient):
             external_batch_id (str): The external ID of the batch to retrieve.
 
         Returns:
-            tuple[int, Batch | Error]: A tuple containing the status code and either a Batch or an Error.
+            tuple[int, Batch | ErrorResponse]: A tuple containing the status code and either a Batch or an ErrorResponse.
         """
         endpoint = f"{cls._endpoint}/{Endpoints.BATCHES.value}/external_batch_id/{external_batch_id}"
 
@@ -168,33 +141,20 @@ class BatchPortal(ShipStationClient):
                 "GET",
                 endpoint,
             )
-            json = res.json()
-            if res.status_code != 200:
-                if "error_code" in json:
-                    return (res.status_code, cast(Error, json))
 
-                raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
+            return cls.validate_response(
+                res,
+                (200,),
+                Batch,
             )
-
-        return (res.status_code, cast(Batch, json))
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def get_by_id(
         cls: type[ShipStationClient],
         batch_id: str,
-    ) -> tuple[int, Batch | Error]:
+    ) -> tuple[int, Batch | ErrorResponse]:
         """
         Retrieve a batch by its ID.
         https://docs.shipstation.com/openapi/batches/get_batch#batches/get_batch/request
@@ -203,7 +163,7 @@ class BatchPortal(ShipStationClient):
             batch_id (str): The ID of the batch to retrieve.
 
         Returns:
-            tuple[int, Batch | Error]: A tuple containing the status code and either a Batch or an Error.
+            tuple[int, Batch | ErrorResponse]: A tuple containing the status code and either a Batch or an ErrorResponse.
         """
         endpoint = f"{cls._endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
 
@@ -212,32 +172,20 @@ class BatchPortal(ShipStationClient):
                 "GET",
                 endpoint,
             )
-            json = res.json()
-            if res.status_code != 200:
-                if "error_code" in json:
-                    return (res.status_code, cast(Error, json))
-                raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
 
-        return (res.status_code, cast(Batch, json))
+            return cls.validate_response(
+                res,
+                (200,),
+                Batch,
+            )
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def delete_by_id(
         cls: type[ShipStationClient],
         batch_id: str,
-    ) -> tuple[int, None | Error]:
+    ) -> tuple[int, None | ErrorResponse]:
         """
         Delete a batch by its ID.
         https://docs.shipstation.com/openapi/batches/delete_batch#batches/delete_batch/request
@@ -246,7 +194,7 @@ class BatchPortal(ShipStationClient):
             batch_id (str): The ID of the batch to delete.
 
         Returns:
-            tuple[int, None | Error]: A tuple containing the status code and either None or an Error.
+            tuple[int, None | ErrorResponse]: A tuple containing the status code and either None or an ErrorResponse.
         """
         endpoint = f"{cls._endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
 
@@ -255,32 +203,22 @@ class BatchPortal(ShipStationClient):
                 "DELETE",
                 endpoint,
             )
-            if res.status_code != 204:
-                json = res.json()
-                if "error_code" in json:
-                    return (res.status_code, cast(Error, json))
-                raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
+            if res.status_code == 204:
+                return (res.status_code, None)
 
-        return (res.status_code, None)
+            return cls.validate_response(
+                res,
+                (204,),
+                type(None),
+            )
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def archive_by_id(
         cls: type[ShipStationClient],
         batch_id: str,
-    ) -> tuple[int, None | Error]:
+    ) -> tuple[int, None | ErrorResponse]:
         """
         Archive a batch by its ID.
         https://docs.shipstation.com/openapi/batches/archive_batch#batches/archive_batch/request
@@ -289,7 +227,7 @@ class BatchPortal(ShipStationClient):
             batch_id (str): The ID of the batch to archive.
 
         Returns:
-            tuple[int, None | Error]: A tuple containing the status code and either None or an Error.
+            tuple[int, None | ErrorResponse]: A tuple containing the status code and either None or an ErrorResponse.
         """
         endpoint = f"{cls._endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
 
@@ -298,26 +236,16 @@ class BatchPortal(ShipStationClient):
                 "PUT",
                 endpoint,
             )
-            if res.status_code != 204:
-                json = res.json()
-                if "error_code" in json:
-                    return (res.status_code, cast(Error, json))
-                raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
+            if res.status_code == 204:
+                return (res.status_code, None)
 
-        return (res.status_code, None)
+            return cls.validate_response(
+                res,
+                (204,),
+                type(None),
+            )
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def add_to_batch(
@@ -328,7 +256,7 @@ class BatchPortal(ShipStationClient):
         shipment_ids: List[str] | None = None,
         rate_ids: List[str] | None = None,
         process_labels: ProcessLabel | None = None,
-    ) -> tuple[int, None | Error]:
+    ) -> tuple[int, None | ErrorResponse]:
         """
         Add shipments to an existing batch.
         https://docs.shipstation.com/openapi/batches/add_to_batch#batches/add_to_batch/request
@@ -342,7 +270,7 @@ class BatchPortal(ShipStationClient):
             process_labels (ProcessLabels): Instructions for processing labels for the shipments.
 
         Returns:
-            tuple[int, None | Error]: A tuple containing the status code and either None or an Error.
+            tuple[int, None | ErrorResponse]: A tuple containing the status code and either None or an ErrorResponse.
         """
         payload = {
             "external_batch_id": external_batch_id,
@@ -362,26 +290,16 @@ class BatchPortal(ShipStationClient):
                 endpoint,
                 json=payload,  # type: ignore[arg-type]
             )
-            if res.status_code != 204:
-                json = res.json()
-                if "error_code" in json:
-                    return (res.status_code, cast(Error, json))
-                raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
+            if res.status_code == 204:
+                return (res.status_code, None)
 
-        return (res.status_code, None)
+            return cls.validate_response(
+                res,
+                (204,),
+                type(None),
+            )
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def get_batch_errors(
@@ -389,7 +307,7 @@ class BatchPortal(ShipStationClient):
         batch_id: str,
         page: int = 1,
         page_size: int = 25,
-    ) -> tuple[int, BatchProcessErrorResponse | Error]:
+    ) -> tuple[int, BatchProcessErrorResponse | ErrorResponse]:
         params = {
             "page": page,
             "page_size": page_size,
@@ -403,27 +321,14 @@ class BatchPortal(ShipStationClient):
                 endpoint,
                 params=params,  # type: ignore[arg-type]
             )
-            json = res.json()
-            if res.status_code != 200:
-                if "error_code" in json:
-                    return (res.status_code, cast(Error, json))
-                else:
-                    raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
 
-        return (res.status_code, cast(BatchProcessErrorResponse, json))
+            return cls.validate_response(
+                res,
+                (200,),
+                BatchProcessErrorResponse,
+            )
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def process_batch_id_labels(
@@ -433,7 +338,7 @@ class BatchPortal(ShipStationClient):
         label_format: LabelFormats = "pdf",
         display_scheme: DisplayFormatSchemes = "label",
         ship_date: str | None = None,
-    ) -> tuple[int, None | Error]:
+    ) -> tuple[int, None | ErrorResponse]:
         """
         Process labels for a batch by its ID.
         https://docs.shipstation.com/openapi/batches/process_batch_labels#batches/process_batch_labels/request
@@ -462,29 +367,18 @@ class BatchPortal(ShipStationClient):
             res = await cls.request(
                 "POST",
                 endpoint,
-                json=payload,
+                json=payload,  # type: ignore[arg-type]
             )
-            if res.status_code != 204:
-                json = res.json()
-                if "error_code" in json:
-                    return (res.status_code, cast(Error, json))
-                else:
-                    raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
+            if res.status_code == 204:
+                return (res.status_code, None)
 
-        return (res.status_code, None)
+            return cls.validate_response(
+                res,
+                (204,),
+                type(None),
+            )
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def remove_from_batch(
@@ -492,7 +386,7 @@ class BatchPortal(ShipStationClient):
         batch_id: str,
         shipment_ids: List[str] | None = None,
         rate_ids: List[str] | None = None,
-    ) -> tuple[int, None | Error]:
+    ) -> tuple[int, None | ErrorResponse]:
         params: dict[str, object] = {}
         if shipment_ids is not None:
             params["shipment_ids"] = shipment_ids
@@ -503,12 +397,17 @@ class BatchPortal(ShipStationClient):
             return (
                 400,
                 cast(
-                    Error,
+                    ErrorResponse,
                     {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "invalid_request",
-                        "message": "At least one of shipment_ids or rate_ids must be provided.",
+                        "request_id": None,
+                        "errors": [
+                            {
+                                "error_source": "ShipStation",
+                                "error_type": "integrations",
+                                "error_code": "invalid_request",
+                                "message": "At least one of shipment_ids or rate_ids must be provided.",
+                            }
+                        ],
                     },
                 ),
             )
@@ -519,26 +418,15 @@ class BatchPortal(ShipStationClient):
             res = await cls.request(
                 "POST",
                 endpoint,
-                json=params,
+                json=params,  # type: ignore[arg-type]
             )
-            if res.status_code != 204:
-                json = res.json()
-                if "error_code" in json:
-                    return (res.status_code, cast(Error, json))
-                else:
-                    raise Exception(f"Unexpected response: {json}")
-        except Exception as e:
-            return (
-                500,
-                cast(
-                    Error,
-                    {
-                        "error_source": "ShipStation",
-                        "error_type": "integrations",
-                        "error_code": "unknown",
-                        "message": str(e),
-                    },
-                ),
-            )
+            if res.status_code == 204:
+                return (res.status_code, None)
 
-        return (res.status_code, None)
+            return cls.validate_response(
+                res,
+                (204,),
+                type(None),
+            )
+        except Exception as e:
+            return cls.parse_unknown_exception(e)

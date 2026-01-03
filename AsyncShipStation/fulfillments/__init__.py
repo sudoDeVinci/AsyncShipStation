@@ -1,5 +1,4 @@
 from ._types import (
-    Address,
     BatchFulfillmentCreationResponse,
     Fulfillment,
     FulfillmentCreationResponse,
@@ -10,7 +9,6 @@ from ._types import (
 from .fulfillments import FulfillmentPortal
 
 __all__ = (
-    "Address",
     "BatchFulfillmentCreationResponse",
     "Fulfillment",
     "FulfillmentCreationResponse",

@@ -2,6 +2,7 @@ from typing import List, Literal, cast
 
 from ..common import (
     DisplayFormatScheme,
+    DisplayFormatSchemes,
     Endpoints,
     Error,
     LabelFormats,
@@ -430,7 +431,7 @@ class BatchPortal(ShipStationClient):
         batch_id: str,
         label_layout: LabelLayouts = "4x6",
         label_format: LabelFormats = "pdf",
-        display_scheme: DisplayFormatScheme = "label",
+        display_scheme: DisplayFormatSchemes = "label",
         ship_date: str | None = None,
     ) -> tuple[int, None | Error]:
         """

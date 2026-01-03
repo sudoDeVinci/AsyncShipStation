@@ -1,20 +1,6 @@
 from typing import NotRequired, TypedDict
 
-from ..common import Fee, PaginationLink
-
-
-class Address(TypedDict):
-    name: str
-    company_name: str | None
-    email: str | None
-    phone: str | None
-    address_line1: str
-    address_line2: str | None
-    address_line3: str | None
-    city_locality: str
-    state_province: str
-    postal_code: str
-    country_code: str
+from ..common import Address, Fee, PaginatinatedResponse
 
 
 class Fulfillment(TypedDict):
@@ -64,9 +50,5 @@ class BatchFulfillmentCreationResponse(TypedDict):
     fulfillments: list[FulfillmentCreationResponse]
 
 
-class FulfillmentListResponse(TypedDict):
+class FulfillmentListResponse(PaginatinatedResponse):
     fulfillments: list[Fulfillment]
-    page: int
-    pages: int
-    total: int
-    links: PaginationLink

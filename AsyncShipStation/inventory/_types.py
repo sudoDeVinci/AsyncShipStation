@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from ..common import Fee, PaginationLink
+from ..common import Fee, PaginatinatedResponse
 
 
 class InventoryItem(TypedDict):
@@ -13,12 +13,8 @@ class InventoryItem(TypedDict):
     inventory_location_id: str
 
 
-class Inventory(TypedDict):
+class Inventory(PaginatinatedResponse):
     inventory: list[InventoryItem]
-    total: int
-    page: int
-    pages: int
-    links: list[PaginationLink]
 
 
 class Warehouse(TypedDict):
@@ -32,17 +28,9 @@ class Location(Warehouse):
     inventory_location_id: str
 
 
-class WarehouseListResponse(TypedDict):
+class WarehouseListResponse(PaginatinatedResponse):
     inventory_warehouses: list[Warehouse]
-    total: int
-    page: int
-    pages: int
-    links: list[PaginationLink]
 
 
-class LocationListResponse(TypedDict):
+class LocationListResponse(PaginatinatedResponse):
     inventory_locations: list[Location]
-    total: int
-    page: int
-    pages: int
-    links: list[PaginationLink]

@@ -1,4 +1,6 @@
+from ast import Add
 from enum import Enum
+from tkinter.constants import N, S
 from typing import Literal, TypedDict
 
 from pydantic import EmailStr, HttpUrl, PastDatetime
@@ -15,6 +17,7 @@ class Endpoints(Enum):
     INVENTORY_WAREHOUSES = "inventory_warehouses"
     INVENTORY_LOCATIONS = "inventory_locations"
     ORDERS = "orders"
+    LABELS = "labels"
 
 
 ErrorSources = Literal["carrier", "order_source", "ShipStation"]
@@ -138,9 +141,18 @@ class ErrorCode(Enum):
     NO_RATES_RETURNED = "no_rates_returned"
 
 
-DisplayFormatScheme = Literal[
+DisplayFormatSchemes = Literal[
     "label", "qr_code", "label_and_qr_code", "paperless", "label_and_paperless"
 ]
+
+
+class DisplayFormatScheme(Enum):
+    LABEL = "label"
+    QR_CODE = "qr_code"
+    LABEL_AND_QR_CODE = "label_and_qr_code"
+    PAPERLESS = "paperless"
+    LABEL_AND_PAPERLESS = "label_and_paperless"
+
 
 LabelLayouts = Literal["4x6", "letter"]
 
@@ -159,6 +171,109 @@ class LabelFormat(Enum):
     PNG = "png"
 
 
+OrderSources = Literal[
+    "amazon_ca",
+    "amazon_us",
+    "brightpearl",
+    "channel_advisor",
+    "cratejoy",
+    "ebay",
+    "etsy",
+    "jane",
+    "groupon_goods",
+    "magento",
+    "paypal",
+    "seller_active",
+    "shopify",
+    "stitch_labs",
+    "squarespace",
+    "three_dcart",
+    "tophatter",
+    "walmart",
+    "woo_commerce",
+    "volusion",
+]
+
+
+class OrderSource(Enum):
+    AMAZON_CA = "amazon_ca"
+    AMAZON_US = "amazon_us"
+    BRIGHTPEARL = "brightpearl"
+    CHANNEL_ADVISOR = "channel_advisor"
+    CRATEJOY = "cratejoy"
+    EBAY = "ebay"
+    ETSY = "etsy"
+    JANE = "jane"
+    GROUPON_GOODS = "groupon_goods"
+    MAGENTO = "magento"
+    PAYPAL = "paypal"
+    SELLER_ACTIVE = "seller_active"
+    SHOPIFY = "shopify"
+    STITCH_LABS = "stitch_labs"
+    SQUARESPACE = "squarespace"
+    THREE_DCART = "three_dcart"
+    TOPHATTER = "tophatter"
+    WALMART = "walmart"
+    WOO_COMMERCE = "woo_commerce"
+    VOLUSION = "volusion"
+
+
+DeliveryConfirmationMethods = Literal[
+    "none",
+    "delivery",
+    "signature",
+    "adult_signature",
+    "direct_signature",
+    "delivery_mailed",
+    "verbal_confirmation",
+]
+
+
+class DeliveryConfirmationMethod(Enum):
+    NONE = "none"
+    DELIVERY = "delivery"
+    SIGNATURE = "signature"
+    ADULT_SIGNATURE = "adult_signature"
+    DIRECT_SIGNATURE = "direct_signature"
+    DELIVERY_MAILED = "delivery_mailed"
+    VERBAL_CONFIRMATION = "verbal_confirmation"
+
+
+IncoTerms = Literal[
+    "exwfca",
+    "cpt",
+    "cip",
+    "dpu",
+    "dap",
+    "ddp",
+    "fas",
+    "fob",
+    "cfr",
+    "cif",
+    "ddu",
+    "daf",
+    "deq",
+    "des",
+]
+
+
+class IncoTerm(Enum):
+    EXWFCA = "exwfca"
+    CPT = "cpt"
+    CIP = "cip"
+    DPU = "dpu"
+    DAP = "dap"
+    DDP = "ddp"
+    FAS = "fas"
+    FOB = "fob"
+    CFR = "cfr"
+    CIF = "cif"
+    DDU = "ddu"
+    DAF = "daf"
+    DEQ = "deq"
+    DES = "des"
+
+
 class URL(TypedDict):
     href: str
     type: str | None
@@ -171,7 +286,7 @@ class LabelDownload(TypedDict):
     zpl: str
 
 
-class Label(TypedDict):
+class LabelMetaData(TypedDict):
     ship_date: str
     label_layout: LabelLayouts  # default "4x6"
     label_format: LabelFormats  # default "pdf"
@@ -207,3 +322,54 @@ class Dimensions(TypedDict):
 class Fee(TypedDict):
     amount: float
     currency: str
+
+
+class Weight(TypedDict):
+    value: float
+    unit: Literal["pound", "ounce", "gram", "kilogram"]
+
+
+class Identifier(TypedDict):
+    type: str
+    value: str
+
+
+class Option(TypedDict):
+    name: str
+    value: str
+
+
+class Tag(TypedDict):
+    name: str
+
+
+class Address(TypedDict):
+    name: str
+    company_name: str | None
+    email: str | None
+    phone: str | None
+    address_line1: str
+    address_line2: str | None
+    address_line3: str | None
+    city_locality: str
+    state_province: str
+    postal_code: str
+    country_code: str
+
+
+class PaginatinatedResponse(TypedDict):
+    total: int
+    page: int
+    pages: int
+    links: PaginationLink
+
+
+class Contact(TypedDict):
+    name: str
+    phone: str
+
+
+class ShippingAddress(Address):
+    address_residential_indicator: Literal["unknown", "yes", "no"]
+    instructions: str | None
+    geolocation: list[Identifier]

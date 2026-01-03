@@ -5,10 +5,11 @@ from ..common import (
     URL,
     DisplayFormatScheme,
     Error,
-    Label,
     LabelDownload,
     LabelFormats,
     LabelLayouts,
+    LabelMetaData,
+    PaginatinatedResponse,
     PaginationLink,
     PaperlessDownload,
 )
@@ -36,7 +37,7 @@ class BatchStatus(Enum):
     INVALID = "invalid"
 
 
-class BatchLabel(Label):
+class BatchLabel(LabelMetaData):
     display_scheme: DisplayFormatScheme  # default "label"
 
 
@@ -68,12 +69,8 @@ class Batch(TypedDict):
     status: BatchStatuses
 
 
-class BatchListResponse(TypedDict):
+class BatchListResponse(PaginatinatedResponse):
     batches: list[Batch]
-    total: int
-    page: int
-    pages: int
-    links: PaginationLink
 
 
 class BatchResponseError(TypedDict):

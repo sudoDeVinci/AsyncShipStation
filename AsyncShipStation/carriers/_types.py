@@ -17,7 +17,7 @@ class ServiceList(TypedDict):
     services: list[Service]
 
 
-class Package(TypedDict):
+class PackageGist(TypedDict):
     package_id: str
     package_code: str
     name: str
@@ -26,7 +26,7 @@ class Package(TypedDict):
 
 
 class PackageList(TypedDict):
-    packages: list[Package]
+    packages: list[PackageGist]
 
 
 class AdvancedCarrierOption(TypedDict):
@@ -53,7 +53,7 @@ class Carrier(TypedDict):
     supports_label_messages: bool
     disabled_by_billing_plan: bool
     services: list[Service]
-    packages: list[Package]
+    packages: list[PackageGist]
     options: list[AdvancedCarrierOption]
     send_rates: bool
     supports_user_managed_rates: bool

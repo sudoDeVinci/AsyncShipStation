@@ -19,11 +19,12 @@ class InventoryPortal(ShipStationClient):
     @classmethod
     async def list(
         cls: type[ShipStationClient],
-        sku: str,
-        inventory_warehouse_id: str,
-        inventory_location_id: str,
-        group_by: Literal["warehouse", "location"],
-        page_size: int,
+        sku: str | None = None,
+        inventory_warehouse_id: str | None = None,
+        inventory_location_id: str | None = None,
+        group_by: Literal["warehouse", "location"] | None = None,
+        page_size: int = 25,
+        page: int = 1,
     ) -> tuple[int, ErrorResponse | Inventory]:
         params = {
             "sku": sku,
@@ -31,7 +32,10 @@ class InventoryPortal(ShipStationClient):
             "inventory_location_id": inventory_location_id,
             "group_by": group_by,
             "page_size": page_size,
+            "page": page,
         }
+
+        params = {k: v for k, v in params.items() if v is not None}
 
         endpoint = f"{cls._endpoint}/{Endpoints.INVENTORY.value}"
 
@@ -110,9 +114,9 @@ class InventoryPortal(ShipStationClient):
 
     @classmethod
     async def list_warehouses(
-        cls: type[ShipStationClient], page_size: int
+        cls: type[ShipStationClient], page_size: int = 25, page: int = 1
     ) -> tuple[int, ErrorResponse | WarehouseListResponse]:
-        params = {"page_size": page_size}
+        params = {"page_size": page_size, "page": page}
         endpoint = f"{cls._endpoint}/{Endpoints.INVENTORY_WAREHOUSES.value}"
 
         try:

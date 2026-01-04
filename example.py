@@ -3,8 +3,12 @@ import os
 
 from dotenv import load_dotenv
 
-from AsyncShipStation.common import ShipStationClient
-from AsyncShipStation.inventory import InventoryPortal
+from AsyncShipStation import (
+    BatchPortal,
+    InventoryPortal,
+    LabelPortal,
+    ShipStationClient,
+)
 
 load_dotenv()
 API_KEY: str | None = os.getenv("API_KEY")
@@ -15,11 +19,19 @@ async def main() -> None:
         raise ValueError("API_KEY environment variable not set")
 
     ShipStationClient.configure(api_key=API_KEY)
+    async with ShipStationClient.scoped_client() as _:
+        results = await asyncio.gather(
+            InventoryPortal.list_warehouses(),
+            InventoryPortal.list(),
+            BatchPortal.list(),
+            LabelPortal.list(),
+        )
 
-    async with InventoryPortal.scoped_client() as _:
-        status, warehouses = await InventoryPortal.list_warehouses(page_size=10)
-        print(f"Status: {status}, Warehouses: {warehouses}")
-        # You can add more calls to other methods here for testing
+    for status, data in results:
+        if status in (200, 207, 201):
+            print(f"Success :: {data}")
+        else:
+            print(f"Error :: {data}")
 
 
 if __name__ == "__main__":

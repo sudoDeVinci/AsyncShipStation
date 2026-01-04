@@ -5,10 +5,126 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![Validation: Pydantic v2](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/pydantic/pydantic/main/docs/badge/v2.json)](https://pydantic.dev)
 
-It looks like there's no recently updated shipstation APIs for python, at least that are easily found. We therefore will roll our own simple API for ShipStation.
+Simple API for ShipStation.
 
-## Auth
-ShipStation doesn't force auth before usage, but requires the API-Key header on each request.
+## Install
+
+### pip
+
+```bash
+pip install AsyncShipStation
+```
+
+### Manual
+
+```bash
+git clone git@github.com:sudoDeVinci/AsyncShipStation.git
+cd AsyncShipStation
+pip install -r requirements.txt
+```
+
+## Setup 
+Create a `.env` file to store your key.
+```bash
+API_KEY=your_api_key
+```
+
+## Client Lifecycle
+
+The library uses a shared `httpx.AsyncClient` under the hood. You have two options for managing it:
+
+### Option 1: Let it auto-start (simple)
+
+The client starts automatically on first request. Just remember to close it when done:
+
+```python
+import asyncio
+import os
+from dotenv import load_dotenv
+from AsyncShipStation import ShipStationClient, InventoryPortal
+
+load_dotenv()
+API_KEY: str | None = os.getenv("API_KEY")
+
+async def main() -> None:
+    ShipStationClient.configure(api_key=API_KEY)
+
+    # Connection pool starts on first request
+    status, warehouses = await InventoryPortal.list_warehouses(page_size=10)
+    print(f"Status: {status}, Warehouses: {warehouses}")
+    
+    ...
+
+    # Clean up when done
+    await ShipStationClient.close()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### Option 2: Use the async context manager (recommended)
+Scoped usage where you want automatic cleanup:
+
+```python
+import asyncio
+import os
+from dotenv import load_dotenv
+from AsyncShipStation import ShipStationClient, InventoryPortal
+
+load_dotenv()
+API_KEY: str | None = os.getenv("API_KEY")
+
+async def main() -> None:
+    ShipStationClient.configure(api_key=API_KEY)
+
+    async with InventoryPortal.scoped_client() as _:
+        status, warehouses = await InventoryPortal.list_warehouses(page_size=10)
+        print(f"Status: {status}, Warehouses: {warehouses}")
+        
+        ...
+     
+        # Client closes automatically when exiting the context
+
+if __name__ == "__main__":
+    asyncio.run(main())
+
+```
+
+## Concurrent Requests
+
+The client uses connection pooling, so concurrent requests share connections efficiently:
+
+```python
+import asyncio
+from AsyncShipStation import (
+    BatchPortal,
+    InventoryPortal,
+    LabelPortal,
+    ShipStationClient,
+)
+
+        ...
+
+ShipStationClient.configure(api_key=API_KEY)
+async with ShipStationClient.scoped_client() as _:
+    results = await asyncio.gather(
+        InventoryPortal.list_warehouses(),
+        InventoryPortal.list(),
+        BatchPortal.list(),
+        LabelPortal.list(),
+    )
+
+for status, data in results:
+    if status in (200, 207, 201):
+        print(f"Success :: {data}")
+    else:
+        print(f"Error :: {data}")
+    
+        ...
+
+```
+
 
 ## Rate Limiting
 Accounts that send too many requests in quick succession will receive a 429 Too Many Requests error response and include a Retry-After header with the number of seconds to wait for. By default we get 200 requests per minute.

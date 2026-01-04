@@ -19,7 +19,7 @@ from ._types import (
 )
 
 
-class Labelportal(ShipStationClient):
+class LabelPortal(ShipStationClient):
     @classmethod
     async def list(
         cls: type[ShipStationClient],

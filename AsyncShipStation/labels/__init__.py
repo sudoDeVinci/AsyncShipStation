@@ -14,6 +14,7 @@ from ._types import (
     TrackingStatus,
     TrackingStatuses,
 )
+from .labels import LabelPortal
 
 __all__ = (
     "ChargeEvent",
@@ -30,4 +31,5 @@ __all__ = (
     "RateDetails",
     "TrackingStatus",
     "TrackingStatuses",
+    "LabelPortal",
 )

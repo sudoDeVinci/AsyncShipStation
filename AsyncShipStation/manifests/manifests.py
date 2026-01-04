@@ -1,7 +1,5 @@
-from typing import cast
-
 from ..common import Endpoints, ErrorResponse, ShipStationClient
-from ._types import ManifestListResponse
+from ._types import Manifest, ManifestListResponse
 
 
 class ManifestsPortal(ShipStationClient):
@@ -60,3 +58,25 @@ class ManifestsPortal(ShipStationClient):
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
+
+    @classmethod
+    async def create(
+        cls: type[ShipStationClient],
+    ) -> tuple[int, ErrorResponse, ManifestListResponse]:
+        """Create a new manifest.
+
+        Raises:
+            NotImplementedError: This method is not yet implemented.
+        """
+        raise NotImplementedError("This method is not yet implemented.")
+
+    @classmethod
+    async def get_by_id(
+        cls: type[ShipStationClient], manifest_id: str
+    ) -> tuple[int, ErrorResponse, Manifest]:
+        """Get a manifest by its ID.
+
+        Raises:
+            NotImplementedError: This method is not yet implemented.
+        """
+        raise NotImplementedError("This method is not yet implemented.")

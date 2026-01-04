@@ -1,4 +1,4 @@
-from typing import Literal, cast
+from typing import Literal
 
 from ..common import (
     DisplayFormatSchemes,
@@ -12,9 +12,9 @@ from ._types import (
     ChargeEvents,
     Label,
     LabelListResponse,
+    LabelShipment,
     LabelStatuses,
     LabelVoidResponse,
-    Shipment,
     TrackingInformation,
 )
 
@@ -97,7 +97,7 @@ class LabelPortal(ShipStationClient):
     @classmethod
     async def purchase(
         cls: type[ShipStationClient],
-        shipment: Shipment,
+        shipment: LabelShipment,
         charge_event: ChargeEvents,
         outbound_label_id: str,
         validate_address: Literal[

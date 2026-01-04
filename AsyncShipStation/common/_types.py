@@ -17,6 +17,8 @@ class Endpoints(Enum):
     ORDERS = "orders"
     LABELS = "labels"
     MANIFESTS = "manifests"
+    PRODUCTS = "products"
+    SHIPMENTS = "shipments"
 
 
 ErrorSources = Literal["carrier", "order_source", "ShipStation"]

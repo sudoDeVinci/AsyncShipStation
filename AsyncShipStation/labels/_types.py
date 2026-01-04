@@ -420,7 +420,7 @@ class AdvancedShipmentOptions(TypedDict):
     event_notification: bool  # default false
 
 
-class Shipment(TypedDict):
+class LabelShipment(TypedDict):
     carrier_id: str | None
     service_code: str | None
     requested_shipment_service: str | None

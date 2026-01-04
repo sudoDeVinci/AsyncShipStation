@@ -7,6 +7,8 @@ from AsyncShipStation import (
     BatchPortal,
     InventoryPortal,
     LabelPortal,
+    ProductPortal,
+    ShipmentPortal,
     ShipStationClient,
 )
 
@@ -25,6 +27,8 @@ async def main() -> None:
             InventoryPortal.list(),
             BatchPortal.list(),
             LabelPortal.list(),
+            ProductPortal.list(),
+            ShipmentPortal.list(),
         )
 
     for status, data in results:

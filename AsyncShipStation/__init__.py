@@ -102,8 +102,29 @@ from .labels import (
     TrackingStatuses,
 )
 from .manifests import Manifest, ManifestError, ManifestListResponse, ManifestsPortal
+from .products import (
+    Product,
+    ProductAlias,
+    ProductBundleComponent,
+    ProductCategory,
+    ProductListResponse,
+    ProductPortal,
+    ProductTag,
+)
+from .shipments import Shipment, ShipmentListResponse, ShipmentPortal, ShipmentStatuses
 
 __all__ = (
+    "Shipment",
+    "ShipmentPortal",
+    "ShipmentListResponse",
+    "ShipmentStatuses",
+    "Product",
+    "ProductAlias",
+    "ProductBundleComponent",
+    "ProductCategory",
+    "ProductListResponse",
+    "ProductPortal",
+    "ProductTag",
     "Manifest",
     "ManifestError",
     "ManifestListResponse",

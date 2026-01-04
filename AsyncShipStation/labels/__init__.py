@@ -5,6 +5,7 @@ from ._types import (
     LabelGist,
     LabelListResponse,
     LabelMessages,
+    LabelShipment,
     LabelStatus,
     LabelStatuses,
     Package,
@@ -32,4 +33,5 @@ __all__ = (
     "TrackingStatus",
     "TrackingStatuses",
     "LabelPortal",
+    "LabelShipment",
 )

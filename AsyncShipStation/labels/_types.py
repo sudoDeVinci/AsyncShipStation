@@ -14,9 +14,11 @@ from ..common import (
     LabelDownload,
     LabelFormats,
     LabelLayouts,
+    LabelMessages,
     LabelMetaData,
     Option,
     OrderSources,
+    Package,
     PaginatinatedResponse,
     ShippingAddress,
     Tag,
@@ -222,26 +224,12 @@ class TrackingStatusCode(Enum):
     CARRIER_STATUS_NOT_MAPPED = "CARRIER_STATUS_NOT_MAPPED"
 
 
-class LabelMessages(TypedDict):
-    reference1: str | None
-    reference2: str | None
-    reference3: str | None
-
-
-class Package(TypedDict):
-    package_id: int
-    package_code: str
-    weight: Weight
-    dimensions: Dimensions
-    insured_value: Fee
+class LabelPackage(Package):
     tracking_number: str
     label_download: LabelDownload
     form_download: URL | None
     qr_code_download: URL | None
     paperless_download: URL | None
-    label_messages: LabelMessages
-    external_package_id: str
-    content_description: str | None
     sequence: int
     has_label_documents: bool
     has_form_documents: bool
@@ -290,7 +278,7 @@ class Label(LabelMetaData):
     qr_code_download: URL | None
     paperless_download: URL | None
     insurance_claim: URL | None
-    packages: list[Package]
+    packages: list[LabelPackage]
     alternative_identifiers: list[Identifier] | None
     rate_details: list[RateDetails]
     tracking_url: str | None
@@ -456,7 +444,7 @@ class LabelShipment(TypedDict):
     ]  # default "none"
     tags: list[Tag]
     order_source_code: OrderSources
-    packages: list[Package]
+    packages: list[LabelPackage]
     comparison_rate_type: str | None
 
 

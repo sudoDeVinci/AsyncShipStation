@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Literal, TypedDict
+from typing import Literal, NotRequired, TypedDict
 
 from pydantic import EmailStr, HttpUrl
 
@@ -345,6 +345,11 @@ class Option(TypedDict):
     value: str
 
 
+class Quantity(TypedDict):
+    amount: int  # default 0
+    unit: str | None
+
+
 class Tag(TypedDict):
     name: str
 
@@ -361,6 +366,23 @@ class Address(TypedDict):
     state_province: str
     postal_code: str
     country_code: str
+
+
+class LabelMessages(TypedDict):
+    reference1: str | None
+    reference2: str | None
+    reference3: str | None
+
+
+class Package(TypedDict):
+    package_id: str
+    package_code: str
+    weight: Weight
+    dimensions: Dimensions
+    insured_value: NotRequired[Fee]
+    label_messages: LabelMessages
+    external_package_id: str
+    content_description: str | None
 
 
 class PaginatinatedResponse(TypedDict):

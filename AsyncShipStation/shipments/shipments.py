@@ -1,7 +1,13 @@
-from typing import Literal
+from typing import List, Literal
 
 from ..common import Endpoints, ErrorResponse, ShipStationClient
-from ._types import ShipmentListResponse, ShipmentStatuses
+from ._types import (
+    Shipment,
+    ShipmentCreationRequest,
+    ShipmentCreationResponse,
+    ShipmentListResponse,
+    ShipmentStatuses,
+)
 
 
 class ShipmentPortal(ShipStationClient):
@@ -65,3 +71,27 @@ class ShipmentPortal(ShipStationClient):
 
         except Exception as e:
             return cls.parse_unknown_exception(e)
+
+    @classmethod
+    async def create(
+        cls: type[ShipStationClient], shipments: List[ShipmentCreationRequest]
+    ) -> tuple[int, ErrorResponse, ShipmentCreationResponse]:
+        raise NotImplementedError("Shipment creation is not yet implemented.")
+
+    @classmethod
+    async def get_by_external_id(
+        cls: type[ShipStationClient], external_shipment_id: str
+    ) -> tuple[int, ErrorResponse, Shipment]:
+        raise NotImplementedError("Get shipment by external ID is not yet implemented.")
+
+    @classmethod
+    async def get_by_id(
+        cls: type[ShipStationClient], shipment_id: str
+    ) -> tuple[int, ErrorResponse, Shipment]:
+        raise NotImplementedError("Get shipment by ID is not yet implemented.")
+
+    @classmethod
+    async def cancel_by_id(
+        cls: type[ShipStationClient], shipment_id: str
+    ) -> tuple[int, ErrorResponse, None]:
+        raise NotImplementedError("Cancel shipment by ID is not yet implemented.")

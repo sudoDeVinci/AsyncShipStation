@@ -2,11 +2,13 @@ from typing import List, Literal
 
 from ..common import Endpoints, ErrorResponse, ShipStationClient
 from ._types import (
+    RateQueryResponse,
     Shipment,
     ShipmentCreationRequest,
     ShipmentCreationResponse,
     ShipmentListResponse,
     ShipmentStatuses,
+    ShipmentTag,
 )
 
 
@@ -95,3 +97,18 @@ class ShipmentPortal(ShipStationClient):
         cls: type[ShipStationClient], shipment_id: str
     ) -> tuple[int, ErrorResponse, None]:
         raise NotImplementedError("Cancel shipment by ID is not yet implemented.")
+
+    @classmethod
+    async def get_rates(
+        cls: type[ShipStationClient], shipment_id: str
+    ) -> tuple[int, ErrorResponse, RateQueryResponse]:
+        raise NotImplementedError("Get shipment rates is not yet implemented.")
+
+    @classmethod
+    async def add_tag(
+        cls: type[ShipStationClient], shipment_id: str, tag_name: str
+    ) -> tuple[int, ErrorResponse, ShipmentTag]:
+        raise NotImplementedError("Add tag to shipment is not yet implemented.")
+
+
+__all__ = ["ShipmentPortal"]

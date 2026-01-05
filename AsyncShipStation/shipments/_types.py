@@ -1,6 +1,14 @@
 from typing import Literal, TypedDict
 
-from ..common import Fee, Package, PaginatinatedResponse, Quantity, ShippingAddress
+from ..common import (
+    Error,
+    Fee,
+    Package,
+    PaginatinatedResponse,
+    Quantity,
+    ShippingAddress,
+    Tag,
+)
 from ..labels import LabelShipment, ShipmentItem
 
 ShipmentStatuses = Literal["pending", "processing", "label_purchased", "cancelled"]
@@ -89,3 +97,46 @@ class ShipmentCreationRequest(TypedDict):
 class ShipmentCreationResponse(TypedDict):
     has_errors: bool
     shipments: list[Shipment]
+
+
+class ShippingRate(TypedDict):
+    rate_id: str
+    rate_type: Literal["check", "shipment"]
+    carrier_id: str
+    shipping_amount: Fee
+    insurance_amount: Fee
+    confirmation_amount: Fee
+    other_amount: Fee
+    requested_comparison_amount: Fee
+    tax_amount: Fee
+    zone: int | None
+    package_type: str | None
+    delivery_days: int | None
+    guaranteed_service: bool
+    estimated_delivery_date: str
+    carrier_delivery_days: str
+    ship_date: str
+    negatiated_rate: bool
+    service_type: str
+    service_code: str
+    traclable: bool
+    carrier_code: str
+    carrier_nickname: str
+    carrier_friendly_name: str
+    validation_status: Literal["valid", "invalid", "unknown", "has_warnings"]
+    warning_messages: list[str]
+    error_messages: list[str]
+
+
+class RateQueryResponse(TypedDict):
+    rates: list[ShippingRate]
+    invalid_rates: list[ShippingRate]
+    rate_request_id: str
+    shipment_id: str
+    created_at: str
+    status: str
+    errors: list[Error]
+
+
+class ShipmentTag(Tag):
+    shipment_id: str

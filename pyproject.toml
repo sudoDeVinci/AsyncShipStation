@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "AsyncShipStation"
-version = "0.1.0.4"
+version = "0.1.0.5"
 description = "Async Python wrapper for the ShipStation API"
 readme = "README.md"
 license = "MIT"
@@ -12,7 +12,7 @@ requires-python = ">=3.12"
 authors = [
     { name = "sudoDeVinci" },
 ]
-keywords = ["github", "api", "async", "asyncio", "httpx"]
+keywords = ["github", "api", "async", "asyncio", "httpx", "shipstation"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",

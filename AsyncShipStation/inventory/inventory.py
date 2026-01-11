@@ -37,7 +37,7 @@ class InventoryPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls._endpoint}/{Endpoints.INVENTORY.value}"
+        endpoint = f"{cls._v2_endpoint}/{Endpoints.INVENTORY.value}"
 
         try:
             res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
@@ -95,7 +95,7 @@ class InventoryPortal(ShipStationClient):
             filtered = {k: v for k, v in optionals.items() if v is not None}
             payload.update(filtered)
 
-        endpoint = f"{cls._endpoint}/{Endpoints.INVENTORY.value}"
+        endpoint = f"{cls._v2_endpoint}/{Endpoints.INVENTORY.value}"
 
         try:
             res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
@@ -117,7 +117,7 @@ class InventoryPortal(ShipStationClient):
         cls: type[ShipStationClient], page_size: int = 25, page: int = 1
     ) -> tuple[int, ErrorResponse | WarehouseListResponse]:
         params = {"page_size": page_size, "page": page}
-        endpoint = f"{cls._endpoint}/{Endpoints.INVENTORY_WAREHOUSES.value}"
+        endpoint = f"{cls._v2_endpoint}/{Endpoints.INVENTORY_WAREHOUSES.value}"
 
         try:
             res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]

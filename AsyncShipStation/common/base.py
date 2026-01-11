@@ -1,17 +1,18 @@
 from asyncio import Lock
+from base64 import b64encode
 from contextlib import asynccontextmanager
 from json import JSONDecodeError, dump, dumps, load
 from logging import Logger, getLogger
 from os import makedirs
 from pathlib import Path
-from typing import Any, AsyncGenerator, Final, Generic, Literal, TypeVar, cast
+from typing import Any, AsyncGenerator, Final, Literal, TypeVar, cast
 
 from dotenv import load_dotenv
 from httpx import AsyncClient, Limits, Response
 from httpx._types import HeaderTypes
 from pydantic import EmailStr, HttpUrl
 
-from ._types import Error, ErrorResponse
+from ._types import ErrorResponse
 
 LOGGER: Logger = getLogger(__name__)
 LOGGER.setLevel("INFO")
@@ -66,11 +67,17 @@ class APIError(Exception):
 class ShipStationClient:
     __slots__ = ()
 
-    _api_key: str | None = None
-    _endpoint: Final[str] = "https://api.shipstation.com/v2"
-    _headers = {"User-Agent": "asyncShipStation/1.0.0"}
-    _client: AsyncClient | None = None
-    _connection_lock: Lock = Lock()
+    _api_key_v2: str | None = None
+    _api_key_v1: str | None = None
+    _api_secret: str | None = None
+    _v2_endpoint: Final[str] = "https://api.shipstation.com/v2"
+    _v1_endpoint: Final[str] = "https://ssapi.shipstation.com"
+    _v1_headers = {"User-Agent": "asyncShipStation/1.0.0"}
+    _v2_headers = {"User-Agent": "asyncShipStation/1.0.0"}
+    _v1_client: AsyncClient | None = None
+    _v2_client: AsyncClient | None = None
+    _v1_connection_lock: Lock = Lock()
+    _v2_connection_lock: Lock = Lock()
 
     @classmethod
     def validate_response(
@@ -134,69 +141,109 @@ class ShipStationClient:
     @classmethod
     def configure(
         cls: type["ShipStationClient"],
-        api_key: str,
+        v2_key: str,
+        v1_key: str | None = None,
+        v1_secret: str | None = None,
     ) -> None:
         """
         Configures the ShipStation client with the provided API key.
         Args:
             api_key (str): The API key for authenticating requests.
         """
-        cls._api_key = api_key
-        cls._headers["api-key"] = api_key
+        cls._api_key_v2 = v2_key
+        cls._api_key_v1 = v1_key
+        cls._api_secret = v1_secret
+        cls._v2_headers["api-key"] = v2_key
+
+        if v1_key and v1_secret:
+            credentials = f"{v1_key}:{v1_secret}"
+            encoded_credentials = b64encode(credentials.encode("utf-8")).decode("utf-8")
+            cls._v1_headers["Authorization"] = f"Basic {encoded_credentials}"
 
     @classmethod
     async def start(
-        cls: type["ShipStationClient"],
+        cls: type["ShipStationClient"], version: Literal["v1", "v2"] = "v2"
     ) -> None:
         """
         Initializes the asynchronous HTTP client session.
         """
-        async with cls._connection_lock:
-            if cls._client is None:
-                cls._client = AsyncClient(
-                    base_url=cls._endpoint,
-                    headers=cast(HeaderTypes, cls._headers),
-                    timeout=30,
-                    http2=False,  # Disable HTTP/2
-                    limits=Limits(
-                        max_connections=20,
-                        max_keepalive_connections=10,
-                    ),
-                )
+        if version == "v2":
+            async with cls._v2_connection_lock:
+                if cls._v2_client is None:
+                    cls._v2_client = AsyncClient(
+                        base_url=cls._v2_endpoint,
+                        headers=cast(HeaderTypes, cls._v2_headers),
+                        timeout=30,
+                        http2=False,  # Disable HTTP/2
+                        limits=Limits(
+                            max_connections=20,
+                            max_keepalive_connections=10,
+                        ),
+                    )
+
+        elif version == "v1":
+            async with cls._v1_connection_lock:
+                if cls._v1_client is None:
+                    cls._v1_client = AsyncClient(
+                        base_url=cls._v1_endpoint,
+                        headers=cast(HeaderTypes, cls._v1_headers),
+                        timeout=30,
+                        http2=False,  # Disable HTTP/2
+                        limits=Limits(
+                            max_connections=20,
+                            max_keepalive_connections=10,
+                        ),
+                    )
+
+        else:
+            raise ValueError(f"Unsupported version: {version}")
 
     @classmethod
     async def close(
-        cls: type["ShipStationClient"],
+        cls: type["ShipStationClient"], version: Literal["v1", "v2"] = "v2"
     ) -> None:
         """
         Closes the asynchronous HTTP client session.
         """
-        async with cls._connection_lock:
-            if cls._client is not None:
-                await cls._client.aclose()
-                cls._client = None
+        if version == "v2":
+            async with cls._v2_connection_lock:
+                if cls._v2_client is not None:
+                    await cls._v2_client.aclose()
+                    cls._v2_client = None
+
+        elif version == "v1":
+            async with cls._v1_connection_lock:
+                if cls._v1_client is not None:
+                    await cls._v1_client.aclose()
+                    cls._v1_client = None
+
+        else:
+            raise ValueError(f"Unsupported version: {version}")
 
     @classmethod
     @asynccontextmanager
     async def scoped_client(
         cls: type["ShipStationClient"],
+        version: Literal["v1", "v2"] = "v2",
     ) -> AsyncGenerator[AsyncClient, None]:
         """
         Asynchronous context manager for the HTTP client session.
         Yields:
             AsyncClient: The asynchronous HTTP client session.
         """
-        await cls.start()
+        await cls.start(version)
+        client = cls._v2_client if version == "v2" else cls._v1_client
         try:
-            yield cls._client  # type: ignore
+            yield client  # type: ignore
         finally:
-            await cls.close()
+            await cls.close(version)
 
     @classmethod
     async def request(
         cls: type["ShipStationClient"],
         method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
         url: str,
+        version: Literal["v1", "v2"] = "v2",
         **kwargs: dict[str, str | int | bool | EmailStr | HttpUrl | None],
     ) -> Response | APIError:
         """
@@ -210,13 +257,14 @@ class ShipStationClient:
         Raises:
             RequestError: If an error occurs while making the request.
         """
-        if cls._client is None:
-            await cls.start()
+        client = cls._v2_client if version == "v2" else cls._v1_client
+        if client is None:
+            await cls.start(version)
 
-        if cls._client is None:
+        if client is None:
             return APIError(500, "HTTP client could not be initialized.")
 
-        response = await cls._client.request(method, url, **kwargs)  # type: ignore[arg-type]
+        response = await client.request(method, url, **kwargs)  # type: ignore[arg-type]
 
         return response
 

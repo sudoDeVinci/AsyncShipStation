@@ -102,6 +102,7 @@ from .labels import (
     TrackingStatuses,
 )
 from .manifests import Manifest, ManifestError, ManifestListResponse, ManifestsPortal
+from .orders import OrderClient, V1Order, V1OrderListResponse
 from .products import (
     Product,
     ProductAlias,
@@ -114,6 +115,9 @@ from .products import (
 from .shipments import Shipment, ShipmentListResponse, ShipmentPortal, ShipmentStatuses
 
 __all__ = (
+    "OrderClient",
+    "V1Order",
+    "V1OrderListResponse",
     "Shipment",
     "ShipmentPortal",
     "ShipmentListResponse",

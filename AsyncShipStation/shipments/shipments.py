@@ -60,7 +60,7 @@ class ShipmentPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls._endpoint}/{Endpoints.SHIPMENTS.value}"
+        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}"
 
         try:
             res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]

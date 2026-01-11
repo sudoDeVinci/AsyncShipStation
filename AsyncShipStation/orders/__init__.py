@@ -7,7 +7,7 @@ from ._types import (
     V1OrderListResponse,
     V1Weight,
 )
-from .orders import OrderClient
+from .orders import OrderPortal
 
 __all__ = [
     "V1Address",
@@ -17,5 +17,5 @@ __all__ = [
     "V1Order",
     "V1OrderListResponse",
     "V1Weight",
-    "OrderClient",
+    "OrderPortal",
 ]

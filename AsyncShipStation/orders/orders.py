@@ -13,7 +13,7 @@ from AsyncShipStation.orders._types import (
 from ..common import ErrorResponse, ShipStationClient
 
 
-class OrderClient(ShipStationClient):
+class OrderPortal(ShipStationClient):
     @classmethod
     async def list(
         cls: type[ShipStationClient],

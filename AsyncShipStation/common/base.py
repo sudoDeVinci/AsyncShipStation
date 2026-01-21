@@ -167,36 +167,37 @@ class ShipStationClient:
         """
         Initializes the asynchronous HTTP client session.
         """
-        if version == "v2":
-            async with cls._v2_connection_lock:
-                if cls._v2_client is None:
-                    cls._v2_client = AsyncClient(
-                        base_url=cls._v2_endpoint,
-                        headers=cast(HeaderTypes, cls._v2_headers),
-                        timeout=30,
-                        http2=False,  # Disable HTTP/2
-                        limits=Limits(
-                            max_connections=20,
-                            max_keepalive_connections=10,
-                        ),
-                    )
+        match version:
+            case "v2":
+                async with cls._v2_connection_lock:
+                    if cls._v2_client is None:
+                        cls._v2_client = AsyncClient(
+                            base_url=cls._v2_endpoint,
+                            headers=cast(HeaderTypes, cls._v2_headers),
+                            timeout=30,
+                            http2=False,  # Disable HTTP/2
+                            limits=Limits(
+                                max_connections=20,
+                                max_keepalive_connections=10,
+                            ),
+                        )
 
-        elif version == "v1":
-            async with cls._v1_connection_lock:
-                if cls._v1_client is None:
-                    cls._v1_client = AsyncClient(
-                        base_url=cls._v1_endpoint,
-                        headers=cast(HeaderTypes, cls._v1_headers),
-                        timeout=30,
-                        http2=False,  # Disable HTTP/2
-                        limits=Limits(
-                            max_connections=20,
-                            max_keepalive_connections=10,
-                        ),
-                    )
+            case "v1":
+                async with cls._v1_connection_lock:
+                    if cls._v1_client is None:
+                        cls._v1_client = AsyncClient(
+                            base_url=cls._v1_endpoint,
+                            headers=cast(HeaderTypes, cls._v1_headers),
+                            timeout=30,
+                            http2=False,  # Disable HTTP/2
+                            limits=Limits(
+                                max_connections=20,
+                                max_keepalive_connections=10,
+                            ),
+                        )
 
-        else:
-            raise ValueError(f"Unsupported version: {version}")
+            case _:
+                raise ValueError(f"Unsupported version: {version}")
 
     @classmethod
     async def close(
@@ -205,20 +206,21 @@ class ShipStationClient:
         """
         Closes the asynchronous HTTP client session.
         """
-        if version == "v2":
-            async with cls._v2_connection_lock:
-                if cls._v2_client is not None:
-                    await cls._v2_client.aclose()
+        match version:
+            case "v2":
+                async with cls._v2_connection_lock:
+                    if cls._v2_client is not None:
+                        await cls._v2_client.aclose()
                     cls._v2_client = None
 
-        elif version == "v1":
-            async with cls._v1_connection_lock:
-                if cls._v1_client is not None:
-                    await cls._v1_client.aclose()
+            case "v1":
+                async with cls._v1_connection_lock:
+                    if cls._v1_client is not None:
+                        await cls._v1_client.aclose()
                     cls._v1_client = None
 
-        else:
-            raise ValueError(f"Unsupported version: {version}")
+            case _:
+                raise ValueError(f"Unsupported version: {version}")
 
     @classmethod
     @asynccontextmanager

@@ -151,3 +151,6 @@ Purchase and print shipping labels for any carrier active on your account. The l
 
 [/manifests](/manifests/_types.py)
 A manifest is a document that provides a list of the day's shipments. It typically contains a barcode that allows the pickup driver to scan a single document to register all shipments, rather than scanning each shipment individually.
+
+
+##

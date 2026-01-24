@@ -21,7 +21,7 @@ V2_API_KEY: str | None = getenv("SHIP_STATION_V2")
 V1_SECRET: str | None = getenv("SHIP_STATION_SECRET")
 
 
-async def main():
+async def main() -> None:
     if not V1_API_KEY:
         raise ValueError("SHIP_STATION_V2 environment variable not set")
     if not V2_API_KEY:
@@ -57,6 +57,7 @@ async def main():
 
     orderlistres = cast(V1OrderListResponse, orderres)
     print(f"ORDERS\nTotal: {orderlistres['total']}\nPages: {orderlistres['pages']}")
+    print(f"-------------\n{orderlistres['orders'][0]}")
 
     batchlistres = cast(BatchListResponse, batches)
     print(f"\nBATCHES\nTotal: {batchlistres['total']}\nPages: {batchlistres['pages']}")

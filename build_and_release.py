@@ -35,6 +35,7 @@ def run_cmd(
 @no_type_check
 def main() -> None:
     token = getenv("PIPY_TOKEN")
+    print(f"PIPY_TOKEN: {token}")
     if not token:
         raise RuntimeError("Environment variable 'PIPY_TOKEN' not set")
 

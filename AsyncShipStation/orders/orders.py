@@ -1,6 +1,7 @@
 from typing import Literal
 
-from AsyncShipStation.orders._types import (
+from ..common import ErrorResponse, ShipStationClient
+from ._types import (
     V1AdvancedOptions,
     V1Dimensions,
     V1InsuranceOptions,
@@ -9,8 +10,6 @@ from AsyncShipStation.orders._types import (
     V1OrderListResponse,
     V1Weight,
 )
-
-from ..common import ErrorResponse, ShipStationClient
 
 
 class OrderPortal(ShipStationClient):

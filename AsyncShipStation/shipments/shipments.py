@@ -36,6 +36,34 @@ class ShipmentPortal(ShipStationClient):
         page: int = 1,
         page_size: int = 25,
     ) -> tuple[int, ShipmentListResponse | ErrorResponse]:
+        """
+        Get a list of shipments.
+        https://docs.shipstation.com/openapi/shipments/list_shipments
+
+        Args:
+            shipment_status: Filter by shipment status (pending, processing, label_purchased, cancelled)
+            batch_id: Filter by batch ID
+            pickup_id: Filter by pickup ID
+            created_at_start: Filter by creation date start (ISO 8601)
+            created_at_end: Filter by creation date end (ISO 8601)
+            modified_at_start: Filter by modification date start (ISO 8601)
+            modified_at_end: Filter by modification date end (ISO 8601)
+            sales_order_id: Filter by sales order ID
+            sort_dir: Sort direction (asc or desc)
+            shipment_number: Filter by shipment number
+            ship_to_name: Filter by recipient name
+            item_keyword: Filter by item keyword
+            payment_date_start: Filter by payment date start
+            payment_date_end: Filter by payment date end
+            store_id: Filter by store ID
+            external_shipment_id: Filter by external shipment ID
+            sort_by: Sort by field (modified_at or created_at)
+            page: Page number (default 1)
+            page_size: Results per page (default 25)
+
+        Returns:
+            Tuple of status code and ShipmentListResponse or ErrorResponse
+        """
         params = {
             "shipment_status": shipment_status,
             "batch_id": batch_id,
@@ -76,39 +104,235 @@ class ShipmentPortal(ShipStationClient):
 
     @classmethod
     async def create(
-        cls: type[ShipStationClient], shipments: List[ShipmentCreationRequest]
-    ) -> tuple[int, ErrorResponse, ShipmentCreationResponse]:
-        raise NotImplementedError("Shipment creation is not yet implemented.")
+        cls: type[ShipStationClient],
+        shipments: List[ShipmentCreationRequest],
+    ) -> tuple[int, ShipmentCreationResponse | ErrorResponse]:
+        """
+        Create one or more shipments.
+        https://docs.shipstation.com/openapi/shipments/create_shipments
+
+        Args:
+            shipments: List of shipment creation requests
+
+        Returns:
+            Tuple of status code and ShipmentCreationResponse or ErrorResponse
+        """
+        payload = {
+            "shipments": shipments,
+        }
+
+        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}"
+
+        try:
+            res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
+
+            return cls.validate_response(
+                res,
+                (200, 207),
+                ShipmentCreationResponse,
+            )
+
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def get_by_external_id(
-        cls: type[ShipStationClient], external_shipment_id: str
-    ) -> tuple[int, ErrorResponse, Shipment]:
-        raise NotImplementedError("Get shipment by external ID is not yet implemented.")
+        cls: type[ShipStationClient],
+        external_shipment_id: str,
+    ) -> tuple[int, Shipment | ErrorResponse]:
+        """
+        Retrieve a shipment by its external ID.
+        https://docs.shipstation.com/openapi/shipments/get_shipment_by_external_id
+
+        Args:
+            external_shipment_id: The external shipment ID
+
+        Returns:
+            Tuple of status code and Shipment or ErrorResponse
+        """
+        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}/external_shipment_id/{external_shipment_id}"
+
+        try:
+            res = await cls.request("GET", endpoint)
+
+            return cls.validate_response(
+                res,
+                (200,),
+                Shipment,
+            )
+
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def get_by_id(
-        cls: type[ShipStationClient], shipment_id: str
-    ) -> tuple[int, ErrorResponse, Shipment]:
-        raise NotImplementedError("Get shipment by ID is not yet implemented.")
+        cls: type[ShipStationClient],
+        shipment_id: str,
+    ) -> tuple[int, Shipment | ErrorResponse]:
+        """
+        Retrieve a shipment by its ID.
+        https://docs.shipstation.com/openapi/shipments/get_shipment_by_id
+
+        Args:
+            shipment_id: The shipment ID (e.g., se-12345678)
+
+        Returns:
+            Tuple of status code and Shipment or ErrorResponse
+        """
+        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}"
+
+        try:
+            res = await cls.request("GET", endpoint)
+
+            return cls.validate_response(
+                res,
+                (200,),
+                Shipment,
+            )
+
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def cancel_by_id(
-        cls: type[ShipStationClient], shipment_id: str
-    ) -> tuple[int, ErrorResponse, None]:
-        raise NotImplementedError("Cancel shipment by ID is not yet implemented.")
+        cls: type[ShipStationClient],
+        shipment_id: str,
+    ) -> tuple[int, None | ErrorResponse]:
+        """
+        Cancel a shipment by its ID.
+        https://docs.shipstation.com/openapi/shipments/cancel_shipments
+
+        Note: You can only cancel a shipment if it hasn't been labeled yet.
+        Once a label has been purchased, you must void the label instead.
+
+        Args:
+            shipment_id: The shipment ID to cancel
+
+        Returns:
+            Tuple of status code and None (on success) or ErrorResponse
+        """
+        endpoint = (
+            f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/cancel"
+        )
+
+        try:
+            res = await cls.request("PUT", endpoint)
+
+            if res.status_code == 204:
+                return (res.status_code, None)
+
+            return cls.validate_response(
+                res,
+                (204,),
+                type(None),
+            )
+
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def get_rates(
-        cls: type[ShipStationClient], shipment_id: str
-    ) -> tuple[int, ErrorResponse, RateQueryResponse]:
-        raise NotImplementedError("Get shipment rates is not yet implemented.")
+        cls: type[ShipStationClient],
+        shipment_id: str,
+        created_at_start: str | None = None,
+    ) -> tuple[int, RateQueryResponse | ErrorResponse]:
+        """
+        Get shipping rates for a shipment.
+        https://docs.shipstation.com/openapi/shipments/list_shipment_rates
+
+        Args:
+            shipment_id: The shipment ID to get rates for
+            created_at_start: Optional filter for rates created after this date (ISO 8601)
+
+        Returns:
+            Tuple of status code and RateQueryResponse or ErrorResponse
+        """
+        params: dict[str, object] = {}
+        if created_at_start is not None:
+            params["created_at_start"] = created_at_start
+
+        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/rates"
+
+        try:
+            res = await cls.request(
+                "GET",
+                endpoint,
+                params=params if params else None,  # type: ignore[arg-type]
+            )
+
+            return cls.validate_response(
+                res,
+                (200,),
+                RateQueryResponse,
+            )
+
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
     @classmethod
     async def add_tag(
-        cls: type[ShipStationClient], shipment_id: str, tag_name: str
-    ) -> tuple[int, ErrorResponse, ShipmentTag]:
-        raise NotImplementedError("Add tag to shipment is not yet implemented.")
+        cls: type[ShipStationClient],
+        shipment_id: str,
+        tag_name: str,
+    ) -> tuple[int, ShipmentTag | ErrorResponse]:
+        """
+        Add a tag to a shipment.
+        https://docs.shipstation.com/openapi/shipments/tag_shipment
+
+        Args:
+            shipment_id: The shipment ID to tag
+            tag_name: The name of the tag to add
+
+        Returns:
+            Tuple of status code and ShipmentTag or ErrorResponse
+        """
+        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/tags/{tag_name}"
+
+        try:
+            res = await cls.request("POST", endpoint)
+
+            return cls.validate_response(
+                res,
+                (200, 201),
+                ShipmentTag,
+            )
+
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
+
+    @classmethod
+    async def remove_tag(
+        cls: type[ShipStationClient],
+        shipment_id: str,
+        tag_name: str,
+    ) -> tuple[int, None | ErrorResponse]:
+        """
+        Remove a tag from a shipment.
+        https://docs.shipstation.com/openapi/shipments/untag_shipment
+
+        Args:
+            shipment_id: The shipment ID
+            tag_name: The name of the tag to remove
+
+        Returns:
+            Tuple of status code and None (on success) or ErrorResponse
+        """
+        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/tags/{tag_name}"
+
+        try:
+            res = await cls.request("DELETE", endpoint)
+
+            if res.status_code == 204:
+                return (res.status_code, None)
+
+            return cls.validate_response(
+                res,
+                (204,),
+                type(None),
+            )
+
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
 
 
 __all__ = ["ShipmentPortal"]

@@ -102,7 +102,20 @@ from .labels import (
     TrackingStatuses,
 )
 from .manifests import Manifest, ManifestError, ManifestListResponse, ManifestsPortal
-from .orders import OrderPortal, V1Order, V1OrderListResponse
+from .orders import (
+    OrderPortal,
+    V1Address,
+    V1AdvancedOptions,
+    V1Customsitem,
+    V1Dimensions,
+    V1InsuranceOptions,
+    V1InternationalOptions,
+    V1Order,
+    V1OrderItem,
+    V1OrderLabel,
+    V1OrderListResponse,
+    V1Weight,
+)
 from .products import (
     Product,
     ProductAlias,
@@ -112,12 +125,75 @@ from .products import (
     ProductPortal,
     ProductTag,
 )
+from .rates import (
+    CalculateRatesResponse,
+    Rate,
+    RateEstimate,
+    RateRequestOptions,
+    RateResponseStatus,
+    RateResponseStatuses,
+    RatesPortal,
+    RatesResponse,
+    RateType,
+    RateTypes,
+    ValidationStatus,
+    ValidationStatuses,
+)
 from .shipments import Shipment, ShipmentListResponse, ShipmentPortal, ShipmentStatuses
+from .tags import (
+    TagCreateResponse,
+    TagDeleteResponse,
+    TagInfo,
+    TagListResponse,
+    TagsPortal,
+)
+from .warehouses import (
+    Warehouse as WarehouseV2,
+)
+from .warehouses import (
+    WarehouseListResponse as WarehouseListResponseV2,
+)
+from .warehouses import (
+    WarehousePortal,
+)
 
 __all__ = (
+    # Rates
+    "CalculateRatesResponse",
+    "Rate",
+    "RateEstimate",
+    "RateRequestOptions",
+    "RateResponseStatus",
+    "RateResponseStatuses",
+    "RatesPortal",
+    "RatesResponse",
+    "RateType",
+    "RateTypes",
+    "ValidationStatus",
+    "ValidationStatuses",
+    # Tags
+    "TagCreateResponse",
+    "TagDeleteResponse",
+    "TagInfo",
+    "TagListResponse",
+    "TagsPortal",
+    # Warehouses V2
+    "WarehouseV2",
+    "WarehouseListResponseV2",
+    "WarehousePortal",
+    # Orders
     "OrderPortal",
+    "V1Address",
+    "V1AdvancedOptions",
+    "V1Customsitem",
+    "V1Dimensions",
+    "V1InsuranceOptions",
+    "V1InternationalOptions",
     "V1Order",
+    "V1OrderItem",
+    "V1OrderLabel",
     "V1OrderListResponse",
+    "V1Weight",
     "Shipment",
     "ShipmentPortal",
     "ShipmentListResponse",

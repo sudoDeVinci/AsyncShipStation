@@ -18,7 +18,10 @@ class Endpoints(Enum):
     LABELS = "labels"
     MANIFESTS = "manifests"
     PRODUCTS = "products"
+    RATES = "rates"
     SHIPMENTS = "shipments"
+    TAGS = "tags"
+    WAREHOUSES = "warehouses"
 
 
 ErrorSources = Literal["carrier", "order_source", "ShipStation"]
@@ -308,7 +311,7 @@ class PaginationLink(TypedDict):
 
 class Error(TypedDict):
     error_source: ErrorSources
-    errors_type: ErrorTypes
+    error_type: ErrorTypes
     error_code: ErrorCodes
     message: str
 
@@ -375,6 +378,7 @@ class LabelMessages(TypedDict):
 
 
 class Package(TypedDict):
+    shipment_package_id: str
     package_id: str
     package_code: str
     weight: Weight

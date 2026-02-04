@@ -5,3 +5,5 @@ __pycache__/
 .DS_Store
 .env
 .zed
+test.py
+*__cache__

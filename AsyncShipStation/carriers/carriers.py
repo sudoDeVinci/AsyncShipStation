@@ -19,7 +19,7 @@ class CarrierPortal(ShipStationClient):
     async def list_carriers(
         cls: type[ShipStationClient],
     ) -> tuple[int, CarrierListResponse | ErrorResponse]:
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.CARRIERS}"
+        endpoint = f"{cls._v2_endpoint}/{Endpoints.CARRIERS.value}"
 
         try:
             res = await cls.request(

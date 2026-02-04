@@ -116,10 +116,10 @@ class ShippingRate(TypedDict):
     estimated_delivery_date: str
     carrier_delivery_days: str
     ship_date: str
-    negatiated_rate: bool
+    negotiated_rate: bool
     service_type: str
     service_code: str
-    traclable: bool
+    trackable: bool
     carrier_code: str
     carrier_nickname: str
     carrier_friendly_name: str

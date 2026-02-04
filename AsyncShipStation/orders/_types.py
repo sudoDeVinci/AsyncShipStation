@@ -1,6 +1,6 @@
 from typing import Literal, TypedDict
 
-from ..common import PaginatinatedResponse
+from ..common import Option, PaginatinatedResponse
 
 
 class V1AdvancedOptions(TypedDict):
@@ -79,6 +79,27 @@ class V1Address(TypedDict):
     ]
 
 
+class V1OrderItem(TypedDict):
+    orderItemId: int
+    lineItemKey: int
+    sku: str
+    name: str
+    imageUrl: str
+    weight: V1Weight
+    quantity: int
+    unitPrice: float
+    taxAmount: float
+    shippingAmount: float
+    warehouseLocation: V1Address | None
+    options: list[Option]
+    productId: int
+    fulfillmentSku: object | None  # no clue
+    adjustment: object | None  # no clue
+    upc: object | None  # no clue
+    createdDate: str
+    modifyDate: str | None
+
+
 class V1Order(TypedDict):
     orderId: int
     orderNumber: str
@@ -95,7 +116,8 @@ class V1Order(TypedDict):
     customerUsername: str
     customerEmail: str
     billTo: V1Address
-    items: list[V1Address]
+    shipTo: V1Address
+    items: list[V1OrderItem]
     orderTotal: float  # read-only
     amountPaid: float
     taxAmount: float

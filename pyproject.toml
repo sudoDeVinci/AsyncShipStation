@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "AsyncShipStation"
-version = "0.1.0.6"
+version = "0.1.0.8"
 description = "Async Python wrapper for the ShipStation API"
 readme = "README.md"
 license = "MIT"
@@ -19,7 +19,6 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Framework :: AsyncIO",
     "Typing :: Typed",
@@ -60,11 +59,11 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.13"
 strict = true
 warn_return_any = true
 warn_unused_ignores = true
 
 [tool.black]
 line-length = 88
-target-version = ["py312", "py313"]
+target-version = ["py313"]

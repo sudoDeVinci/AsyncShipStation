@@ -1,13 +1,12 @@
 from typing import cast
 
+from ..carriers import PackageGist, PackageList
 from ..common import (
     Dimensions,
     Endpoints,
     ErrorResponse,
-    PackageGist,
     ShipStationClient,
 )
-from ._types import PackageListResponse
 
 
 class CustomPackagePortal(ShipStationClient):
@@ -63,7 +62,7 @@ class CustomPackagePortal(ShipStationClient):
     @classmethod
     async def list(
         cls: type[ShipStationClient],
-    ) -> tuple[int, PackageListResponse | ErrorResponse]:
+    ) -> tuple[int, PackageList | ErrorResponse]:
         """
         List your package types to get a response with an array of all the available custom packaging available in your account.
         """
@@ -72,7 +71,7 @@ class CustomPackagePortal(ShipStationClient):
 
         try:
             res = await cls.request("GET", endpoint)
-            return cls.validate_response(res, (200,), PackageListResponse)
+            return cls.validate_response(res, (200,), PackageList)
         except Exception as e:
             return cls.parse_unknown_exception(e)
 

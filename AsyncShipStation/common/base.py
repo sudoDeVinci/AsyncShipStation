@@ -60,6 +60,10 @@ class APIError(Exception):
         return dumps(outdict, indent=4, ensure_ascii=False)
 
     @property
+    def text(self) -> str:
+        return self.__str__()
+
+    @property
     def content(self) -> bytes:
         return self.__str__().encode("utf-8")
 

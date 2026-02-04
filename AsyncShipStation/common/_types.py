@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Literal, NotRequired, TypedDict
 
 from pydantic import EmailStr, HttpUrl
+from pydantic_core.core_schema import TypedDictField
 
 JSONDict = dict[str, str | int | bool | EmailStr | HttpUrl | None]
 
@@ -378,14 +379,11 @@ class LabelMessages(TypedDict):
     reference3: str | None
 
 
-class PackageGist(TypedDict):
+class Package(TypedDict):
     package_code: str
     name: str
     dimensions: Dimensions
     description: str | None
-
-
-class Package(PackageGist):
     shipment_package_id: str
     weight: Weight
     insured_value: NotRequired[Fee]

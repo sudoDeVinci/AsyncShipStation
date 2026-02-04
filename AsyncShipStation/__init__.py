@@ -56,6 +56,8 @@ from .common import (
     Option,
     OrderSource,
     OrderSources,
+    Package,
+    PackageGist,
     PaginatinatedResponse,
     PaginationLink,
     PaperlessDownload,
@@ -116,6 +118,7 @@ from .orders import (
     V1OrderListResponse,
     V1Weight,
 )
+from .packages import CustomPackagePortal, PackageListResponse
 from .products import (
     Product,
     ProductAlias,
@@ -300,4 +303,8 @@ __all__ = (
     "BatchStatuses",
     "ProcessLabel",
     "BatchPortal",
+    # Packages
+    "CustomPackagePortal",
+    "PackageGist",
+    "PackageListResponse",
 )

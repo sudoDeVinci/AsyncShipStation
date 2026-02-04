@@ -16,7 +16,7 @@ class WarehousePortal(ShipStationClient):
         Returns:
             Tuple of status code and WarehouseListResponse or ErrorResponse
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.WAREHOUSES.value}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.WAREHOUSES.value}"
 
         try:
             res = await cls.request("GET", endpoint)
@@ -45,7 +45,7 @@ class WarehousePortal(ShipStationClient):
         Returns:
             Tuple of status code and Warehouse or ErrorResponse
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.WAREHOUSES.value}/{warehouse_id}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.WAREHOUSES.value}/{warehouse_id}"
 
         try:
             res = await cls.request("GET", endpoint)

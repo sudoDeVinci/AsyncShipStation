@@ -22,7 +22,7 @@ class ProductPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.PRODUCTS.value}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.PRODUCTS.value}"
 
         try:
             res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]

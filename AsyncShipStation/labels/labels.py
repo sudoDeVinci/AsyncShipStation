@@ -81,7 +81,7 @@ class LabelPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.LABELS.value}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}"
 
         try:
             res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
@@ -155,7 +155,7 @@ class LabelPortal(ShipStationClient):
 
         payload = {k: v for k, v in payload.items() if v is not None}
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.LABELS.value}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}"
 
         try:
             res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
@@ -202,7 +202,7 @@ class LabelPortal(ShipStationClient):
             "display_scheme": display_scheme,
         }
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.LABELS.value}/rates/{rate_id}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}/rates/{rate_id}"
 
         try:
             res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
@@ -249,7 +249,7 @@ class LabelPortal(ShipStationClient):
             "display_scheme": display_scheme,
         }
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.LABELS.value}/shipment/{shipment_id}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}/shipment/{shipment_id}"
 
         try:
             res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
@@ -277,7 +277,7 @@ class LabelPortal(ShipStationClient):
         Returns:
             tuple[int, ErrorResponse | Label]: A tuple containing the HTTP status code and either an ErrorResponse or the requested Label.
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.LABELS.value}/{label_id}?label_download_type={label_download_type}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}?label_download_type={label_download_type}"
 
         try:
             res = await cls.request("GET", endpoint)
@@ -327,7 +327,7 @@ class LabelPortal(ShipStationClient):
             "label_image_id": label_image_id,
         }
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/return"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/return"
 
         try:
             res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
@@ -345,7 +345,7 @@ class LabelPortal(ShipStationClient):
         cls: type[ShipStationClient],
         label_id: str,
     ) -> tuple[int, ErrorResponse | TrackingInformation]:
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/track"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/track"
 
         try:
             res = await cls.request("GET", endpoint)
@@ -363,7 +363,7 @@ class LabelPortal(ShipStationClient):
         cls: type[ShipStationClient],
         label_id: str,
     ) -> tuple[int, ErrorResponse | LabelVoidResponse]:
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/void"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/void"
 
         try:
             res = await cls.request("PUT", endpoint)

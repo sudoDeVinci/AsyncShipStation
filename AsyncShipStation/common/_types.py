@@ -18,6 +18,7 @@ class Endpoints(Enum):
     LABELS = "labels"
     MANIFESTS = "manifests"
     PRODUCTS = "products"
+    PACKAGES = "packages"
     RATES = "rates"
     SHIPMENTS = "shipments"
     TAGS = "tags"
@@ -377,12 +378,16 @@ class LabelMessages(TypedDict):
     reference3: str | None
 
 
-class Package(TypedDict):
-    shipment_package_id: str
-    package_id: str
+class PackageGist(TypedDict):
     package_code: str
-    weight: Weight
+    name: str
     dimensions: Dimensions
+    description: str | None
+
+
+class Package(PackageGist):
+    shipment_package_id: str
+    weight: Weight
     insured_value: NotRequired[Fee]
     label_messages: LabelMessages
     external_package_id: str

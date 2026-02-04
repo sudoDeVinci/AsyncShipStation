@@ -88,7 +88,7 @@ class ShipmentPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}"
 
         try:
             res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
@@ -121,7 +121,7 @@ class ShipmentPortal(ShipStationClient):
             "shipments": shipments,
         }
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}"
 
         try:
             res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
@@ -150,7 +150,7 @@ class ShipmentPortal(ShipStationClient):
         Returns:
             Tuple of status code and Shipment or ErrorResponse
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}/external_shipment_id/{external_shipment_id}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}/external_shipment_id/{external_shipment_id}"
 
         try:
             res = await cls.request("GET", endpoint)
@@ -179,7 +179,7 @@ class ShipmentPortal(ShipStationClient):
         Returns:
             Tuple of status code and Shipment or ErrorResponse
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}"
 
         try:
             res = await cls.request("GET", endpoint)
@@ -211,9 +211,7 @@ class ShipmentPortal(ShipStationClient):
         Returns:
             Tuple of status code and None (on success) or ErrorResponse
         """
-        endpoint = (
-            f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/cancel"
-        )
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/cancel"
 
         try:
             res = await cls.request("PUT", endpoint)
@@ -251,7 +249,7 @@ class ShipmentPortal(ShipStationClient):
         if created_at_start is not None:
             params["created_at_start"] = created_at_start
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/rates"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/rates"
 
         try:
             res = await cls.request(
@@ -286,7 +284,7 @@ class ShipmentPortal(ShipStationClient):
         Returns:
             Tuple of status code and ShipmentTag or ErrorResponse
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/tags/{tag_name}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/tags/{tag_name}"
 
         try:
             res = await cls.request("POST", endpoint)
@@ -317,7 +315,7 @@ class ShipmentPortal(ShipStationClient):
         Returns:
             Tuple of status code and None (on success) or ErrorResponse
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/tags/{tag_name}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/tags/{tag_name}"
 
         try:
             res = await cls.request("DELETE", endpoint)

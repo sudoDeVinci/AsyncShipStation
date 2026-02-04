@@ -57,7 +57,7 @@ class FulfillmentPortal(ShipStationClient):
 
         data = {k: v for k, v in data.items() if v is not None}
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.FULFILLMENTS.value}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.FULFILLMENTS.value}"
 
         try:
             res = await cls.request(
@@ -86,7 +86,7 @@ class FulfillmentPortal(ShipStationClient):
 
         data: FulfillmentGistRequest = {"fulfillments": fulfillments}
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.FULFILLMENTS.value}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.FULFILLMENTS.value}"
 
         try:
             res = await cls.request(

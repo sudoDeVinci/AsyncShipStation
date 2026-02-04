@@ -71,6 +71,8 @@ class ShipStationClient:
     _api_key_v1: str | None = None
     _api_secret: str | None = None
     _v2_endpoint: Final[str] = "https://api.shipstation.com/v2"
+    _v2_mock_endpoint: Final[str] = "https://docs.shipstation.com/_mock/openapi/v2"
+    v2_endpoint: str = ""
     _v1_endpoint: Final[str] = "https://ssapi.shipstation.com"
     _v1_headers = {"User-Agent": "asyncShipStation/1.0.0"}
     _v2_headers = {"User-Agent": "asyncShipStation/1.0.0"}
@@ -86,26 +88,18 @@ class ShipStationClient:
         accepted_statuses: tuple[int, ...],
         return_type: type[T],
     ) -> tuple[int, ErrorResponse | T]:
-        """
-        Validates the HTTP response from the ShipStation API.
-        Args:
-            res (Response | APIError): The response object or APIError to validate.
-            accepted_statuses (tuple[int, ...]): A tuple of accepted HTTP status codes.
-        Returns:
-            tuple[int, ErrorResponse | T]: A tuple containing the status code and either an error dict or a response.
+        try:
+            json = cast(str | dict[str, object], res.json())
+        except JSONDecodeError as e:
+            # Return raw response text for debugging
+            return cls.parse_unknown_exception(
+                Exception(f"JSON decode error: {e}. Raw response: {res.text[:500]}")
+            )
 
-        Raises:
-            APIError: If the response status code is not in the accepted statuses.
-        """
-        json = cast(str | dict[str, object], res.json())
         if res.status_code not in accepted_statuses:
             if "errors" in json:
                 return res.status_code, cast(ErrorResponse, json)
-
-            raise APIError(
-                res.status_code,
-                json,
-            )
+            raise APIError(res.status_code, json)
 
         return res.status_code, cast(T, json)
 
@@ -162,17 +156,20 @@ class ShipStationClient:
 
     @classmethod
     async def start(
-        cls: type["ShipStationClient"], version: Literal["v1", "v2"] = "v2"
+        cls: type["ShipStationClient"],
+        version: Literal["v1", "v2"] = "v2",
+        mock: bool = False,
     ) -> None:
         """
         Initializes the asynchronous HTTP client session.
         """
+        cls.v2_endpoint = cls._v2_endpoint if not mock else cls._v2_mock_endpoint
         match version:
             case "v2":
                 async with cls._v2_connection_lock:
                     if cls._v2_client is None:
                         cls._v2_client = AsyncClient(
-                            base_url=cls._v2_endpoint,
+                            base_url=cls.v2_endpoint,
                             headers=cast(HeaderTypes, cls._v2_headers),
                             timeout=30,
                             http2=False,  # Disable HTTP/2
@@ -227,16 +224,17 @@ class ShipStationClient:
     async def scoped_client(
         cls: type["ShipStationClient"],
         version: Literal["v1", "v2"] = "v2",
-    ) -> AsyncGenerator[AsyncClient, None]:
+        mock: bool = False,
+    ) -> AsyncGenerator[AsyncClient | None, None]:
         """
         Asynchronous context manager for the HTTP client session.
         Yields:
             AsyncClient: The asynchronous HTTP client session.
         """
-        await cls.start(version)
+        await cls.start(version, mock=mock)
         client = cls._v2_client if version == "v2" else cls._v1_client
         try:
-            yield client  # type: ignore
+            yield client
         finally:
             await cls.close(version)
 
@@ -260,10 +258,6 @@ class ShipStationClient:
             RequestError: If an error occurs while making the request.
         """
         client = cls._v2_client if version == "v2" else cls._v1_client
-        if client is None:
-            await cls.start(version)
-            client = cls._v2_client if version == "v2" else cls._v1_client
-
         if client is None:
             return APIError(500, "HTTP client could not be initialized.")
 

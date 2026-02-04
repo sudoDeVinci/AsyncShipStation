@@ -18,7 +18,7 @@ class DownloadPortal(ShipStationClient):
         rotation: int = 0,
     ) -> tuple[int, bytes | ErrorResponse]:
         endpoint = (
-            f"{cls._v2_endpoint}/{Endpoints.DOWNLOADS.value}/{dir}/{subdir}/{filename}"
+            f"{cls.v2_endpoint}/{Endpoints.DOWNLOADS.value}/{dir}/{subdir}/{filename}"
         )
         params = {
             "download": download,

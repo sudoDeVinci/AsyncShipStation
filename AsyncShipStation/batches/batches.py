@@ -54,7 +54,7 @@ class BatchPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.BATCHES.value}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}"
 
         try:
             res = await cls.request(
@@ -103,7 +103,7 @@ class BatchPortal(ShipStationClient):
 
         payload = {k: v for k, v in payload.items() if v is not None}
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.BATCHES.value}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}"
 
         try:
             res = await cls.request(
@@ -134,7 +134,7 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, Batch | ErrorResponse]: A tuple containing the status code and either a Batch or an ErrorResponse.
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.BATCHES.value}/external_batch_id/{external_batch_id}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/external_batch_id/{external_batch_id}"
 
         try:
             res = await cls.request(
@@ -165,7 +165,7 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, Batch | ErrorResponse]: A tuple containing the status code and either a Batch or an ErrorResponse.
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
 
         try:
             res = await cls.request(
@@ -196,7 +196,7 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, None | ErrorResponse]: A tuple containing the status code and either None or an ErrorResponse.
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
 
         try:
             res = await cls.request(
@@ -229,7 +229,7 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, None | ErrorResponse]: A tuple containing the status code and either None or an ErrorResponse.
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
 
         try:
             res = await cls.request(
@@ -282,7 +282,7 @@ class BatchPortal(ShipStationClient):
 
         payload = {k: v for k, v in payload.items() if v is not None}
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/add"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/add"
 
         try:
             res = await cls.request(
@@ -313,7 +313,7 @@ class BatchPortal(ShipStationClient):
             "page_size": page_size,
         }
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/errors"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/errors"
 
         try:
             res = await cls.request(
@@ -360,7 +360,7 @@ class BatchPortal(ShipStationClient):
             payload["ship_date"] = ship_date
 
         endpoint = (
-            f"{cls._v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/process/labels"
+            f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/process/labels"
         )
 
         try:
@@ -412,7 +412,7 @@ class BatchPortal(ShipStationClient):
                 ),
             )
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/remove"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/remove"
 
         try:
             res = await cls.request(

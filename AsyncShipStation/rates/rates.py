@@ -93,7 +93,7 @@ class RatesPortal(ShipStationClient):
             }
             return (400, error_response)
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.RATES.value}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.RATES.value}"
 
         try:
             res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
@@ -174,7 +174,7 @@ class RatesPortal(ShipStationClient):
             {k: v for k, v in payload_options.items() if v is not None},
         )
 
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.RATES.value}/estimate"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.RATES.value}/estimate"
 
         try:
             res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
@@ -203,7 +203,7 @@ class RatesPortal(ShipStationClient):
         Returns:
             Tuple of status code and Rate or ErrorResponse
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.RATES.value}/{rate_id}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.RATES.value}/{rate_id}"
 
         try:
             res = await cls.request("GET", endpoint)

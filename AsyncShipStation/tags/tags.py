@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, cast
 
 from ..common import Endpoints, ErrorResponse, ShipStationClient
 from ._types import (
@@ -67,15 +67,11 @@ class TagsPortal(ShipStationClient):
         """
         endpoint = f"{cls._v2_endpoint}/{Endpoints.TAGS.value}/{tag_name}"
 
-        params = {}
-        if color is not None:
-            params["color"] = color
-
         try:
             res = await cls.request(
                 "POST",
                 endpoint,
-                params=params if params else None,  # type: ignore[arg-type]
+                params={"color": color} if color is not None else None,  # type: ignore[arg-type]
             )
 
             return cls.validate_response(
@@ -148,7 +144,18 @@ class TagsPortal(ShipStationClient):
             if tag.get("name") == tag_name:
                 return (status_code, tag)
 
-        return (404, None)
+        return (
+            404,
+            cast(
+                ErrorResponse,
+                {
+                    "error": "Tag not found",
+                    "message": f"Tag '{tag_name}' not found",
+                    "code": 404,
+                    "type": "not_found",
+                },
+            ),
+        )
 
 
 __all__ = ["TagsPortal"]

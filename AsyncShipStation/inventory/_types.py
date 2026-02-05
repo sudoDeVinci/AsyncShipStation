@@ -17,20 +17,20 @@ class Inventory(PaginatinatedResponse):
     inventory: list[InventoryItem]
 
 
-class Warehouse(TypedDict):
+class InventoryWarehouse(TypedDict):
     inventory_warehouse_id: str
     name: str
     created_at: str
     updated_at: str
 
 
-class Location(Warehouse):
+class InventoryLocation(InventoryWarehouse):
     inventory_location_id: str
 
 
-class WarehouseListResponse(PaginatinatedResponse):
-    inventory_warehouses: list[Warehouse]
+class InventoryWarehouseListResponse(PaginatinatedResponse):
+    inventory_warehouses: list[InventoryWarehouse]
 
 
 class LocationListResponse(PaginatinatedResponse):
-    inventory_locations: list[Location]
+    inventory_locations: list[InventoryLocation]

@@ -80,11 +80,11 @@ from .fulfillments import (
 from .inventory import (
     Inventory,
     InventoryItem,
+    InventoryLocation,
     InventoryPortal,
-    Location,
+    InventoryWarehouse,
+    InventoryWarehouseListResponse,
     LocationListResponse,
-    Warehouse,
-    WarehouseListResponse,
 )
 from .labels import (
     ChargeEvent,
@@ -150,12 +150,8 @@ from .tags import (
     TagsPortal,
 )
 from .warehouses import (
-    Warehouse as WarehouseV2,
-)
-from .warehouses import (
-    WarehouseListResponse as WarehouseListResponseV2,
-)
-from .warehouses import (
+    Warehouse,
+    WarehouseListResponse,
     WarehousePortal,
 )
 
@@ -179,9 +175,9 @@ __all__ = (
     "TagInfo",
     "TagListResponse",
     "TagsPortal",
-    # Warehouses V2
-    "WarehouseV2",
-    "WarehouseListResponseV2",
+    # Warehouses
+    "Warehouse",
+    "WarehouseListResponse",
     "WarehousePortal",
     # Orders
     "OrderPortal",
@@ -228,10 +224,11 @@ __all__ = (
     "LabelPortal",
     "Inventory",
     "InventoryItem",
-    "Location",
+    "InventoryLocation",
     "LocationListResponse",
     "Warehouse",
-    "WarehouseListResponse",
+    "InventoryWarehouse",
+    "InventoryWarehouseListResponse",
     "InventoryPortal",
     "BatchFulfillmentCreationResponse",
     "Fulfillment",

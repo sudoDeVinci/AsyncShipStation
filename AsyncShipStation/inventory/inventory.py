@@ -8,10 +8,10 @@ from ..common import (
 )
 from ._types import (
     Inventory,
-    Location,
+    InventoryLocation,
+    InventoryWarehouse,
+    InventoryWarehouseListResponse,
     LocationListResponse,
-    Warehouse,
-    WarehouseListResponse,
 )
 
 
@@ -115,7 +115,7 @@ class InventoryPortal(ShipStationClient):
     @classmethod
     async def list_warehouses(
         cls: type[ShipStationClient], page_size: int = 25, page: int = 1
-    ) -> tuple[int, ErrorResponse | WarehouseListResponse]:
+    ) -> tuple[int, ErrorResponse | InventoryWarehouseListResponse]:
         params = {"page_size": page_size, "page": page}
         endpoint = f"{cls.v2_endpoint}/{Endpoints.INVENTORY_WAREHOUSES.value}"
 
@@ -125,7 +125,7 @@ class InventoryPortal(ShipStationClient):
             return cls.validate_response(
                 res,
                 (200,),
-                WarehouseListResponse,
+                InventoryWarehouseListResponse,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -133,13 +133,13 @@ class InventoryPortal(ShipStationClient):
     @classmethod
     async def create_warehouse(
         cls: type[ShipStationClient], name: str
-    ) -> tuple[int, ErrorResponse | Warehouse]:
+    ) -> tuple[int, ErrorResponse | InventoryWarehouse]:
         raise NotImplementedError("This method is not yet implemented.")
 
     @classmethod
     async def get_warehouse_by_id(
         cls: type[ShipStationClient], inventory_warehouse_id: str
-    ) -> tuple[int, ErrorResponse | Warehouse]:
+    ) -> tuple[int, ErrorResponse | InventoryWarehouse]:
         raise NotImplementedError("This method is not yet implemented.")
 
     @classmethod
@@ -182,7 +182,7 @@ class InventoryPortal(ShipStationClient):
         cls: type[ShipStationClient],
         name: str,
         inventory_warehouse_id: str,
-    ) -> tuple[int, ErrorResponse | Warehouse]:
+    ) -> tuple[int, ErrorResponse | InventoryWarehouse]:
         """
         POST a new inventory location.
         /v2/inventory_locations
@@ -192,7 +192,7 @@ class InventoryPortal(ShipStationClient):
     @classmethod
     async def get_location_by_id(
         cls: type[ShipStationClient], inventory_location_id: str
-    ) -> tuple[int, ErrorResponse | Location]:
+    ) -> tuple[int, ErrorResponse | InventoryLocation]:
         """
         GET an inventory location by its ID.
         /v2/inventory_locations/{inventory_location_id}

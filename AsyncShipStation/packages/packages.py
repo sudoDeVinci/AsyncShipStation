@@ -75,5 +75,74 @@ class CustomPackagePortal(ShipStationClient):
         except Exception as e:
             return cls.parse_unknown_exception(e)
 
+    @classmethod
+    async def get_by_id(
+        cls: type[ShipStationClient],
+        package_id: str,
+    ) -> tuple[int, PackageGist | ErrorResponse]:
+        """
+        Retrieve a custom package by its ID.
+        To obtain details about a specific custom package, like its dimensions and description, you'll use the GET method with the /v2/packages endpoint and the package_id.
+
+        Args:
+            package_id (str): The ID of the package to retrieve.
+
+        Returns:
+            tuple[int, PackageGist | ErrorResponse]: A tuple containing the HTTP status code and the package details or an error response.
+        """
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.PACKAGES.value}/{package_id}"
+
+        try:
+            res = await cls.request("GET", endpoint)
+            return cls.validate_response(res, (200,), PackageGist)
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
+
+    @classmethod
+    async def update(
+        cls: type[ShipStationClient], package_id: str, new_values: PackageGist
+    ) -> tuple[int, None | ErrorResponse]:
+        """
+        You can update the individual properties of your custom packages using the PUT method with the /v2/packages endpoint and the package_id.
+        You'll need to include all the same properties in the request body as when you defined the custom package, with any new values for the properties you'd like to update.
+
+        Args:
+            package_id (str): The ID of the package to update.
+            new_values (PackageGist): The new values for the package properties.
+
+        Returns:
+            tuple[int, None | ErrorResponse]: A tuple containing the HTTP status code and an error response if any.
+        """
+
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.PACKAGES.value}/{package_id}"
+        try:
+            res = await cls.request("PUT", endpoint, json=new_values)  # type: ignore[arg-type]
+            return cls.validate_response(res, (200,), type(None))
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
+
+    @classmethod
+    async def delete(
+        cls: type[ShipStationClient], package_id: str
+    ) -> tuple[int, None | ErrorResponse]:
+        """
+        You can delete a custom package using the DELETE method with the /v2/packages endpoint and the package_id.
+        Deleting a package will not disassociate it from any shipments. It will merely stop being available for use with future shipments and it will will no longer be included in the list packages response.
+        You will need the package_id of the custom package you wish to delete.
+
+        Args:
+            package_id (str): The ID of the package to delete.
+
+        Returns:
+            tuple[int, None | ErrorResponse]: A tuple containing the HTTP status code and an error response if any.
+        """
+
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.PACKAGES.value}/{package_id}"
+        try:
+            res = await cls.request("DELETE", endpoint)
+            return cls.validate_response(res, (204,), type(None))
+        except Exception as e:
+            return cls.parse_unknown_exception(e)
+
 
 __all__ = ["CustomPackagePortal"]

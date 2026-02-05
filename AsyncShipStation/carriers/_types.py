@@ -22,7 +22,7 @@ class PackageGist(TypedDict):
     package_code: str
     name: str
     dimensions: Dimensions
-    description: str
+    description: str | None
 
 
 class PackageList(TypedDict):

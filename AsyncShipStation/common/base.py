@@ -263,6 +263,10 @@ class ShipStationClient:
         """
         client = cls._v2_client if version == "v2" else cls._v1_client
         if client is None:
+            await cls.start(version)
+            client = cls._v2_client if version == "v2" else cls._v1_client
+
+        if client is None:
             return APIError(500, "HTTP client could not be initialized.")
 
         response = await client.request(method, url, **kwargs)  # type: ignore[arg-type]

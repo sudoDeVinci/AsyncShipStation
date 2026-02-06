@@ -1,6 +1,6 @@
 from typing import Literal
 
-from ..common import ErrorResponse, ShipStationClient
+from ..common import Endpoints, ErrorResponse, ShipStationClient
 from ._types import (
     V1AdvancedOptions,
     V1Dimensions,
@@ -69,7 +69,7 @@ class OrderPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls._v1_endpoint}/orders"
+        endpoint = f"{cls._v1_endpoint}/{Endpoints.ORDERS.value}"
 
         try:
             res = await cls.request("GET", endpoint, "v1", params=params)  # type: ignore[arg-type]
@@ -114,7 +114,7 @@ class OrderPortal(ShipStationClient):
 
         payload = {k: v for k, v in payload.items() if v is not None}
 
-        endpoint = f"{cls._v1_endpoint}/orders/createlabelfororder"
+        endpoint = f"{cls._v1_endpoint}/{Endpoints.ORDERS.value}/createlabelfororder"
 
         try:
             res = await cls.request("POST", endpoint, "v1", json=payload)  # type: ignore[arg-type]

@@ -2,7 +2,6 @@ from enum import Enum
 from typing import Literal, NotRequired, TypedDict
 
 from pydantic import EmailStr, HttpUrl
-from pydantic_core.core_schema import TypedDictField
 
 JSONDict = dict[str, str | int | bool | EmailStr | HttpUrl | None]
 
@@ -24,6 +23,8 @@ class Endpoints(Enum):
     SHIPMENTS = "shipments"
     TAGS = "tags"
     WAREHOUSES = "warehouses"
+    WEBHOOKS = "environment/webhooks"
+    STORES = "stores"
 
 
 ErrorSources = Literal["carrier", "order_source", "ShipStation"]

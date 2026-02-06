@@ -142,6 +142,11 @@ from .rates import (
     ValidationStatuses,
 )
 from .shipments import Shipment, ShipmentListResponse, ShipmentPortal, ShipmentStatuses
+from .stores import (
+    StorePortal,
+    V1MarketPlace,
+    V1Store,
+)
 from .tags import (
     TagCreateResponse,
     TagDeleteResponse,
@@ -154,8 +159,23 @@ from .warehouses import (
     WarehouseListResponse,
     WarehousePortal,
 )
+from .webhooks import (
+    Header,
+    Webhook,
+    WebhookEventValues,
+    WebhookPortal,
+)
 
 __all__ = (
+    # Stores
+    "StorePortal",
+    "V1MarketPlace",
+    "V1Store",
+    # Webhooks
+    "Header",
+    "Webhook",
+    "WebhookEventValues",
+    "WebhookPortal",
     # Rates
     "CalculateRatesResponse",
     "Rate",

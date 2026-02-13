@@ -1,5 +1,4 @@
 from enum import Enum
-from tkinter.constants import N
 from typing import Literal, NotRequired, Required, TypedDict
 
 from ..common import (

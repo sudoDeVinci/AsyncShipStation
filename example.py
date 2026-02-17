@@ -1,6 +1,8 @@
 from asyncio import gather
 from asyncio import run as asyncrun
+from json import dump
 from os import getenv
+from pathlib import Path
 from typing import cast
 
 from dotenv import load_dotenv
@@ -8,17 +10,29 @@ from dotenv import load_dotenv
 from AsyncShipStation import (
     BatchListResponse,
     BatchPortal,
+    CarrierPortal,
     ErrorResponse,
     LabelPortal,
     OrderPortal,
     ShipStationClient,
     V1OrderListResponse,
+    WarehousePortal,
 )
 
 load_dotenv()
 V1_API_KEY: str | None = getenv("SHIP_STATION_V1")
 V2_API_KEY: str | None = getenv("SHIP_STATION_V2")
 V1_SECRET: str | None = getenv("SHIP_STATION_SECRET")
+
+CWD: Path = Path(__file__).parent.resolve()
+TEST: Path = CWD / "__cache__"
+TEST.mkdir(exist_ok=True)
+SS_ORDER_JSON: Path = TEST / "ss_order.json"
+HYGP_ORDER_JSON: Path = TEST / "hygp_order.json"
+FONT_GROUPINGS: Path = TEST / "font_groupings.json"
+CARRIER_JSON: Path = TEST / "carriers.json"
+RECIPIENTS_JSON: Path = TEST / "recipients.json"
+WAREHOUSES_JSON: Path = TEST / "warehouses.json"
 
 
 async def main() -> None:
@@ -35,6 +49,8 @@ async def main() -> None:
 
     async with ShipStationClient.scoped_client("v2") as _:
         bstatus, batches = await BatchPortal.list(sort_by="processed_at")
+        cstatus, carriers = await CarrierPortal.get_by_id("se-564137")
+        wstatus, warehouses = await WarehousePortal.list()
 
     async with ShipStationClient.scoped_client("v1") as _:
         ostatus, orderres = await OrderPortal.list(orderStatus="awaiting_shipment")
@@ -55,13 +71,11 @@ async def main() -> None:
         print("No orders found")
         return
 
-    orderlistres = cast(V1OrderListResponse, orderres)
-    print(f"ORDERS\nTotal: {orderlistres['total']}\nPages: {orderlistres['pages']}")
-    print(f"-------------\n{orderlistres['orders'][0]}")
+    with open(CARRIER_JSON, "w") as f:
+        dump(carriers, f, indent=4)
 
-    batchlistres = cast(BatchListResponse, batches)
-    print(f"\nBATCHES\nTotal: {batchlistres['total']}\nPages: {batchlistres['pages']}")
-    print(f"-------------\n{batchlistres['batches'][0]}")
+    with open(WAREHOUSES_JSON, "w") as f:
+        dump(warehouses, f, indent=4)
 
 
 if __name__ == "__main__":

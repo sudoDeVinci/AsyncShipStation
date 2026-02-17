@@ -37,7 +37,7 @@ class CarrierPortal(ShipStationClient):
     async def get_by_id(
         cls: type[ShipStationClient], carrier_id: str
     ) -> tuple[int, Carrier | ErrorResponse]:
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS}/{carrier_id}"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS.value}/{carrier_id}"
 
         try:
             res = await cls.request(
@@ -57,7 +57,7 @@ class CarrierPortal(ShipStationClient):
     async def get_options(
         cls: type[ShipStationClient], carrier_id: str
     ) -> tuple[int, ErrorResponse | AdvancedCarrierOptionList]:
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS}/{carrier_id}/options"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS.value}/{carrier_id}/options"
 
         try:
             res = await cls.request(
@@ -77,7 +77,7 @@ class CarrierPortal(ShipStationClient):
     async def get_packages(
         cls: type[ShipStationClient], carrier_id: str
     ) -> tuple[int, ErrorResponse | PackageList]:
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS}/{carrier_id}/packages"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS.value}/{carrier_id}/packages"
 
         try:
             res = await cls.request(
@@ -97,7 +97,7 @@ class CarrierPortal(ShipStationClient):
     async def get_services(
         cls: type[ShipStationClient], carrier_id: str
     ) -> tuple[int, ErrorResponse | ServiceList]:
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS}/{carrier_id}/services"
+        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS.value}/{carrier_id}/services"
 
         try:
             res = await cls.request(

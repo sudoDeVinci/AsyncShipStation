@@ -1,14 +1,18 @@
 from typing import Literal
 
-from ..common import Endpoints, ErrorResponse, ShipStationClient
+from ..common import (
+    Endpoints,
+    ErrorResponse,
+    ShipStationClient,
+    V1Dimensions,
+    V1Weight,
+)
 from ._types import (
     V1AdvancedOptions,
-    V1Dimensions,
     V1InsuranceOptions,
     V1InternationalOptions,
     V1OrderLabel,
     V1OrderListResponse,
-    V1Weight,
 )
 
 

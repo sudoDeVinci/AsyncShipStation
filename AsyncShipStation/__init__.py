@@ -63,6 +63,9 @@ from .common import (
     ShippingAddress,
     ShipStationClient,
     Tag,
+    V1Address,
+    V1Dimensions,
+    V1Weight,
     Weight,
     read_json,
     write_json,
@@ -105,17 +108,14 @@ from .labels import (
 from .manifests import Manifest, ManifestError, ManifestListResponse, ManifestsPortal
 from .orders import (
     OrderPortal,
-    V1Address,
     V1AdvancedOptions,
     V1Customsitem,
-    V1Dimensions,
     V1InsuranceOptions,
     V1InternationalOptions,
     V1Order,
     V1OrderItem,
     V1OrderLabel,
     V1OrderListResponse,
-    V1Weight,
 )
 from .packages import CustomPackagePortal
 from .products import (
@@ -154,6 +154,10 @@ from .tags import (
     TagListResponse,
     TagsPortal,
 )
+from .v1warehouses import (
+    V1Warehouse,
+    V1WarehousePortal,
+)
 from .warehouses import (
     Warehouse,
     WarehouseListResponse,
@@ -167,6 +171,8 @@ from .webhooks import (
 )
 
 __all__ = (
+    "V1Warehouse",
+    "V1WarehousePortal",
     # Stores
     "StorePortal",
     "V1MarketPlace",

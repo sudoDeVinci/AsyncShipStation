@@ -360,6 +360,39 @@ class Tag(TypedDict):
     name: str
 
 
+class V1Dimensions(TypedDict):
+    length: float
+    width: float
+    height: float
+    units: Literal["inches", "feet", "centimeters"]
+
+
+class V1Weight(TypedDict):
+    value: float
+    units: Literal["ounces", "pounds", "grams", "kilograms"]
+    WeightUnits: float  # read-only
+
+
+class V1Address(TypedDict):
+    name: str
+    company: str
+    street1: str
+    street2: str
+    street3: str
+    city: str
+    state: str
+    postalCode: str
+    country: str
+    phone: str
+    residential: bool
+    addressVerified: Literal[
+        "Address not yet validated",
+        "Address validated successfully",
+        "Address validation warning",
+        "Address validation failed",
+    ]
+
+
 class Address(TypedDict):
     name: str
     company_name: str | None

@@ -16,6 +16,8 @@ from AsyncShipStation import (
     OrderPortal,
     ShipStationClient,
     V1OrderListResponse,
+    V1Warehouse,
+    V1WarehousePortal,
     WarehousePortal,
 )
 
@@ -33,6 +35,7 @@ FONT_GROUPINGS: Path = TEST / "font_groupings.json"
 CARRIER_JSON: Path = TEST / "carriers.json"
 RECIPIENTS_JSON: Path = TEST / "recipients.json"
 WAREHOUSES_JSON: Path = TEST / "warehouses.json"
+V1_WAREHOUSES_JSON: Path = TEST / "v1_warehouses.json"
 
 
 async def main() -> None:
@@ -54,6 +57,7 @@ async def main() -> None:
 
     async with ShipStationClient.scoped_client("v1") as _:
         ostatus, orderres = await OrderPortal.list(orderStatus="awaiting_shipment")
+        wstatus, v1_warehouses = await V1WarehousePortal.list()
 
     if bstatus not in (200, 201):
         print(f"Error: {bstatus} :: {batches}")
@@ -76,6 +80,9 @@ async def main() -> None:
 
     with open(WAREHOUSES_JSON, "w") as f:
         dump(warehouses, f, indent=4)
+
+    with open(V1_WAREHOUSES_JSON, "w") as f:
+        dump(v1_warehouses, f, indent=4)
 
 
 if __name__ == "__main__":

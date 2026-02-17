@@ -1,6 +1,6 @@
 from typing import Literal, TypedDict
 
-from ..common import Option, PaginatinatedResponse
+from ..common import Option, PaginatinatedResponse, V1Address, V1Dimensions, V1Weight
 
 
 class V1AdvancedOptions(TypedDict):
@@ -44,39 +44,6 @@ class V1InternationalOptions(TypedDict):
     contents: Literal["merchandise", "documents", "gift", "returned_goods", "sample"]
     customsItems: V1Customsitem
     nonDelivery: Literal["return_to_sender", "treat_as_abandoned"]
-
-
-class V1Dimensions(TypedDict):
-    length: float
-    width: float
-    height: float
-    units: Literal["inches", "feet", "centimeters"]
-
-
-class V1Weight(TypedDict):
-    value: float
-    units: Literal["ounces", "pounds", "grams", "kilograms"]
-    WeightUnits: float  # read-only
-
-
-class V1Address(TypedDict):
-    name: str
-    company: str
-    street1: str
-    street2: str
-    street3: str
-    city: str
-    state: str
-    postalCode: str
-    country: str
-    phone: str
-    residential: bool
-    addressVerified: Literal[
-        "Address not yet validated",
-        "Address validated successfully",
-        "Address validation warning",
-        "Address validation failed",
-    ]
 
 
 class V1OrderItem(TypedDict):

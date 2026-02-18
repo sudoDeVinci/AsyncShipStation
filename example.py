@@ -53,11 +53,15 @@ async def main() -> None:
     async with ShipStationClient.scoped_client("v2") as _:
         bstatus, batches = await BatchPortal.list(sort_by="processed_at")
         cstatus, carriers = await CarrierPortal.get_by_id("se-564137")
-        wstatus, warehouses = await WarehousePortal.list()
+        wstatus, warehouses = await WarehousePortal.get_by_name(
+            "HYGP World Headquarters"
+        )
 
     async with ShipStationClient.scoped_client("v1") as _:
         ostatus, orderres = await OrderPortal.list(orderStatus="awaiting_shipment")
-        wstatus, v1_warehouses = await V1WarehousePortal.list()
+        wstatus, v1_warehouses = await V1WarehousePortal.get_by_name(
+            "HYGP World Headquarters"
+        )
 
     if bstatus not in (200, 201):
         print(f"Error: {bstatus} :: {batches}")

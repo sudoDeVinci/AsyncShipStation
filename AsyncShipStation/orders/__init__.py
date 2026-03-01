@@ -1,9 +1,11 @@
 from ._types import (
     V1AdvancedOptions,
+    V1BatchOrderCreationResponse,
     V1Customsitem,
     V1InsuranceOptions,
     V1InternationalOptions,
     V1Order,
+    V1OrderCreationResponseResult,
     V1OrderItem,
     V1OrderLabel,
     V1OrderListResponse,
@@ -20,4 +22,6 @@ __all__ = [
     "V1OrderLabel",
     "V1OrderListResponse",
     "OrderPortal",
+    "V1BatchOrderCreationResponse",
+    "V1OrderCreationResponseResult",
 ]

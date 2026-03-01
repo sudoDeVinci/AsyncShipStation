@@ -24,6 +24,7 @@ class Endpoints(Enum):
     TAGS = "tags"
     WAREHOUSES = "warehouses"
     WEBHOOKS = "environment/webhooks"
+    V1WEBHOOKS = "webhooks"
     STORES = "stores"
 
 
@@ -322,6 +323,11 @@ class Error(TypedDict):
 class ErrorResponse(TypedDict):
     errors: list[Error]
     request_id: str | None
+
+
+class Header(TypedDict):
+    key: str
+    value: str
 
 
 class Dimensions(TypedDict):

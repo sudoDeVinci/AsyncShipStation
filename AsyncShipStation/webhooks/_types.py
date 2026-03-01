@@ -1,5 +1,7 @@
 from typing import Literal, NotRequired, TypedDict
 
+from ..common import Header
+
 WebhookEventValues = Literal[
     "batch",
     "carrier_connected",
@@ -15,11 +17,6 @@ WebhookEventValues = Literal[
     "shipment_created_v2",
     "track_event_v2",
 ]
-
-
-class Header(TypedDict):
-    key: str
-    value: str
 
 
 class Webhook(TypedDict, total=True):

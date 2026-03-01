@@ -1,6 +1,15 @@
 from typing import Literal, TypedDict
 
-from ..common import Option, PaginatinatedResponse, V1Address, V1Dimensions, V1Weight
+from pydantic.deprecated.class_validators import V1RootValidator
+
+from ..common import (
+    DeliveryConfirmationMethods,
+    Option,
+    PaginatinatedResponse,
+    V1Address,
+    V1Dimensions,
+    V1Weight,
+)
 
 
 class V1AdvancedOptions(TypedDict):
@@ -98,7 +107,7 @@ class V1Order(TypedDict):
     carrierCode: str
     serviceCode: str
     packageCode: str
-    confirmation: str
+    confirmation: DeliveryConfirmationMethods
     shipDate: str
     holdUntilDate: str | None
     weight: V1Weight
@@ -113,6 +122,19 @@ class V1Order(TypedDict):
 
 class V1OrderListResponse(PaginatinatedResponse):
     orders: list[V1Order]
+
+
+class V1OrderCreationResponseResult(TypedDict):
+    orderId: int
+    orderNumber: str
+    orderkey: str
+    success: bool
+    errorMessage: str | None
+
+
+class V1BatchOrderCreationResponse(TypedDict):
+    hasErrors: bool
+    results: list[V1OrderCreationResponseResult]
 
 
 class V1OrderLabel(TypedDict):

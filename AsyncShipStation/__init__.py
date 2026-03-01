@@ -43,6 +43,7 @@ from .common import (
     ErrorType,
     ErrorTypes,
     Fee,
+    Header,
     Identifier,
     IncoTerm,
     IncoTerms,
@@ -158,19 +159,30 @@ from .v1warehouses import (
     V1Warehouse,
     V1WarehousePortal,
 )
+from .v1webhooks import (
+    V1Webhook,
+    V1WebhookEventValues,
+    V1WebhookGist,
+    V1WebhookListResponse,
+    V1WebhookSubscriptionResult,
+)
 from .warehouses import (
     Warehouse,
     WarehouseListResponse,
     WarehousePortal,
 )
 from .webhooks import (
-    Header,
     Webhook,
     WebhookEventValues,
     WebhookPortal,
 )
 
 __all__ = (
+    "V1Webhook",
+    "V1WebhookEventValues",
+    "V1WebhookGist",
+    "V1WebhookListResponse",
+    "V1WebhookSubscriptionResult",
     "V1Warehouse",
     "V1WarehousePortal",
     # Stores

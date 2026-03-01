@@ -17,6 +17,7 @@ from ._types import (
     ErrorType,
     ErrorTypes,
     Fee,
+    Header,
     Identifier,
     IncoTerm,
     IncoTerms,
@@ -102,4 +103,5 @@ __all__ = (
     "Package",
     "LabelMessages",
     "Quantity",
+    "Header",
 )

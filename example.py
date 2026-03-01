@@ -50,14 +50,13 @@ async def main() -> None:
         v2_key=V2_API_KEY, v1_key=V1_API_KEY, v1_secret=V1_SECRET
     )
 
-    async with ShipStationClient.scoped_client("v2") as _:
+    async with ShipStationClient.scoped_client("both") as _:
         bstatus, batches = await BatchPortal.list(sort_by="processed_at")
         cstatus, carriers = await CarrierPortal.get_by_id("se-564137")
         wstatus, warehouses = await WarehousePortal.get_by_name(
             "HYGP World Headquarters"
         )
 
-    async with ShipStationClient.scoped_client("v1") as _:
         ostatus, orderres = await OrderPortal.list(orderStatus="awaiting_shipment")
         wstatus, v1_warehouses = await V1WarehousePortal.get_by_name(
             "HYGP World Headquarters"

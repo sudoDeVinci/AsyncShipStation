@@ -11,14 +11,6 @@
 
 Async Python client for ShipStation V1 and V2 APIs with full type hints.
 
-## Features
-
-- **Full V1 & V2 API Support**: Works with both ShipStation API versions
-- **Async/Await**: Built on `httpx` for efficient async HTTP requests
-- **Type Safety**: Complete TypedDict definitions for all request/response types
-- **Connection Pooling**: Efficient connection reuse for concurrent requests
-- **Portal Pattern**: Clean, organized API with dedicated portals for each resource
-
 ## Install
 
 ### pip
@@ -36,18 +28,6 @@ pip install -r requirements.txt
 ```
 
 ## Setup 
-Create a `.env` file to store your keys. The library supports both V1 and V2 APIs:
-
-```bash
-# V2 API Key (recommended for most operations)
-SHIP_STATION_V2=your_v2_api_key
-
-# V1 API Key and Secret (required for orders endpoint)
-SHIP_STATION_V1=your_v1_api_key
-SHIP_STATION_SECRET=your_v1_secret
-```
-
-### Configuring the Client
 
 ```python
 from AsyncShipStation import ShipStationClient

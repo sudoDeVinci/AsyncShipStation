@@ -84,6 +84,8 @@ class ShipStationClient:
     _v2_client: AsyncClient | None = None
     _v1_connection_lock: Lock = Lock()
     _v2_connection_lock: Lock = Lock()
+    _v1_ref_count: int = 0
+    _v2_ref_count: int = 0
 
     @classmethod
     def validate_response(
@@ -161,84 +163,115 @@ class ShipStationClient:
     @classmethod
     async def start(
         cls: type["ShipStationClient"],
-        version: Literal["v1", "v2"] = "v2",
+        version: Literal["v1", "v2", "both"] = "v2",
         mock: bool = False,
     ) -> None:
         """
         Initializes the asynchronous HTTP client session.
+
+        Uses reference counting so that multiple callers can share the same
+        client. The client is only created on the first call; subsequent calls
+        increment the reference count.
         """
-        cls.v2_endpoint = cls._v2_endpoint if not mock else cls._v2_mock_endpoint
-        match version:
-            case "v2":
-                async with cls._v2_connection_lock:
-                    if cls._v2_client is None:
-                        cls._v2_client = AsyncClient(
-                            base_url=cls.v2_endpoint,
-                            headers=cast(HeaderTypes, cls._v2_headers),
-                            timeout=30,
-                            http2=False,  # Disable HTTP/2
-                            limits=Limits(
-                                max_connections=20,
-                                max_keepalive_connections=10,
-                            ),
-                        )
+        if version not in ("v1", "v2", "both"):
+            raise ValueError(f"Unsupported version: {version}")
 
-            case "v1":
-                async with cls._v1_connection_lock:
-                    if cls._v1_client is None:
-                        cls._v1_client = AsyncClient(
-                            base_url=cls._v1_endpoint,
-                            headers=cast(HeaderTypes, cls._v1_headers),
-                            timeout=30,
-                            http2=False,  # Disable HTTP/2
-                            limits=Limits(
-                                max_connections=20,
-                                max_keepalive_connections=10,
-                            ),
-                        )
+        if version in ("v2", "both"):
+            cls.v2_endpoint = cls._v2_endpoint if not mock else cls._v2_mock_endpoint
+            async with cls._v2_connection_lock:
+                if cls._v2_client is None:
+                    cls._v2_client = AsyncClient(
+                        base_url=cls.v2_endpoint,
+                        headers=cast(HeaderTypes, cls._v2_headers),
+                        timeout=30,
+                        http2=False,  # Disable HTTP/2
+                        limits=Limits(
+                            max_connections=20,
+                            max_keepalive_connections=10,
+                        ),
+                    )
+                cls._v2_ref_count += 1
 
-            case _:
-                raise ValueError(f"Unsupported version: {version}")
+        if version in ("v1", "both"):
+            async with cls._v1_connection_lock:
+                if cls._v1_client is None:
+                    cls._v1_client = AsyncClient(
+                        base_url=cls._v1_endpoint,
+                        headers=cast(HeaderTypes, cls._v1_headers),
+                        timeout=30,
+                        http2=False,  # Disable HTTP/2
+                        limits=Limits(
+                            max_connections=20,
+                            max_keepalive_connections=10,
+                        ),
+                    )
+                cls._v1_ref_count += 1
 
     @classmethod
     async def close(
-        cls: type["ShipStationClient"], version: Literal["v1", "v2"] = "v2"
+        cls: type["ShipStationClient"],
+        version: Literal["v1", "v2", "both"] = "v2",
+        force: bool = False,
     ) -> None:
         """
         Closes the asynchronous HTTP client session.
+
+        Decrements the reference count and only actually closes the client
+        when no more references remain. Pass ``force=True`` to close
+        unconditionally, resetting the reference count to zero.
         """
-        match version:
-            case "v2":
-                async with cls._v2_connection_lock:
+        if version not in ("v1", "v2", "both"):
+            raise ValueError(f"Unsupported version: {version}")
+
+        if version in ("v2", "both"):
+            async with cls._v2_connection_lock:
+                cls._v2_ref_count = max(0, cls._v2_ref_count - 1)
+                if cls._v2_ref_count <= 0 or force:
+                    cls._v2_ref_count = 0
                     if cls._v2_client is not None:
                         await cls._v2_client.aclose()
                     cls._v2_client = None
 
-            case "v1":
-                async with cls._v1_connection_lock:
+        if version in ("v1", "both"):
+            async with cls._v1_connection_lock:
+                cls._v1_ref_count = max(0, cls._v1_ref_count - 1)
+                if cls._v1_ref_count <= 0 or force:
+                    cls._v1_ref_count = 0
                     if cls._v1_client is not None:
                         await cls._v1_client.aclose()
                     cls._v1_client = None
-
-            case _:
-                raise ValueError(f"Unsupported version: {version}")
 
     @classmethod
     @asynccontextmanager
     async def scoped_client(
         cls: type["ShipStationClient"],
-        version: Literal["v1", "v2"] = "v2",
+        version: Literal["v1", "v2", "both"] = "v2",
         mock: bool = False,
-    ) -> AsyncGenerator[AsyncClient | None, None]:
+    ) -> AsyncGenerator[
+        AsyncClient | tuple[AsyncClient | None, AsyncClient | None] | None,
+        None,
+    ]:
         """
         Asynchronous context manager for the HTTP client session.
+
+        When ``version`` is ``"v1"`` or ``"v2"``, yields a single
+        :class:`AsyncClient` (or ``None`` if initialisation failed).
+
+        When ``version`` is ``"both"``, yields a ``(v1_client, v2_client)``
+        tuple so that both API versions can be used within the same scope.
+
         Yields:
-            AsyncClient: The asynchronous HTTP client session.
+            AsyncClient | tuple[AsyncClient | None, AsyncClient | None] | None:
+                The client(s) for the requested API version(s).
         """
         await cls.start(version, mock=mock)
-        client = cls._v2_client if version == "v2" else cls._v1_client
         try:
-            yield client
+            if version == "both":
+                yield (cls._v1_client, cls._v2_client)
+            elif version == "v2":
+                yield cls._v2_client
+            else:
+                yield cls._v1_client
         finally:
             await cls.close(version)
 
@@ -261,16 +294,20 @@ class ShipStationClient:
         Raises:
             RequestError: If an error occurs while making the request.
         """
+        self_start = False
         client = cls._v2_client if version == "v2" else cls._v1_client
         if client is None:
             await cls.start(version)
             client = cls._v2_client if version == "v2" else cls._v1_client
+            self_start = True
 
         if client is None:
             return APIError(500, "HTTP client could not be initialized.")
 
         response = await client.request(method, url, **kwargs)  # type: ignore[arg-type]
 
+        if self_start:
+            await cls.close(version)
         return response
 
 

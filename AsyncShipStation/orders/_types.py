@@ -1,7 +1,5 @@
 from typing import Literal, TypedDict
 
-from pydantic.deprecated.class_validators import V1RootValidator
-
 from ..common import (
     DeliveryConfirmationMethods,
     Option,

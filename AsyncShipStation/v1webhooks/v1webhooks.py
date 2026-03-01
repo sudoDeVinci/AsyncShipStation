@@ -26,7 +26,7 @@ class V1WebhookPortal(ShipStationClient):
         endpoint = f"{cls._v1_endpoint}/{Endpoints.V1WEBHOOKS.value}/subscribe"
 
         try:
-            res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
+            res = await cls.request("POST", endpoint, "v2", json=payload)  # type: ignore[arg-type]
 
             return cls.validate_response(res, (200, 201), V1WebhookSubscriptionResult)
 
@@ -42,7 +42,7 @@ class V1WebhookPortal(ShipStationClient):
         endpoint = f"{cls._v1_endpoint}/{Endpoints.V1WEBHOOKS.value}/{webhookId}"
 
         try:
-            res = await cls.request("DELETE", endpoint)
+            res = await cls.request("DELETE", endpoint, "v1")
 
             return cls.validate_response(
                 res,
@@ -61,7 +61,7 @@ class V1WebhookPortal(ShipStationClient):
         endpoint = f"{cls._v1_endpoint}/{Endpoints.V1WEBHOOKS.value}"
 
         try:
-            res = await cls.request("GET", endpoint)
+            res = await cls.request("GET", endpoint, "v1")
 
             return cls.validate_response(res, (200, 201), V1WebhookListResponse)
 

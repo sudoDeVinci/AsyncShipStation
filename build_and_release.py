@@ -43,7 +43,7 @@ def main() -> None:
     run_cmd("rm -rf dist")
 
     # 2. Build the package
-    run_cmd("python3 -m build")
+    run_cmd("python -m build")
 
     # 3. Upload to PyPI
     run_cmd(f"twine upload dist/* -u __token__ -p {token}", capture=True)

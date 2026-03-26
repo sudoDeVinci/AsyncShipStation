@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
 from os import getenv
@@ -40,7 +41,10 @@ def main() -> None:
         raise RuntimeError("Environment variable 'PIPY_TOKEN' not set")
 
     # 1. Remove old builds
-    run_cmd("rm -rf dist")
+    dist_dir = Path("dist")
+    if dist_dir.exists():
+        shutil.rmtree(dist_dir)
+        print("> Removed dist/")
 
     # 2. Build the package
     run_cmd("python -m build")

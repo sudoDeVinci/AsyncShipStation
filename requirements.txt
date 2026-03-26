@@ -7,3 +7,5 @@ build
 twine
 pytest
 pytest-asyncio
+reportlab
+pypdf

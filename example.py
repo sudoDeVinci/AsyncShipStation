@@ -11,7 +11,9 @@ from AsyncShipStation import (
     BatchListResponse,
     BatchPortal,
     CarrierPortal,
+    DownloadPortal,
     ErrorResponse,
+    LabelListResponse,
     LabelPortal,
     OrderPortal,
     ShipStationClient,
@@ -36,6 +38,9 @@ CARRIER_JSON: Path = TEST / "carriers.json"
 RECIPIENTS_JSON: Path = TEST / "recipients.json"
 WAREHOUSES_JSON: Path = TEST / "warehouses.json"
 V1_WAREHOUSES_JSON: Path = TEST / "v1_warehouses.json"
+BATCHES_JSON: Path = TEST / "batches.json"
+LABELS_JSON: Path = TEST / "labels.json"
+LABEL_PDF: Path = TEST / "label.pdf"
 
 
 async def main() -> None:
@@ -51,41 +56,42 @@ async def main() -> None:
     )
 
     async with ShipStationClient.scoped_client("both") as _:
-        bstatus, batches = await BatchPortal.list(sort_by="processed_at")
-        cstatus, carriers = await CarrierPortal.get_by_id("se-564137")
-        wstatus, warehouses = await WarehousePortal.get_by_name(
-            "HYGP World Headquarters"
+        bstat, batches = await BatchPortal.list(sort_by="processed_at", page_size=1)
+        if bstat not in (200, 201):
+            print(f"Error: {bstat} :: {batches}")
+            return
+        if not batches:
+            print("No batches found")
+            return
+        with open(BATCHES_JSON, "w") as f:
+            dump(batches, f, indent=4)
+
+        batch = cast(BatchListResponse, batches)["batches"][0]
+        batch_id = batch["batch_id"]
+
+        lstat, labels = await LabelPortal.list(batch_id=batch_id)
+        if lstat not in (200, 201):
+            print(f"Error: {lstat} :: {labels}")
+            return
+        if not labels:
+            print("No labels found")
+            return
+        with open(LABELS_JSON, "w") as f:
+            dump(labels, f, indent=4)
+
+        label = cast(LabelListResponse, labels)["labels"]
+
+        dlstat, dl = await DownloadPortal.download_packing_slips(
+            label,
         )
-
-        ostatus, orderres = await OrderPortal.list(orderStatus="awaiting_shipment")
-        wstatus, v1_warehouses = await V1WarehousePortal.get_by_name(
-            "HYGP World Headquarters"
-        )
-
-    if bstatus not in (200, 201):
-        print(f"Error: {bstatus} :: {batches}")
-        return
-
-    if ostatus not in (200, 201):
-        print(f"Error: {ostatus} :: {orderres}")
-        return
-
-    if not batches:
-        print("No batches found")
-        return
-
-    if not orderres:
-        print("No orders found")
-        return
-
-    with open(CARRIER_JSON, "w") as f:
-        dump(carriers, f, indent=4)
-
-    with open(WAREHOUSES_JSON, "w") as f:
-        dump(warehouses, f, indent=4)
-
-    with open(V1_WAREHOUSES_JSON, "w") as f:
-        dump(v1_warehouses, f, indent=4)
+        if dlstat not in (200, 201):
+            print(f"Error: {dlstat} :: {dl}")
+            return
+        if not dl:
+            print("No label found")
+            return
+        with open(LABEL_PDF, "wb") as f:
+            f.write(cast(bytes, dl))
 
 
 if __name__ == "__main__":

@@ -81,9 +81,11 @@ async def main() -> None:
 
         label = cast(LabelListResponse, labels)["labels"]
 
-        dlstat, dl = await DownloadPortal.download_packing_slips(
+        dlstat, (dl, dlerrs) = await DownloadPortal.download_packing_slips(
             label,
         )
+        print(f"Download status: {dlstat}")
+        print(f"Download errors: {dlerrs}")
         if dlstat not in (200, 201):
             print(f"Error: {dlstat} :: {dl}")
             return

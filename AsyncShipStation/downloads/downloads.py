@@ -16,6 +16,7 @@ from ..common import (
     ShipStationClient,
 )
 from ..labels import Label
+from ._types import DownloadError
 
 
 def create_packing_slip_page(order_id: str | None) -> bytes:
@@ -146,7 +147,7 @@ class DownloadPortal(ShipStationClient):
         labels: list[Label],
         dtype: LabelFormats = "pdf",
         include_dummy_slips: bool = True,
-    ) -> tuple[int, bytes | list[ErrorResponse]]:
+    ) -> tuple[int, tuple[bytes, list[DownloadError]]]:
 
         print(f"Downloading {len(labels)} packing slips")
         try:
@@ -155,17 +156,33 @@ class DownloadPortal(ShipStationClient):
             )
 
             writer = PdfWriter()
-            errors: list[ErrorResponse] = []
+            errors: list[DownloadError] = []
             for index, (stat, slip) in enumerate(slips):
-                if stat not in (200, 201):
+                if stat not in (200, 201, 207):
                     if isinstance(slip, dict):
-                        errors.append(slip)
+                        errors.append(
+                            cast(
+                                DownloadError,
+                                {
+                                    "shipment_id": labels[index].get("shipment_id"),
+                                    "external_shipment_id": labels[index].get(
+                                        "external_shipment_id"
+                                    ),
+                                    "error": slip,
+                                },
+                            )
+                        )
                     continue
                 if not isinstance(slip, bytes):
                     errors.append(
                         cast(
-                            ErrorResponse,
-                            cast(Error, {"errors": [{"message": "Invalid slip data"}]}),
+                            DownloadError,
+                            {
+                                "shipment_id": labels[index].get("shipment_id"),
+                                "external_shipment_id": labels[index].get(
+                                    "external_shipment_id"
+                                ),
+                            },
                         )
                     )
                     continue
@@ -185,14 +202,21 @@ class DownloadPortal(ShipStationClient):
             out = BytesIO()
             writer.write(out)
 
-            if errors:
-                return 400, errors
-
             if out.tell() == 0:
                 raise ValueError("No packing slips were downloaded")
 
-            return 200, out.getvalue()
+            return 200, (out.getvalue(), errors)
 
         except Exception as e:
             stat, err = cls.parse_unknown_exception(e)
-            return stat, [err]
+            return stat, (
+                b"",
+                [
+                    cast(
+                        DownloadError,
+                        {
+                            "error": err,
+                        },
+                    )
+                ],
+            )

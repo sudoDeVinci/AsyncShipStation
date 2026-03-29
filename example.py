@@ -1,6 +1,6 @@
 from asyncio import gather
 from asyncio import run as asyncrun
-from json import dump
+from json import dumps
 from os import getenv
 from pathlib import Path
 from typing import cast
@@ -10,17 +10,12 @@ from dotenv import load_dotenv
 from AsyncShipStation import (
     BatchListResponse,
     BatchPortal,
-    CarrierPortal,
     DownloadPortal,
-    ErrorResponse,
     LabelListResponse,
     LabelPortal,
-    OrderPortal,
+    ShipmentListResponse,
+    ShipmentPortal,
     ShipStationClient,
-    V1OrderListResponse,
-    V1Warehouse,
-    V1WarehousePortal,
-    WarehousePortal,
 )
 
 load_dotenv()
@@ -56,44 +51,23 @@ async def main() -> None:
     )
 
     async with ShipStationClient.scoped_client("both") as _:
-        bstat, batches = await BatchPortal.list(batch_number="100116", page_size=1)
-        if bstat not in (200, 201):
-            print(f"Error: {bstat} :: {batches}")
-            return
-        if not batches:
-            print("No batches found")
-            return
-        with open(BATCHES_JSON, "w") as f:
-            dump(batches, f, indent=4)
+        _, batches = await BatchPortal.list(batch_number="100120", page_size=1)
 
-        batch = cast(BatchListResponse, batches)["batches"][0]
-        batch_id = batch["batch_id"]
+        reference_batch = cast(BatchListResponse, batches)["batches"][0]
+        print(f"Batch found: {reference_batch['batch_id']}")
+        _, sres = await ShipmentPortal.list(batch_id=reference_batch["batch_id"])
 
-        lstat, labels = await LabelPortal.list(batch_id=batch_id)
-        if lstat not in (200, 201):
-            print(f"Error: {lstat} :: {labels}")
-            return
-        if not labels:
-            print("No labels found")
-            return
-        with open(LABELS_JSON, "w") as f:
-            dump(labels, f, indent=4)
+        _, lres = await LabelPortal.list(batch_id=reference_batch["batch_id"])
 
-        label = cast(LabelListResponse, labels)["labels"]
-
-        dlstat, (dl, dlerrs) = await DownloadPortal.download_packing_slips(
-            label,
+        stat, (dres, derrs) = await DownloadPortal.download_packing_slips(
+            labels=cast(LabelListResponse, lres)["labels"]
         )
-        print(f"Download status: {dlstat}")
-        print(f"Download errors: {dlerrs}")
-        if dlstat not in (200, 201):
-            print(f"Error: {dlstat} :: {dl}")
-            return
-        if not dl:
-            print("No label found")
-            return
+
+        print(f"Download status: {stat}")
+        print(f"Download errors: {dumps(derrs, indent=2)}")
+
         with open(LABEL_PDF, "wb") as f:
-            f.write(cast(bytes, dl))
+            f.write(dres)
 
 
 if __name__ == "__main__":

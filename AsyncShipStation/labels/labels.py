@@ -1,4 +1,5 @@
-from typing import Literal
+from asyncio import sleep as async_sleep
+from typing import ClassVar, List, Literal, cast
 
 from ..common import (
     DisplayFormatSchemes,
@@ -20,9 +21,13 @@ from ._types import (
 
 
 class LabelPortal(ShipStationClient):
+    # Polling defaults for batch label processing
+    _BATCH_POLL_INTERVAL: ClassVar[float] = 2.0  # seconds between polls
+    _BATCH_POLL_TIMEOUT: ClassVar[float] = 20.0  # max seconds to wait
+
     @classmethod
     async def list(
-        cls: type[ShipStationClient],
+        cls: type["LabelPortal"],
         label_status: LabelStatuses | None = None,
         service_code: str | None = None,
         carrier_id: str | None = None,
@@ -95,8 +100,76 @@ class LabelPortal(ShipStationClient):
             return cls.parse_unknown_exception(e)
 
     @classmethod
+    async def poll_label_until_ready(
+        cls: type["LabelPortal"],
+        label_id: str,
+        timeout: float | None = None,
+        interval: float | None = None,
+    ) -> tuple[bool, Label | ErrorResponse]:
+        """
+        This method is a helper function that polls the list endpoint for a batch of labels until they are all ready. This is useful for the purchase endpoint which can return a 207 status code if some labels in the batch are ready while others are still being processed.
+
+        Returns:
+            tuple[int, LabelListResponse | ErrorResponse]: A tuple containing the HTTP status code and either a LabelListResponse with all labels in the batch or an ErrorResponse if an error occurs.
+        """
+
+        _timeout = timeout or cls._BATCH_POLL_TIMEOUT
+        _interval = interval or cls._BATCH_POLL_INTERVAL
+
+        terminal = (
+            "completed",
+            "error",
+        )
+
+        elapsed = 0.0
+        while elapsed < _timeout:
+            stat, label = await cls.get_by_id(label_id=label_id)
+
+            if stat not in (200, 201, 207):
+                return False, label
+
+            if isinstance(label, dict) and label.get("status") in terminal:
+                return True, cast(Label, label)
+
+            await async_sleep(_interval)
+            elapsed += _interval
+
+        # Final attempt after timeout
+        stat, label = await cls.get_by_id(label_id=label_id)
+        if (
+            stat in (200, 201)
+            and isinstance(label, dict)
+            and label.get("status") in terminal
+        ):
+            return True, cast(Label, label)
+        return False, label
+
+    @classmethod
+    async def poll_labels_until_ready(
+        cls: type["LabelPortal"],
+        label_ids: List[str],
+        timeout: float | None = None,
+        interval: float | None = None,
+    ) -> tuple[bool, List[Label] | ErrorResponse]:
+
+        labels: list[Label] = []
+        for label_id in label_ids:
+            ready, label = await cls.poll_label_until_ready(
+                label_id=label_id, timeout=timeout, interval=interval
+            )
+            if not ready:
+                return False, cast(ErrorResponse, label)
+
+            labels.append(cast(Label, label))
+            await async_sleep(
+                0.2
+            )  # slight delay between polling each label to avoid hitting rate limits
+
+        return True, labels
+
+    @classmethod
     async def purchase(
-        cls: type[ShipStationClient],
+        cls: type["LabelPortal"],
         shipment: LabelShipment,
         charge_event: ChargeEvents,
         outbound_label_id: str,

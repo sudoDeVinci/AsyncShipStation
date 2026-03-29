@@ -15,7 +15,7 @@ from ..common import (
     LabelFormats,
     ShipStationClient,
 )
-from ..labels import Label
+from ..labels import Label, LabelPortal
 from ._types import DownloadError
 
 
@@ -151,6 +151,10 @@ class DownloadPortal(ShipStationClient):
 
         print(f"Downloading {len(labels)} packing slips")
         try:
+            available, _ = await LabelPortal.poll_labels_until_ready(
+                [label["label_id"] for label in labels]
+            )
+
             slips = await gather(
                 *[cls.download_packing_slip(label, dtype) for label in labels]
             )

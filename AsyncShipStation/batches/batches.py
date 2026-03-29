@@ -1,4 +1,5 @@
-from typing import List, Literal, cast
+from asyncio import sleep as async_sleep
+from typing import ClassVar, List, Literal, cast
 
 from ..common import (
     DisplayFormatSchemes,
@@ -18,9 +19,13 @@ from ._types import (
 
 
 class BatchPortal(ShipStationClient):
+    # Polling defaults for batch label processing
+    _BATCH_POLL_INTERVAL: ClassVar[float] = 2.0  # seconds between polls
+    _BATCH_POLL_TIMEOUT: ClassVar[float] = 20.0  # max seconds to wait
+
     @classmethod
     async def list(
-        cls: type[ShipStationClient],
+        cls: type["BatchPortal"],
         status: BatchStatuses | None = None,
         batch_number: str | None = None,
         sort_by: Literal["ship_date", "processed_at", "created_at"] | None = None,
@@ -72,13 +77,75 @@ class BatchPortal(ShipStationClient):
             return cls.parse_unknown_exception(e)
 
     @classmethod
+    async def _poll_batch_until_ready(
+        cls: type["BatchPortal"],
+        batch_id: str,
+        process_labels: bool = False,
+        timeout: float | None = None,
+        interval: float | None = None,
+    ) -> tuple[bool, Batch | ErrorResponse]:
+        """
+        Poll ``BatchPortal.get_by_id`` until the batch reaches a terminal
+        state (``completed``, ``completed_with_errors``, or ``invalid``)
+        or the *timeout* elapses.
+
+        Returns:
+            ``(True, batch_dict)`` when the batch finishes processing, or
+            ``(False, batch_dict | error_dict)`` on timeout / API error.
+        """
+        _timeout = timeout or cls._BATCH_POLL_TIMEOUT
+        _interval = interval or cls._BATCH_POLL_INTERVAL
+        terminal = (
+            (
+                "completed",
+                "completed_with_errors",
+                "archived",
+                "invalid",
+            )
+            if process_labels
+            else (
+                "open",
+                "queued",
+                "processing",
+                "completed",
+                "completed_with_errors",
+                "invalid",
+            )
+        )
+        elapsed = 0.0
+
+        while elapsed < _timeout:
+            status, batch = await cls.get_by_id(batch_id)
+            if status not in (200, 201, 207):
+                return (False, cast(ErrorResponse, batch))
+
+            if isinstance(batch, dict) and batch.get("status") in terminal:
+                return (True, batch)
+
+            await async_sleep(_interval)
+            elapsed += _interval
+
+        # Last attempt
+        status, batch = await cls.get_by_id(batch_id)
+        if (
+            status in (200, 201, 207)
+            and isinstance(batch, dict)
+            and batch.get("status") in terminal
+        ):
+            return (True, batch)
+
+        return (False, batch)
+
+    @classmethod
     async def create(
-        cls: type[ShipStationClient],
+        cls: type["BatchPortal"],
         external_batch_id: str | None,
         shipment_ids: List[str] | None,
-        rate_ids: List[str] | None,
+        rate_ids: List[str] | None = None,
         batch_notes: str | None = None,
         process_labels: ProcessLabel | None = None,
+        timeout: float | None = None,
+        interval: float | None = None,
     ) -> tuple[int, Batch | ErrorResponse]:
         """
         Create a new batch in your ShipStation account.
@@ -112,11 +179,30 @@ class BatchPortal(ShipStationClient):
                 json=payload,  # type: ignore[arg-type]
             )
 
-            return cls.validate_response(
+            stat, response = cls.validate_response(
                 res,
                 (200, 207),
                 Batch,
             )
+
+            if stat not in (200, 207):
+                return stat, cast(ErrorResponse, response)
+
+            batch = cast(Batch, response)
+            ready, batch_res = await cls._poll_batch_until_ready(
+                batch_id=batch["batch_id"],
+                timeout=timeout,
+                interval=interval,
+                process_labels=bool(process_labels),
+            )
+
+            if not ready:
+                raise ValueError(
+                    f"Batch {batch['batch_id']} did not reach a terminal state within the timeout period."
+                )
+
+            return (200, batch_res)
+
         except Exception as e:
             return cls.parse_unknown_exception(e)
 
@@ -308,6 +394,7 @@ class BatchPortal(ShipStationClient):
         page: int = 1,
         page_size: int = 25,
     ) -> tuple[int, BatchProcessErrorResponse | ErrorResponse]:
+
         params = {
             "page": page,
             "page_size": page_size,

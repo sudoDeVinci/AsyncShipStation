@@ -10,6 +10,7 @@ from reportlab.pdfgen import canvas
 
 from ..common import (
     Endpoints,
+    Error,
     ErrorResponse,
     LabelFormats,
     ShipStationClient,
@@ -154,15 +155,18 @@ class DownloadPortal(ShipStationClient):
             )
 
             writer = PdfWriter()
-            errors = []
+            errors: list[ErrorResponse] = []
             for index, (stat, slip) in enumerate(slips):
                 if stat not in (200, 201):
                     if isinstance(slip, dict):
-                        errors.append(cast(ErrorResponse, slip))
+                        errors.append(slip)
                     continue
                 if not isinstance(slip, bytes):
                     errors.append(
-                        {"status": stat, "message": "Failed to download packing slip"}
+                        cast(
+                            ErrorResponse,
+                            cast(Error, {"errors": [{"message": "Invalid slip data"}]}),
+                        )
                     )
                     continue
 

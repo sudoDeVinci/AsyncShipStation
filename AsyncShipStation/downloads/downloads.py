@@ -1,11 +1,12 @@
 import io
 from asyncio import gather
-from base64 import b64encode
 from io import BytesIO
 from typing import cast
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import urlparse
 
 from pypdf import PdfReader, PdfWriter
+from reportlab.lib.units import inch
+from reportlab.pdfgen import canvas
 
 from ..common import (
     Endpoints,
@@ -14,6 +15,69 @@ from ..common import (
     ShipStationClient,
 )
 from ..labels import Label
+
+
+def create_packing_slip_page(order_id: str | None) -> bytes:
+    """
+    Generate a single-page PDF containing ``Order #<order_id>`` as
+    selectable vector text.
+
+    The page is sized to match a 4×6 shipping label so it prints
+    consistently on the same label stock.  The text is centred on the
+    page in a large, readable font.
+
+    Returns:
+        Raw PDF bytes for the single-page packing-slip document.
+    """
+    # ShipStation 4×6 label size (in points).  Labels are produced in
+    # portrait orientation (4 in wide × 6 in tall).
+    LABEL_WIDTH = 4 * inch  # 288 pt
+    LABEL_HEIGHT = 6 * inch  # 432 pt
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=(LABEL_WIDTH, LABEL_HEIGHT))
+
+    # ── Draw "Order #<id>" centred on the page ──────────────────────
+    text = f"Order #{order_id if order_id else '#00000000000'}"
+
+    # Use Helvetica-Bold at a size that fits comfortably on a 4×6 label.
+    font_name = "Helvetica-Bold"
+    font_size = 28
+
+    # Shrink the font if the text is unusually long so it doesn't
+    # overflow the page width (leave 0.25 in margins on each side).
+    max_text_width = LABEL_WIDTH - 0.5 * inch
+    while font_size > 10:
+        text_width = c.stringWidth(text, font_name, font_size)
+        if text_width <= max_text_width:
+            break
+        font_size -= 1
+
+    c.setFont(font_name, font_size)
+
+    # Centre horizontally and vertically.
+    x = LABEL_WIDTH / 2
+    y = LABEL_HEIGHT / 2
+
+    c.drawCentredString(x, y, text)
+
+    # Add a subtle divider line above and below for visual clarity
+    # when someone fans through the printed stack.
+    line_margin = 0.5 * inch
+    line_y_top = y + font_size + 12
+    line_y_bot = y - 18
+    c.setStrokeColorRGB(0.6, 0.6, 0.6)
+    c.setLineWidth(0.5)
+    c.line(line_margin, line_y_top, LABEL_WIDTH - line_margin, line_y_top)
+    c.line(line_margin, line_y_bot, LABEL_WIDTH - line_margin, line_y_bot)
+
+    # A small footer so the page is clearly identifiable as a separator.
+    c.setFont("Helvetica", 8)
+    c.setFillColorRGB(0.5, 0.5, 0.5)
+    c.drawCentredString(LABEL_WIDTH / 2, 0.4 * inch, "— Packing Slip Separator —")
+
+    c.showPage()
+    c.save()
+    return buf.getvalue()
 
 
 class DownloadPortal(ShipStationClient):
@@ -77,7 +141,10 @@ class DownloadPortal(ShipStationClient):
 
     @classmethod
     async def download_packing_slips(
-        cls: type["DownloadPortal"], labels: list[Label], dtype: LabelFormats = "pdf"
+        cls: type["DownloadPortal"],
+        labels: list[Label],
+        dtype: LabelFormats = "pdf",
+        include_dummy_slips: bool = True,
     ) -> tuple[int, bytes | list[ErrorResponse]]:
 
         print(f"Downloading {len(labels)} packing slips")
@@ -88,7 +155,7 @@ class DownloadPortal(ShipStationClient):
 
             writer = PdfWriter()
             errors = []
-            for stat, slip in slips:
+            for index, (stat, slip) in enumerate(slips):
                 if stat not in (200, 201):
                     if isinstance(slip, dict):
                         errors.append(cast(ErrorResponse, slip))
@@ -103,6 +170,14 @@ class DownloadPortal(ShipStationClient):
                 for page in slip_pdf.pages:
                     writer.add_page(page)
 
+                # If there was only one page, we optionally include a dummy packing slip after it to act as a separator when printing.
+                if include_dummy_slips and len(slip_pdf.pages) == 1:
+                    dummy_slip_bytes = create_packing_slip_page(
+                        labels[index]["external_shipment_id"]
+                    )
+                    dummy_pdf = PdfReader(BytesIO(dummy_slip_bytes))
+                    writer.add_page(dummy_pdf.pages[0])
+
             out = BytesIO()
             writer.write(out)
 
@@ -115,4 +190,5 @@ class DownloadPortal(ShipStationClient):
             return 200, out.getvalue()
 
         except Exception as e:
-            return [cls.parse_unknown_exception(e)]
+            stat, err = cls.parse_unknown_exception(e)
+            return stat, [err]

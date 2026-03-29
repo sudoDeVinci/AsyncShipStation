@@ -56,7 +56,7 @@ async def main() -> None:
     )
 
     async with ShipStationClient.scoped_client("both") as _:
-        bstat, batches = await BatchPortal.list(sort_by="processed_at", page_size=1)
+        bstat, batches = await BatchPortal.list(batch_number="100116", page_size=1)
         if bstat not in (200, 201):
             print(f"Error: {bstat} :: {batches}")
             return

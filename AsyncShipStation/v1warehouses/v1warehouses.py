@@ -1,6 +1,12 @@
 from typing import cast
 
-from ..common import Endpoints, ErrorResponse, ShipStationClient, V1Address
+from ..common import (
+    Endpoints,
+    ErrorResponse,
+    ShipStationClient,
+    ShipStationConnection,
+    V1Address,
+)
 from ._types import V1Warehouse
 
 
@@ -12,13 +18,16 @@ class V1WarehousePortal(ShipStationClient):
     @classmethod
     async def delete_by_id(
         cls: type["V1WarehousePortal"],
+        connection: ShipStationConnection,
         warehouseId: int,
     ) -> tuple[int, ErrorResponse | dict[str, str]]:
 
-        endpoint = f"{cls._v1_endpoint}/{Endpoints.WAREHOUSES.value}/{warehouseId}"
+        endpoint = (
+            f"{connection.v1_endpoint}/{Endpoints.WAREHOUSES.value}/{warehouseId}"
+        )
 
         try:
-            res = await cls.request("DELETE", endpoint, "v1")
+            res = await connection.request("DELETE", endpoint, "v1")
             return cls.validate_response(
                 res,
                 (200, 204),
@@ -30,13 +39,16 @@ class V1WarehousePortal(ShipStationClient):
     @classmethod
     async def get_by_id(
         cls: type["V1WarehousePortal"],
+        connection: ShipStationConnection,
         warehouseId: int,
     ) -> tuple[int, ErrorResponse | V1Warehouse]:
 
-        endpoint = f"{cls._v1_endpoint}/{Endpoints.WAREHOUSES.value}/{warehouseId}"
+        endpoint = (
+            f"{connection.v1_endpoint}/{Endpoints.WAREHOUSES.value}/{warehouseId}"
+        )
 
         try:
-            res = await cls.request("GET", endpoint, "v1")
+            res = await connection.request("GET", endpoint, "v1")
             return cls.validate_response(
                 res,
                 (200, 201),
@@ -48,6 +60,7 @@ class V1WarehousePortal(ShipStationClient):
     @classmethod
     async def get_by_name(
         cls: type["V1WarehousePortal"],
+        connection: ShipStationConnection,
         warehouseName: str,
     ) -> tuple[int, ErrorResponse | V1Warehouse]:
         """
@@ -55,13 +68,14 @@ class V1WarehousePortal(ShipStationClient):
         so we first call the list() endpoint, then filter the results by the given name.
 
         Args:
+            connection (ShipStationConnection): The connection object to use for the request.
             warehouseName (str): The name of the warehouse to retrieve.
 
         Returns:
             tuple[int, ErrorResponse | V1Warehouse]: A tuple containing the HTTP status code and either an ErrorResponse or a V1Warehouse object.
         """
 
-        status, warehouses = await cls.list()
+        status, warehouses = await cls.list(connection)
         if status not in (200, 201):
             return status, cast(ErrorResponse, warehouses)
 
@@ -77,12 +91,13 @@ class V1WarehousePortal(ShipStationClient):
     @classmethod
     async def list(
         cls: type["V1WarehousePortal"],
+        connection: ShipStationConnection,
     ) -> tuple[int, ErrorResponse | list[V1Warehouse]]:
 
-        endpoint = f"{cls._v1_endpoint}/{Endpoints.WAREHOUSES.value}"
+        endpoint = f"{connection.v1_endpoint}/{Endpoints.WAREHOUSES.value}"
 
         try:
-            res = await cls.request("GET", endpoint, "v1")
+            res = await connection.request("GET", endpoint, "v1")
             return cls.validate_response(
                 res,
                 (200, 201),
@@ -94,6 +109,7 @@ class V1WarehousePortal(ShipStationClient):
     @classmethod
     async def create(
         cls: type["V1WarehousePortal"],
+        connection: ShipStationConnection,
         originAddress: V1Address,
         warehouseName: str | None = None,
         returnAddress: V1Address | None = None,
@@ -109,10 +125,12 @@ class V1WarehousePortal(ShipStationClient):
 
         payload = {k: v for k, v in payload.items() if v is not None}
 
-        endpoint = f"{cls._v1_endpoint}/{Endpoints.WAREHOUSES.value}/createwarehouse"
+        endpoint = (
+            f"{connection.v1_endpoint}/{Endpoints.WAREHOUSES.value}/createwarehouse"
+        )
 
         try:
-            res = await cls.request("POST", endpoint, "v1", json=payload)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, "v1", json=payload)  # type: ignore[arg-type]
             return cls.validate_response(
                 res,
                 (200, 201),

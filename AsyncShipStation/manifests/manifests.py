@@ -1,11 +1,12 @@
-from ..common import Endpoints, ErrorResponse, ShipStationClient
+from ..common import Endpoints, ErrorResponse, ShipStationClient, ShipStationConnection
 from ._types import Manifest, ManifestListResponse
 
 
 class ManifestsPortal(ShipStationClient):
     @classmethod
     async def list(
-        cls: type[ShipStationClient],
+        cls: type["ManifestsPortal"],
+        connection: ShipStationConnection,
         label_ids: list[str] | None = None,
         warehouse_id: str | None = None,
         ship_date_start: str | None = None,
@@ -46,10 +47,10 @@ class ManifestsPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.MANIFESTS.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.MANIFESTS.value}"
 
         try:
-            res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
+            res = await connection.request("GET", endpoint, params=params)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,
@@ -61,7 +62,8 @@ class ManifestsPortal(ShipStationClient):
 
     @classmethod
     async def create(
-        cls: type[ShipStationClient],
+        cls: type["ManifestsPortal"],
+        connection: ShipStationConnection,
     ) -> tuple[int, ErrorResponse, ManifestListResponse]:
         """Create a new manifest.
 
@@ -72,7 +74,9 @@ class ManifestsPortal(ShipStationClient):
 
     @classmethod
     async def get_by_id(
-        cls: type[ShipStationClient], manifest_id: str
+        cls: type["ManifestsPortal"],
+        connection: ShipStationConnection,
+        manifest_id: str,
     ) -> tuple[int, ErrorResponse, Manifest]:
         """Get a manifest by its ID.
 

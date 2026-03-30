@@ -46,28 +46,17 @@ async def main() -> None:
     if not V1_SECRET:
         raise ValueError("SHIP_STATION_SECRET environment variable not set")
 
-    ShipStationClient.configure(
+    connection = await ShipStationClient.configure(
         v2_key=V2_API_KEY, v1_key=V1_API_KEY, v1_secret=V1_SECRET
     )
 
-    async with ShipStationClient.scoped_client("both") as _:
-        _, batches = await BatchPortal.list(batch_number="100120", page_size=1)
+    async with ShipStationClient.scoped_client(
+        connection_hash=hash(connection), version="v2"
+    ) as _:
+        stat, shipments = await ShipmentPortal.list(connection, page_size=10, page=1)
 
-        reference_batch = cast(BatchListResponse, batches)["batches"][0]
-        print(f"Batch found: {reference_batch['batch_id']}")
-        _, sres = await ShipmentPortal.list(batch_id=reference_batch["batch_id"])
-
-        _, lres = await LabelPortal.list(batch_id=reference_batch["batch_id"])
-
-        stat, (dres, derrs) = await DownloadPortal.download_packing_slips(
-            labels=cast(LabelListResponse, lres)["labels"]
-        )
-
-        print(f"Download status: {stat}")
-        print(f"Download errors: {dumps(derrs, indent=2)}")
-
-        with open(LABEL_PDF, "wb") as f:
-            f.write(dres)
+    with open(SS_ORDER_JSON, "w") as f:
+        f.write(dumps(shipments, indent=4))
 
 
 if __name__ == "__main__":

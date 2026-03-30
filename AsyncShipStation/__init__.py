@@ -21,8 +21,6 @@ from .carriers import (
     ServiceList,
 )
 from .common import (
-    CACHE_DIR,
-    CWD,
     LOGGER,
     URL,
     Address,
@@ -310,8 +308,6 @@ __all__ = (
     "LabelLayouts",
     "PaginationLink",
     "PaperlessDownload",
-    "CACHE_DIR",
-    "CWD",
     "LOGGER",
     "APIError",
     "ShipStationClient",

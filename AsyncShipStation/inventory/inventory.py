@@ -5,6 +5,7 @@ from ..common import (
     ErrorResponse,
     Fee,
     ShipStationClient,
+    ShipStationConnection,
 )
 from ._types import (
     Inventory,
@@ -18,7 +19,8 @@ from ._types import (
 class InventoryPortal(ShipStationClient):
     @classmethod
     async def list(
-        cls: type[ShipStationClient],
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
         sku: str | None = None,
         inventory_warehouse_id: str | None = None,
         inventory_location_id: str | None = None,
@@ -37,10 +39,10 @@ class InventoryPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.INVENTORY.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.INVENTORY.value}"
 
         try:
-            res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
+            res = await connection.request("GET", endpoint, params=params)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,
@@ -52,7 +54,8 @@ class InventoryPortal(ShipStationClient):
 
     @classmethod
     async def update(
-        cls: type[ShipStationClient],
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
         transaction_type: Literal["increment", "decrement", "adjust", "modify"],
         inventory_location_id: str,
         sku: str,
@@ -95,10 +98,10 @@ class InventoryPortal(ShipStationClient):
             filtered = {k: v for k, v in optionals.items() if v is not None}
             payload.update(filtered)
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.INVENTORY.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.INVENTORY.value}"
 
         try:
-            res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
 
             if res.status_code == 204:
                 return res.status_code, None
@@ -114,13 +117,16 @@ class InventoryPortal(ShipStationClient):
 
     @classmethod
     async def list_warehouses(
-        cls: type[ShipStationClient], page_size: int = 25, page: int = 1
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
+        page_size: int = 25,
+        page: int = 1,
     ) -> tuple[int, ErrorResponse | InventoryWarehouseListResponse]:
         params = {"page_size": page_size, "page": page}
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.INVENTORY_WAREHOUSES.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.INVENTORY_WAREHOUSES.value}"
 
         try:
-            res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
+            res = await connection.request("GET", endpoint, params=params)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,
@@ -132,19 +138,24 @@ class InventoryPortal(ShipStationClient):
 
     @classmethod
     async def create_warehouse(
-        cls: type[ShipStationClient], name: str
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
+        name: str,
     ) -> tuple[int, ErrorResponse | InventoryWarehouse]:
         raise NotImplementedError("This method is not yet implemented.")
 
     @classmethod
     async def get_warehouse_by_id(
-        cls: type[ShipStationClient], inventory_warehouse_id: str
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
+        inventory_warehouse_id: str,
     ) -> tuple[int, ErrorResponse | InventoryWarehouse]:
         raise NotImplementedError("This method is not yet implemented.")
 
     @classmethod
     async def update_warehouse_name(
-        cls: type[ShipStationClient],
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
         inventory_warehouse_id: str,
         name: str,
     ) -> tuple[int, ErrorResponse | None]:
@@ -152,7 +163,8 @@ class InventoryPortal(ShipStationClient):
 
     @classmethod
     async def delete_warehouse(
-        cls: type[ShipStationClient],
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
         inventory_warehouse_id: str,
         remove_inventory: Literal["0", "1"],
     ) -> tuple[int, ErrorResponse | None]:
@@ -168,7 +180,8 @@ class InventoryPortal(ShipStationClient):
 
     @classmethod
     async def list_locations(
-        cls: type[ShipStationClient],
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
         page_size: int,
     ) -> tuple[int, ErrorResponse | LocationListResponse]:
         """
@@ -179,7 +192,8 @@ class InventoryPortal(ShipStationClient):
 
     @classmethod
     async def create_new_location(
-        cls: type[ShipStationClient],
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
         name: str,
         inventory_warehouse_id: str,
     ) -> tuple[int, ErrorResponse | InventoryWarehouse]:
@@ -191,7 +205,9 @@ class InventoryPortal(ShipStationClient):
 
     @classmethod
     async def get_location_by_id(
-        cls: type[ShipStationClient], inventory_location_id: str
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
+        inventory_location_id: str,
     ) -> tuple[int, ErrorResponse | InventoryLocation]:
         """
         GET an inventory location by its ID.
@@ -201,7 +217,8 @@ class InventoryPortal(ShipStationClient):
 
     @classmethod
     async def update_location_name(
-        cls: type[ShipStationClient],
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
         inventory_location_id: str,
         name: str,
     ) -> tuple[int, ErrorResponse | None]:
@@ -213,7 +230,8 @@ class InventoryPortal(ShipStationClient):
 
     @classmethod
     async def delete_location(
-        cls: type[ShipStationClient],
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
         inventory_location_id: str,
         remove_inventory: Literal["0", "1"],
     ) -> tuple[int, ErrorResponse | None]:

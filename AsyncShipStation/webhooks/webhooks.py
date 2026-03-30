@@ -1,13 +1,21 @@
 from typing import Sequence, cast
 
-from ..common import Endpoints, Error, ErrorResponse, Header, ShipStationClient
+from ..common import (
+    Endpoints,
+    Error,
+    ErrorResponse,
+    Header,
+    ShipStationClient,
+    ShipStationConnection,
+)
 from ._types import Webhook, WebhookEventValues
 
 
 class WebhookPortal(ShipStationClient):
     @classmethod
     async def list(
-        cls: type[ShipStationClient],
+        cls: type["WebhookPortal"],
+        connection: ShipStationConnection,
         webhook_id: str | None = None,
         event: WebhookEventValues | None = None,
         headers: Sequence[Header] | None = None,
@@ -29,10 +37,10 @@ class WebhookPortal(ShipStationClient):
             "store_id": store_id,
         }
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.WEBHOOKS.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.WEBHOOKS.value}"
 
         try:
-            res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
+            res = await connection.request("GET", endpoint, params=params)  # type: ignore[arg-type]
 
             return cls.validate_response(res, (200,), list[Webhook])
 
@@ -41,7 +49,8 @@ class WebhookPortal(ShipStationClient):
 
     @classmethod
     async def create(
-        cls: type[ShipStationClient],
+        cls: type["WebhookPortal"],
+        connection: ShipStationConnection,
         name: str,
         event: WebhookEventValues,
         url: str,
@@ -59,10 +68,10 @@ class WebhookPortal(ShipStationClient):
 
         payload = {k: v for k, v in payload.items() if v is not None}
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.WEBHOOKS.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.WEBHOOKS.value}"
 
         try:
-            res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
 
             return cls.validate_response(res, (200,), Webhook)
 
@@ -71,14 +80,15 @@ class WebhookPortal(ShipStationClient):
 
     @classmethod
     async def get_by_id(
-        cls: type[ShipStationClient],
+        cls: type["WebhookPortal"],
+        connection: ShipStationConnection,
         webhook_id: str,
     ) -> tuple[int, Webhook | ErrorResponse]:
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.WEBHOOKS.value}/{webhook_id}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.WEBHOOKS.value}/{webhook_id}"
 
         try:
-            res = await cls.request("GET", endpoint)
+            res = await connection.request("GET", endpoint)
 
             return cls.validate_response(res, (200,), Webhook)
 
@@ -87,14 +97,15 @@ class WebhookPortal(ShipStationClient):
 
     @classmethod
     async def delete_by_id(
-        cls: type[ShipStationClient],
+        cls: type["WebhookPortal"],
+        connection: ShipStationConnection,
         webhook_id: str,
     ) -> tuple[int, None | ErrorResponse]:
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.WEBHOOKS.value}/{webhook_id}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.WEBHOOKS.value}/{webhook_id}"
 
         try:
-            res = await cls.request("DELETE", endpoint)
+            res = await connection.request("DELETE", endpoint)
 
             return cls.validate_response(res, (204,), type(None))
 
@@ -103,7 +114,8 @@ class WebhookPortal(ShipStationClient):
 
     @classmethod
     async def update_by_id(
-        cls: type[ShipStationClient],
+        cls: type["WebhookPortal"],
+        connection: ShipStationConnection,
         webhook_id: str,
         name: str | None = None,
         url: str | None = None,
@@ -137,10 +149,10 @@ class WebhookPortal(ShipStationClient):
                 },
             )
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.WEBHOOKS.value}/{webhook_id}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.WEBHOOKS.value}/{webhook_id}"
 
         try:
-            res = await cls.request("PUT", endpoint, json=payload)  # type: ignore[arg-type]
+            res = await connection.request("PUT", endpoint, json=payload)  # type: ignore[arg-type]
 
             return cls.validate_response(res, (204,), type(None))
 

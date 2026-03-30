@@ -6,6 +6,7 @@ from ..common import (
     Endpoints,
     ErrorResponse,
     ShipStationClient,
+    ShipStationConnection,
     Tag,
     Weight,
 )
@@ -25,7 +26,8 @@ class RatesPortal(ShipStationClient):
 
     @classmethod
     async def calculate_rates(
-        cls: type[ShipStationClient],
+        cls: type["RatesPortal"],
+        connection: ShipStationConnection,
         carrier_ids: List[str],
         shipment_id: str | None = None,
         shipment: Shipment | None = None,
@@ -93,10 +95,10 @@ class RatesPortal(ShipStationClient):
             }
             return (400, error_response)
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.RATES.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.RATES.value}"
 
         try:
-            res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,
@@ -109,7 +111,8 @@ class RatesPortal(ShipStationClient):
 
     @classmethod
     async def estimate_rates(
-        cls: type[ShipStationClient],
+        cls: type["RatesPortal"],
+        connection: ShipStationConnection,
         from_country_code: str,
         from_postal_code: str,
         to_country_code: str,
@@ -174,10 +177,10 @@ class RatesPortal(ShipStationClient):
             {k: v for k, v in payload_options.items() if v is not None},
         )
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.RATES.value}/estimate"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.RATES.value}/estimate"
 
         try:
-            res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,
@@ -190,7 +193,8 @@ class RatesPortal(ShipStationClient):
 
     @classmethod
     async def get_by_id(
-        cls: type[ShipStationClient],
+        cls: type["RatesPortal"],
+        connection: ShipStationConnection,
         rate_id: str,
     ) -> tuple[int, Rate | ErrorResponse]:
         """
@@ -203,10 +207,10 @@ class RatesPortal(ShipStationClient):
         Returns:
             Tuple of status code and Rate or ErrorResponse
         """
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.RATES.value}/{rate_id}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.RATES.value}/{rate_id}"
 
         try:
-            res = await cls.request("GET", endpoint)
+            res = await connection.request("GET", endpoint)
 
             return cls.validate_response(
                 res,

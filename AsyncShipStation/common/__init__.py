@@ -44,11 +44,10 @@ from ._types import (
     Weight,
 )
 from .base import (
-    CACHE_DIR,
-    CWD,
     LOGGER,
     APIError,
     ShipStationClient,
+    ShipStationConnection,
     read_json,
     write_json,
 )
@@ -91,11 +90,10 @@ __all__ = (
     "LabelLayouts",
     "PaginationLink",
     "PaperlessDownload",
-    "CACHE_DIR",
-    "CWD",
     "LOGGER",
     "APIError",
     "ShipStationClient",
+    "ShipStationConnection",
     "read_json",
     "write_json",
     "PaginatinatedResponse",

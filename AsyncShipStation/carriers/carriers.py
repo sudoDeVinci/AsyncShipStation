@@ -2,6 +2,7 @@ from ..common import (
     Endpoints,
     ErrorResponse,
     ShipStationClient,
+    ShipStationConnection,
 )
 from ._types import (
     AdvancedCarrierOptionList,
@@ -15,12 +16,13 @@ from ._types import (
 class CarrierPortal(ShipStationClient):
     @classmethod
     async def list_carriers(
-        cls: type[ShipStationClient],
+        cls: type["CarrierPortal"],
+        connection: ShipStationConnection,
     ) -> tuple[int, CarrierListResponse | ErrorResponse]:
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.CARRIERS.value}"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "GET",
                 endpoint,
             )
@@ -35,12 +37,12 @@ class CarrierPortal(ShipStationClient):
 
     @classmethod
     async def get_by_id(
-        cls: type[ShipStationClient], carrier_id: str
+        cls: type["CarrierPortal"], connection: ShipStationConnection, carrier_id: str
     ) -> tuple[int, Carrier | ErrorResponse]:
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS.value}/{carrier_id}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.CARRIERS.value}/{carrier_id}"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "GET",
                 endpoint,
             )
@@ -55,12 +57,14 @@ class CarrierPortal(ShipStationClient):
 
     @classmethod
     async def get_options(
-        cls: type[ShipStationClient], carrier_id: str
+        cls: type["CarrierPortal"], connection: ShipStationConnection, carrier_id: str
     ) -> tuple[int, ErrorResponse | AdvancedCarrierOptionList]:
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS.value}/{carrier_id}/options"
+        endpoint = (
+            f"{connection.v2_endpoint}/{Endpoints.CARRIERS.value}/{carrier_id}/options"
+        )
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "GET",
                 endpoint,
             )
@@ -75,12 +79,14 @@ class CarrierPortal(ShipStationClient):
 
     @classmethod
     async def get_packages(
-        cls: type[ShipStationClient], carrier_id: str
+        cls: type["CarrierPortal"], connection: ShipStationConnection, carrier_id: str
     ) -> tuple[int, ErrorResponse | PackageList]:
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS.value}/{carrier_id}/packages"
+        endpoint = (
+            f"{connection.v2_endpoint}/{Endpoints.CARRIERS.value}/{carrier_id}/packages"
+        )
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "GET",
                 endpoint,
             )
@@ -95,12 +101,14 @@ class CarrierPortal(ShipStationClient):
 
     @classmethod
     async def get_services(
-        cls: type[ShipStationClient], carrier_id: str
+        cls: type["CarrierPortal"], connection: ShipStationConnection, carrier_id: str
     ) -> tuple[int, ErrorResponse | ServiceList]:
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.CARRIERS.value}/{carrier_id}/services"
+        endpoint = (
+            f"{connection.v2_endpoint}/{Endpoints.CARRIERS.value}/{carrier_id}/services"
+        )
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "GET",
                 endpoint,
             )

@@ -1,11 +1,12 @@
-from ..common import Endpoints, ErrorResponse, ShipStationClient
+from ..common import Endpoints, ErrorResponse, ShipStationClient, ShipStationConnection
 from ._types import ProductListResponse
 
 
 class ProductPortal(ShipStationClient):
     @classmethod
     async def list(
-        cls: type[ShipStationClient],
+        cls: type["ProductPortal"],
+        connection: ShipStationConnection,
         sku: str | None = None,
         name: str | None = None,
         active: bool | None = None,
@@ -22,10 +23,10 @@ class ProductPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.PRODUCTS.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.PRODUCTS.value}"
 
         try:
-            res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
+            res = await connection.request("GET", endpoint, params=params)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,

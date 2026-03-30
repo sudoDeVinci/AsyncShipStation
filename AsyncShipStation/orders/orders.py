@@ -6,6 +6,7 @@ from ..common import (
     Endpoints,
     ErrorResponse,
     ShipStationClient,
+    ShipStationConnection,
     V1Address,
     V1Dimensions,
     V1Weight,
@@ -25,7 +26,8 @@ from ._types import (
 class OrderPortal(ShipStationClient):
     @classmethod
     async def list(
-        cls: type[ShipStationClient],
+        cls: type["OrderPortal"],
+        connection: ShipStationConnection,
         customerName: str | None = None,
         itemKeyword: str | None = None,
         createDateStart: str | None = None,
@@ -79,10 +81,10 @@ class OrderPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls._v1_endpoint}/{Endpoints.ORDERS.value}"
+        endpoint = f"{connection.v1_endpoint}/{Endpoints.ORDERS.value}"
 
         try:
-            res = await cls.request("GET", endpoint, "v1", params=params)  # type: ignore[arg-type]
+            res = await connection.request("GET", endpoint, "v1", params=params)  # type: ignore[arg-type]
             return cls.validate_response(
                 res,
                 (200, 201),
@@ -93,7 +95,8 @@ class OrderPortal(ShipStationClient):
 
     @classmethod
     async def create_label(
-        cls: type[ShipStationClient],
+        cls: type["OrderPortal"],
+        connection: ShipStationConnection,
         orderId: int,
         carrierCode: str,
         serviceCode: str,
@@ -124,10 +127,12 @@ class OrderPortal(ShipStationClient):
 
         payload = {k: v for k, v in payload.items() if v is not None}
 
-        endpoint = f"{cls._v1_endpoint}/{Endpoints.ORDERS.value}/createlabelfororder"
+        endpoint = (
+            f"{connection.v1_endpoint}/{Endpoints.ORDERS.value}/createlabelfororder"
+        )
 
         try:
-            res = await cls.request("POST", endpoint, "v1", json=payload)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, "v1", json=payload)  # type: ignore[arg-type]
             return cls.validate_response(
                 res,
                 (200, 201),
@@ -138,7 +143,8 @@ class OrderPortal(ShipStationClient):
 
     @classmethod
     async def update_order(
-        cls: type[ShipStationClient],
+        cls: type["OrderPortal"],
+        connection: ShipStationConnection,
         orderNumber: str,
         orderStatus: Literal[
             "awaiting_payment",
@@ -237,10 +243,10 @@ class OrderPortal(ShipStationClient):
 
         payload = {k: v for k, v in payload.items() if v is not None}
 
-        endpoint = f"{cls._v1_endpoint}/{Endpoints.ORDERS.value}/createorder"
+        endpoint = f"{connection.v1_endpoint}/{Endpoints.ORDERS.value}/createorder"
 
         try:
-            res = await cls.request("POST", endpoint, "v1", json=payload)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, "v1", json=payload)  # type: ignore[arg-type]
             return cls.validate_response(
                 res,
                 (200, 201),
@@ -252,6 +258,7 @@ class OrderPortal(ShipStationClient):
     @classmethod
     async def create_order(
         cls: type["OrderPortal"],
+        connection: ShipStationConnection,
         orderNumber: str,
         orderStatus: Literal[
             "awaiting_payment",
@@ -312,6 +319,7 @@ class OrderPortal(ShipStationClient):
         """
 
         return await cls.update_order(
+            connection,
             orderNumber=orderNumber,
             orderStatus=orderStatus,
             billTo=billTo,
@@ -349,6 +357,7 @@ class OrderPortal(ShipStationClient):
     @classmethod
     async def create_or_update_orders(
         cls: type["OrderPortal"],
+        connection: ShipStationConnection,
         orders: Sequence[V1Order],
     ) -> tuple[int, V1BatchOrderCreationResponse | ErrorResponse]:
         """
@@ -359,10 +368,10 @@ class OrderPortal(ShipStationClient):
         This call does not currently support partial updates; the entire resource must be provided in the body of the request.
         """
 
-        endpoint = f"{cls._v1_endpoint}/{Endpoints.ORDERS.value}/createorders"
+        endpoint = f"{connection.v1_endpoint}/{Endpoints.ORDERS.value}/createorders"
 
         try:
-            res = await cls.request("POST", endpoint, "v1", json=orders)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, "v1", json=orders)  # type: ignore[arg-type]
             return cls.validate_response(
                 res,
                 (200, 201),

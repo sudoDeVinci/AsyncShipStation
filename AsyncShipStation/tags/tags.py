@@ -1,6 +1,6 @@
 from typing import Literal, cast
 
-from ..common import Endpoints, ErrorResponse, ShipStationClient
+from ..common import Endpoints, ErrorResponse, ShipStationClient, ShipStationConnection
 from ._types import (
     TagCreateResponse,
     TagInfo,
@@ -13,7 +13,8 @@ class TagsPortal(ShipStationClient):
 
     @classmethod
     async def list(
-        cls: type[ShipStationClient],
+        cls: type["TagsPortal"],
+        connection: ShipStationConnection,
     ) -> tuple[int, TagListResponse | ErrorResponse]:
         """
         List all tags in the account.
@@ -22,10 +23,10 @@ class TagsPortal(ShipStationClient):
         Returns:
             Tuple of status code and TagListResponse or ErrorResponse
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.TAGS.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.TAGS.value}"
 
         try:
-            res = await cls.request("GET", endpoint)
+            res = await connection.request("GET", endpoint)
 
             return cls.validate_response(
                 res,
@@ -38,7 +39,8 @@ class TagsPortal(ShipStationClient):
 
     @classmethod
     async def create(
-        cls: type[ShipStationClient],
+        cls: type["TagsPortal"],
+        connection: ShipStationConnection,
         tag_name: str,
         color: (
             Literal[
@@ -65,10 +67,10 @@ class TagsPortal(ShipStationClient):
         Returns:
             Tuple of status code and TagCreateResponse or ErrorResponse
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.TAGS.value}/{tag_name}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.TAGS.value}/{tag_name}"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "POST",
                 endpoint,
                 params={"color": color} if color is not None else None,  # type: ignore[arg-type]
@@ -85,7 +87,8 @@ class TagsPortal(ShipStationClient):
 
     @classmethod
     async def delete(
-        cls: type[ShipStationClient],
+        cls: type["TagsPortal"],
+        connection: ShipStationConnection,
         tag_name: str,
     ) -> tuple[int, None | ErrorResponse]:
         """
@@ -98,10 +101,10 @@ class TagsPortal(ShipStationClient):
         Returns:
             Tuple of status code and None (on success) or ErrorResponse
         """
-        endpoint = f"{cls._v2_endpoint}/{Endpoints.TAGS.value}/{tag_name}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.TAGS.value}/{tag_name}"
 
         try:
-            res = await cls.request("DELETE", endpoint)
+            res = await connection.request("DELETE", endpoint)
 
             if res.status_code == 204:
                 return (res.status_code, None)
@@ -117,7 +120,8 @@ class TagsPortal(ShipStationClient):
 
     @classmethod
     async def get_by_name(
-        cls: type[ShipStationClient],
+        cls: type["TagsPortal"],
+        connection: ShipStationConnection,
         tag_name: str,
     ) -> tuple[int, TagInfo | None | ErrorResponse]:
         """
@@ -132,7 +136,7 @@ class TagsPortal(ShipStationClient):
         Returns:
             Tuple of status code and TagInfo (if found), None (if not found), or ErrorResponse
         """
-        status_code, response = await TagsPortal.list()
+        status_code, response = await cls.list(connection)
 
         if status_code != 200:
             return (status_code, response)  # type: ignore[return-value]

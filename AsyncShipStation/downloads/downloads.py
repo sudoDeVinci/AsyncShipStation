@@ -14,6 +14,7 @@ from ..common import (
     ErrorResponse,
     LabelFormats,
     ShipStationClient,
+    ShipStationConnection,
 )
 from ..labels import Label, LabelPortal
 from ._types import DownloadError
@@ -86,22 +87,21 @@ class DownloadPortal(ShipStationClient):
     @classmethod
     async def download_file(
         cls: type["DownloadPortal"],
+        connection: ShipStationConnection,
         dir: str,
         subdir: str,
         filename: str,
         download: str = "string",
         rotation: int = 0,
     ) -> tuple[int, bytes | ErrorResponse]:
-        endpoint = (
-            f"{cls.v2_endpoint}/{Endpoints.DOWNLOADS.value}/{dir}/{subdir}/{filename}"
-        )
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.DOWNLOADS.value}/{dir}/{subdir}/{filename}"
         params = {
             "download": download,
             "rotation": rotation,
         }
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "GET",
                 endpoint,
                 params=params,  # type: ignore[arg-type]
@@ -120,7 +120,10 @@ class DownloadPortal(ShipStationClient):
 
     @classmethod
     async def download_packing_slip(
-        cls: type["DownloadPortal"], label: Label, dtype: LabelFormats = "pdf"
+        cls: type["DownloadPortal"],
+        connection: ShipStationConnection,
+        label: Label,
+        dtype: LabelFormats = "pdf",
     ) -> tuple[int, bytes | ErrorResponse]:
 
         links = label["label_download"]
@@ -139,11 +142,12 @@ class DownloadPortal(ShipStationClient):
         except Exception as e:
             return cls.parse_unknown_exception(e)
 
-        return await cls.download_file(dir_part, subdir_part, filename_part)
+        return await cls.download_file(connection, dir_part, subdir_part, filename_part)
 
     @classmethod
     async def download_packing_slips(
         cls: type["DownloadPortal"],
+        connection: ShipStationConnection,
         labels: list[Label],
         dtype: LabelFormats = "pdf",
         include_dummy_slips: bool = True,
@@ -152,11 +156,14 @@ class DownloadPortal(ShipStationClient):
         print(f"Downloading {len(labels)} packing slips")
         try:
             available, _ = await LabelPortal.poll_labels_until_ready(
-                [label["label_id"] for label in labels]
+                connection, [label["label_id"] for label in labels]
             )
 
             slips = await gather(
-                *[cls.download_packing_slip(label, dtype) for label in labels]
+                *[
+                    cls.download_packing_slip(connection, label, dtype)
+                    for label in labels
+                ]
             )
 
             writer = PdfWriter()

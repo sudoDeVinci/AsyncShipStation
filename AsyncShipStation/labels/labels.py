@@ -8,6 +8,7 @@ from ..common import (
     LabelFormats,
     LabelLayouts,
     ShipStationClient,
+    ShipStationConnection,
 )
 from ._types import (
     ChargeEvents,
@@ -28,6 +29,7 @@ class LabelPortal(ShipStationClient):
     @classmethod
     async def list(
         cls: type["LabelPortal"],
+        connection: ShipStationConnection,
         label_status: LabelStatuses | None = None,
         service_code: str | None = None,
         carrier_id: str | None = None,
@@ -86,10 +88,10 @@ class LabelPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.LABELS.value}"
 
         try:
-            res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
+            res = await connection.request("GET", endpoint, params=params)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,
@@ -102,6 +104,7 @@ class LabelPortal(ShipStationClient):
     @classmethod
     async def poll_label_until_ready(
         cls: type["LabelPortal"],
+        connection: ShipStationConnection,
         label_id: str,
         timeout: float | None = None,
         interval: float | None = None,
@@ -123,7 +126,7 @@ class LabelPortal(ShipStationClient):
 
         elapsed = 0.0
         while elapsed < _timeout:
-            stat, label = await cls.get_by_id(label_id=label_id)
+            stat, label = await cls.get_by_id(connection, label_id=label_id)
 
             if stat not in (200, 201, 207):
                 return False, label
@@ -135,7 +138,7 @@ class LabelPortal(ShipStationClient):
             elapsed += _interval
 
         # Final attempt after timeout
-        stat, label = await cls.get_by_id(label_id=label_id)
+        stat, label = await cls.get_by_id(connection, label_id=label_id)
         if (
             stat in (200, 201)
             and isinstance(label, dict)
@@ -147,6 +150,7 @@ class LabelPortal(ShipStationClient):
     @classmethod
     async def poll_labels_until_ready(
         cls: type["LabelPortal"],
+        connection: ShipStationConnection,
         label_ids: List[str],
         timeout: float | None = None,
         interval: float | None = None,
@@ -155,7 +159,7 @@ class LabelPortal(ShipStationClient):
         labels: list[Label] = []
         for label_id in label_ids:
             ready, label = await cls.poll_label_until_ready(
-                label_id=label_id, timeout=timeout, interval=interval
+                connection, label_id=label_id, timeout=timeout, interval=interval
             )
             if not ready:
                 return False, cast(ErrorResponse, label)
@@ -170,6 +174,7 @@ class LabelPortal(ShipStationClient):
     @classmethod
     async def purchase(
         cls: type["LabelPortal"],
+        connection: ShipStationConnection,
         shipment: LabelShipment,
         charge_event: ChargeEvents,
         outbound_label_id: str,
@@ -228,10 +233,10 @@ class LabelPortal(ShipStationClient):
 
         payload = {k: v for k, v in payload.items() if v is not None}
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.LABELS.value}"
 
         try:
-            res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,
@@ -243,7 +248,8 @@ class LabelPortal(ShipStationClient):
 
     @classmethod
     async def purchase_with_rate_id(
-        cls: type[ShipStationClient],
+        cls: type["LabelPortal"],
+        connection: ShipStationConnection,
         rate_id: str,
         validate_address: Literal[
             "no_validation", "validate_only", "validate_and_clean"
@@ -275,10 +281,10 @@ class LabelPortal(ShipStationClient):
             "display_scheme": display_scheme,
         }
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}/rates/{rate_id}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.LABELS.value}/rates/{rate_id}"
 
         try:
-            res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,
@@ -290,7 +296,8 @@ class LabelPortal(ShipStationClient):
 
     @classmethod
     async def purchase_with_shipment_id(
-        cls: type[ShipStationClient],
+        cls: type["LabelPortal"],
+        connection: ShipStationConnection,
         shipment_id: str,
         validate_address: Literal[
             "no_validation", "validate_only", "validate_and_clean"
@@ -322,10 +329,12 @@ class LabelPortal(ShipStationClient):
             "display_scheme": display_scheme,
         }
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}/shipment/{shipment_id}"
+        endpoint = (
+            f"{connection.v2_endpoint}/{Endpoints.LABELS.value}/shipment/{shipment_id}"
+        )
 
         try:
-            res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,
@@ -337,7 +346,8 @@ class LabelPortal(ShipStationClient):
 
     @classmethod
     async def get_by_id(
-        cls: type[ShipStationClient],
+        cls: type["LabelPortal"],
+        connection: ShipStationConnection,
         label_id: str,
         label_download_type: Literal["url", "inline"] = "url",
     ) -> tuple[int, ErrorResponse | Label]:
@@ -350,10 +360,10 @@ class LabelPortal(ShipStationClient):
         Returns:
             tuple[int, ErrorResponse | Label]: A tuple containing the HTTP status code and either an ErrorResponse or the requested Label.
         """
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}?label_download_type={label_download_type}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}?label_download_type={label_download_type}"
 
         try:
-            res = await cls.request("GET", endpoint)
+            res = await connection.request("GET", endpoint)
 
             return cls.validate_response(
                 res,
@@ -365,7 +375,8 @@ class LabelPortal(ShipStationClient):
 
     @classmethod
     async def create_return_label(
-        cls: type[ShipStationClient],
+        cls: type["LabelPortal"],
+        connection: ShipStationConnection,
         label_id: str,
         charge_event: ChargeEvents,
         label_layout: LabelLayouts = "4x6",
@@ -400,10 +411,12 @@ class LabelPortal(ShipStationClient):
             "label_image_id": label_image_id,
         }
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/return"
+        endpoint = (
+            f"{connection.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/return"
+        )
 
         try:
-            res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,
@@ -415,13 +428,14 @@ class LabelPortal(ShipStationClient):
 
     @classmethod
     async def get_tracking_information(
-        cls: type[ShipStationClient],
+        cls: type["LabelPortal"],
+        connection: ShipStationConnection,
         label_id: str,
     ) -> tuple[int, ErrorResponse | TrackingInformation]:
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/track"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/track"
 
         try:
-            res = await cls.request("GET", endpoint)
+            res = await connection.request("GET", endpoint)
 
             return cls.validate_response(
                 res,
@@ -433,13 +447,14 @@ class LabelPortal(ShipStationClient):
 
     @classmethod
     async def void_label(
-        cls: type[ShipStationClient],
+        cls: type["LabelPortal"],
+        connection: ShipStationConnection,
         label_id: str,
     ) -> tuple[int, ErrorResponse | LabelVoidResponse]:
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/void"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/void"
 
         try:
-            res = await cls.request("PUT", endpoint)
+            res = await connection.request("PUT", endpoint)
 
             return cls.validate_response(
                 res,

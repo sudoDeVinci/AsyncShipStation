@@ -8,6 +8,7 @@ from ..common import (
     LabelFormats,
     LabelLayouts,
     ShipStationClient,
+    ShipStationConnection,
 )
 from ._types import (
     Batch,
@@ -26,6 +27,7 @@ class BatchPortal(ShipStationClient):
     @classmethod
     async def list(
         cls: type["BatchPortal"],
+        connection: ShipStationConnection,
         status: BatchStatuses | None = None,
         batch_number: str | None = None,
         sort_by: Literal["ship_date", "processed_at", "created_at"] | None = None,
@@ -59,10 +61,10 @@ class BatchPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.BATCHES.value}"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "GET",
                 endpoint,
                 params=params,  # type: ignore[arg-type]
@@ -79,6 +81,7 @@ class BatchPortal(ShipStationClient):
     @classmethod
     async def _poll_batch_until_ready(
         cls: type["BatchPortal"],
+        connection: ShipStationConnection,
         batch_id: str,
         process_labels: bool = False,
         timeout: float | None = None,
@@ -115,7 +118,7 @@ class BatchPortal(ShipStationClient):
         elapsed = 0.0
 
         while elapsed < _timeout:
-            status, batch = await cls.get_by_id(batch_id)
+            status, batch = await cls.get_by_id(connection, batch_id)
             if status not in (200, 201, 207):
                 return (False, cast(ErrorResponse, batch))
 
@@ -126,7 +129,7 @@ class BatchPortal(ShipStationClient):
             elapsed += _interval
 
         # Last attempt
-        status, batch = await cls.get_by_id(batch_id)
+        status, batch = await cls.get_by_id(connection, batch_id)
         if (
             status in (200, 201, 207)
             and isinstance(batch, dict)
@@ -139,6 +142,7 @@ class BatchPortal(ShipStationClient):
     @classmethod
     async def create(
         cls: type["BatchPortal"],
+        connection: ShipStationConnection,
         external_batch_id: str | None,
         shipment_ids: List[str] | None,
         rate_ids: List[str] | None = None,
@@ -170,10 +174,10 @@ class BatchPortal(ShipStationClient):
 
         payload = {k: v for k, v in payload.items() if v is not None}
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.BATCHES.value}"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "POST",
                 endpoint,
                 json=payload,  # type: ignore[arg-type]
@@ -190,6 +194,7 @@ class BatchPortal(ShipStationClient):
 
             batch = cast(Batch, response)
             ready, batch_res = await cls._poll_batch_until_ready(
+                connection,
                 batch_id=batch["batch_id"],
                 timeout=timeout,
                 interval=interval,
@@ -208,7 +213,9 @@ class BatchPortal(ShipStationClient):
 
     @classmethod
     async def get_by_external_id(
-        cls: type[ShipStationClient], external_batch_id: str
+        cls: type["BatchPortal"],
+        connection: ShipStationConnection,
+        external_batch_id: str,
     ) -> tuple[int, Batch | ErrorResponse]:
         """
         Retrieve a batch by its external ID.
@@ -220,10 +227,10 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, Batch | ErrorResponse]: A tuple containing the status code and either a Batch or an ErrorResponse.
         """
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/external_batch_id/{external_batch_id}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.BATCHES.value}/external_batch_id/{external_batch_id}"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "GET",
                 endpoint,
             )
@@ -238,7 +245,8 @@ class BatchPortal(ShipStationClient):
 
     @classmethod
     async def get_by_id(
-        cls: type[ShipStationClient],
+        cls: type["BatchPortal"],
+        connection: ShipStationConnection,
         batch_id: str,
     ) -> tuple[int, Batch | ErrorResponse]:
         """
@@ -251,10 +259,10 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, Batch | ErrorResponse]: A tuple containing the status code and either a Batch or an ErrorResponse.
         """
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "GET",
                 endpoint,
             )
@@ -269,7 +277,8 @@ class BatchPortal(ShipStationClient):
 
     @classmethod
     async def delete_by_id(
-        cls: type[ShipStationClient],
+        cls: type["BatchPortal"],
+        connection: ShipStationConnection,
         batch_id: str,
     ) -> tuple[int, None | ErrorResponse]:
         """
@@ -282,10 +291,10 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, None | ErrorResponse]: A tuple containing the status code and either None or an ErrorResponse.
         """
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "DELETE",
                 endpoint,
             )
@@ -302,7 +311,8 @@ class BatchPortal(ShipStationClient):
 
     @classmethod
     async def archive_by_id(
-        cls: type[ShipStationClient],
+        cls: type["BatchPortal"],
+        connection: ShipStationConnection,
         batch_id: str,
     ) -> tuple[int, None | ErrorResponse]:
         """
@@ -315,10 +325,10 @@ class BatchPortal(ShipStationClient):
         Returns:
             tuple[int, None | ErrorResponse]: A tuple containing the status code and either None or an ErrorResponse.
         """
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "PUT",
                 endpoint,
             )
@@ -335,7 +345,8 @@ class BatchPortal(ShipStationClient):
 
     @classmethod
     async def add_to_batch(
-        cls: type[ShipStationClient],
+        cls: type["BatchPortal"],
+        connection: ShipStationConnection,
         batch_id: str,
         external_batch_id: str,
         batch_notes: str | None = None,
@@ -368,10 +379,10 @@ class BatchPortal(ShipStationClient):
 
         payload = {k: v for k, v in payload.items() if v is not None}
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/add"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/add"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "POST",
                 endpoint,
                 json=payload,  # type: ignore[arg-type]
@@ -389,7 +400,8 @@ class BatchPortal(ShipStationClient):
 
     @classmethod
     async def get_batch_errors(
-        cls: type[ShipStationClient],
+        cls: type["BatchPortal"],
+        connection: ShipStationConnection,
         batch_id: str,
         page: int = 1,
         page_size: int = 25,
@@ -400,10 +412,12 @@ class BatchPortal(ShipStationClient):
             "page_size": page_size,
         }
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/errors"
+        endpoint = (
+            f"{connection.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/errors"
+        )
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "GET",
                 endpoint,
                 params=params,  # type: ignore[arg-type]
@@ -419,7 +433,8 @@ class BatchPortal(ShipStationClient):
 
     @classmethod
     async def process_batch_id_labels(
-        cls: type[ShipStationClient],
+        cls: type["BatchPortal"],
+        connection: ShipStationConnection,
         batch_id: str,
         label_layout: LabelLayouts = "4x6",
         label_format: LabelFormats = "pdf",
@@ -446,12 +461,10 @@ class BatchPortal(ShipStationClient):
         if ship_date is not None:
             payload["ship_date"] = ship_date
 
-        endpoint = (
-            f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/process/labels"
-        )
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/process/labels"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "POST",
                 endpoint,
                 json=payload,  # type: ignore[arg-type]
@@ -469,7 +482,8 @@ class BatchPortal(ShipStationClient):
 
     @classmethod
     async def remove_from_batch(
-        cls: type[ShipStationClient],
+        cls: type["BatchPortal"],
+        connection: ShipStationConnection,
         batch_id: str,
         shipment_ids: List[str] | None = None,
         rate_ids: List[str] | None = None,
@@ -499,10 +513,12 @@ class BatchPortal(ShipStationClient):
                 ),
             )
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/remove"
+        endpoint = (
+            f"{connection.v2_endpoint}/{Endpoints.BATCHES.value}/{batch_id}/remove"
+        )
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "POST",
                 endpoint,
                 json=params,  # type: ignore[arg-type]

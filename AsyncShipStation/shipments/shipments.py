@@ -1,6 +1,11 @@
 from typing import List, Literal
 
-from ..common import Endpoints, ErrorResponse, ShipStationClient
+from ..common import (
+    Endpoints,
+    ErrorResponse,
+    ShipStationClient,
+    ShipStationConnection,
+)
 from ._types import (
     RateQueryResponse,
     Shipment,
@@ -15,7 +20,8 @@ from ._types import (
 class ShipmentPortal(ShipStationClient):
     @classmethod
     async def list(
-        cls: type[ShipStationClient],
+        cls: type["ShipmentPortal"],
+        connection: ShipStationConnection,
         shipment_status: ShipmentStatuses | None = None,
         batch_id: str | None = None,
         pickup_id: str | None = None,
@@ -41,6 +47,7 @@ class ShipmentPortal(ShipStationClient):
         https://docs.shipstation.com/openapi/shipments/list_shipments
 
         Args:
+            connection: The ShipStationConnection to use for the request.
             shipment_status: Filter by shipment status (pending, processing, label_purchased, cancelled)
             batch_id: Filter by batch ID
             pickup_id: Filter by pickup ID
@@ -88,10 +95,10 @@ class ShipmentPortal(ShipStationClient):
 
         params = {k: v for k, v in params.items() if v is not None}
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.SHIPMENTS.value}"
 
         try:
-            res = await cls.request("GET", endpoint, params=params)  # type: ignore[arg-type]
+            res = await connection.request("GET", endpoint, params=params)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,
@@ -104,7 +111,8 @@ class ShipmentPortal(ShipStationClient):
 
     @classmethod
     async def create(
-        cls: type[ShipStationClient],
+        cls: type["ShipmentPortal"],
+        connection: ShipStationConnection,
         shipments: List[ShipmentCreationRequest],
     ) -> tuple[int, ShipmentCreationResponse | ErrorResponse]:
         """
@@ -112,6 +120,7 @@ class ShipmentPortal(ShipStationClient):
         https://docs.shipstation.com/openapi/shipments/create_shipments
 
         Args:
+            connection: The ShipStationConnection to use for the request.
             shipments: List of shipment creation requests
 
         Returns:
@@ -121,10 +130,10 @@ class ShipmentPortal(ShipStationClient):
             "shipments": shipments,
         }
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.SHIPMENTS.value}"
 
         try:
-            res = await cls.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
+            res = await connection.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
 
             return cls.validate_response(
                 res,
@@ -137,7 +146,8 @@ class ShipmentPortal(ShipStationClient):
 
     @classmethod
     async def get_by_external_id(
-        cls: type[ShipStationClient],
+        cls: type["ShipmentPortal"],
+        connection: ShipStationConnection,
         external_shipment_id: str,
     ) -> tuple[int, Shipment | ErrorResponse]:
         """
@@ -145,15 +155,16 @@ class ShipmentPortal(ShipStationClient):
         https://docs.shipstation.com/openapi/shipments/get_shipment_by_external_id
 
         Args:
+            connection: The ShipStationConnection to use for the request.
             external_shipment_id: The external shipment ID
 
         Returns:
             Tuple of status code and Shipment or ErrorResponse
         """
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}/external_shipment_id/{external_shipment_id}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.SHIPMENTS.value}/external_shipment_id/{external_shipment_id}"
 
         try:
-            res = await cls.request("GET", endpoint)
+            res = await connection.request("GET", endpoint)
 
             return cls.validate_response(
                 res,
@@ -166,7 +177,8 @@ class ShipmentPortal(ShipStationClient):
 
     @classmethod
     async def get_by_id(
-        cls: type[ShipStationClient],
+        cls: type["ShipmentPortal"],
+        connection: ShipStationConnection,
         shipment_id: str,
     ) -> tuple[int, Shipment | ErrorResponse]:
         """
@@ -174,15 +186,16 @@ class ShipmentPortal(ShipStationClient):
         https://docs.shipstation.com/openapi/shipments/get_shipment_by_id
 
         Args:
+            connection: The ShipStationConnection to use for the request.
             shipment_id: The shipment ID (e.g., se-12345678)
 
         Returns:
             Tuple of status code and Shipment or ErrorResponse
         """
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}"
 
         try:
-            res = await cls.request("GET", endpoint)
+            res = await connection.request("GET", endpoint)
 
             return cls.validate_response(
                 res,
@@ -195,7 +208,8 @@ class ShipmentPortal(ShipStationClient):
 
     @classmethod
     async def cancel_by_id(
-        cls: type[ShipStationClient],
+        cls: type["ShipmentPortal"],
+        connection: ShipStationConnection,
         shipment_id: str,
     ) -> tuple[int, None | ErrorResponse]:
         """
@@ -206,15 +220,18 @@ class ShipmentPortal(ShipStationClient):
         Once a label has been purchased, you must void the label instead.
 
         Args:
+            connection: The ShipStationConnection to use for the request.
             shipment_id: The shipment ID to cancel
 
         Returns:
             Tuple of status code and None (on success) or ErrorResponse
         """
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/cancel"
+        endpoint = (
+            f"{connection.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/cancel"
+        )
 
         try:
-            res = await cls.request("PUT", endpoint)
+            res = await connection.request("PUT", endpoint)
 
             if res.status_code == 204:
                 return (res.status_code, None)
@@ -230,7 +247,8 @@ class ShipmentPortal(ShipStationClient):
 
     @classmethod
     async def get_rates(
-        cls: type[ShipStationClient],
+        cls: type["ShipmentPortal"],
+        connection: ShipStationConnection,
         shipment_id: str,
         created_at_start: str | None = None,
     ) -> tuple[int, RateQueryResponse | ErrorResponse]:
@@ -239,6 +257,7 @@ class ShipmentPortal(ShipStationClient):
         https://docs.shipstation.com/openapi/shipments/list_shipment_rates
 
         Args:
+            connection: The ShipStationConnection to use for the request.
             shipment_id: The shipment ID to get rates for
             created_at_start: Optional filter for rates created after this date (ISO 8601)
 
@@ -249,10 +268,12 @@ class ShipmentPortal(ShipStationClient):
         if created_at_start is not None:
             params["created_at_start"] = created_at_start
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/rates"
+        endpoint = (
+            f"{connection.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/rates"
+        )
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "GET",
                 endpoint,
                 params=params if params else None,  # type: ignore[arg-type]
@@ -269,7 +290,8 @@ class ShipmentPortal(ShipStationClient):
 
     @classmethod
     async def add_tag(
-        cls: type[ShipStationClient],
+        cls: type["ShipmentPortal"],
+        connection: ShipStationConnection,
         shipment_id: str,
         tag_name: str,
     ) -> tuple[int, ShipmentTag | ErrorResponse]:
@@ -278,16 +300,17 @@ class ShipmentPortal(ShipStationClient):
         https://docs.shipstation.com/openapi/shipments/tag_shipment
 
         Args:
+            connection: The ShipStationConnection to use for the request.
             shipment_id: The shipment ID to tag
             tag_name: The name of the tag to add
 
         Returns:
             Tuple of status code and ShipmentTag or ErrorResponse
         """
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/tags/{tag_name}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/tags/{tag_name}"
 
         try:
-            res = await cls.request("POST", endpoint)
+            res = await connection.request("POST", endpoint)
 
             return cls.validate_response(
                 res,
@@ -300,7 +323,8 @@ class ShipmentPortal(ShipStationClient):
 
     @classmethod
     async def remove_tag(
-        cls: type[ShipStationClient],
+        cls: type["ShipmentPortal"],
+        connection: ShipStationConnection,
         shipment_id: str,
         tag_name: str,
     ) -> tuple[int, None | ErrorResponse]:
@@ -309,16 +333,17 @@ class ShipmentPortal(ShipStationClient):
         https://docs.shipstation.com/openapi/shipments/untag_shipment
 
         Args:
+            connection: The ShipStationConnection to use for the request.
             shipment_id: The shipment ID
             tag_name: The name of the tag to remove
 
         Returns:
             Tuple of status code and None (on success) or ErrorResponse
         """
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/tags/{tag_name}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.SHIPMENTS.value}/{shipment_id}/tags/{tag_name}"
 
         try:
-            res = await cls.request("DELETE", endpoint)
+            res = await connection.request("DELETE", endpoint)
 
             if res.status_code == 204:
                 return (res.status_code, None)

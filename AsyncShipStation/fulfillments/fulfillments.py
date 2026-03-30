@@ -4,6 +4,7 @@ from ..common import (
     Endpoints,
     ErrorResponse,
     ShipStationClient,
+    ShipStationConnection,
 )
 from ._types import (
     BatchFulfillmentCreationResponse,
@@ -16,7 +17,8 @@ from ._types import (
 class FulfillmentPortal(ShipStationClient):
     @classmethod
     async def list(
-        cls: type[ShipStationClient],
+        cls: type["FulfillmentPortal"],
+        connection: ShipStationConnection,
         ship_to_name: str | None,
         ship_to_country_code: str | None,
         shipment_number: str | None,
@@ -57,10 +59,10 @@ class FulfillmentPortal(ShipStationClient):
 
         data = {k: v for k, v in data.items() if v is not None}
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.FULFILLMENTS.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.FULFILLMENTS.value}"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "GET",
                 endpoint,
                 params=data,  # type: ignore[arg-type]
@@ -76,7 +78,8 @@ class FulfillmentPortal(ShipStationClient):
 
     @classmethod
     async def create(
-        cls: type[ShipStationClient],
+        cls: type["FulfillmentPortal"],
+        connection: ShipStationConnection,
         fulfillments: List[FulfillmentGist],
     ) -> tuple[int, ErrorResponse | BatchFulfillmentCreationResponse]:
         """
@@ -86,10 +89,10 @@ class FulfillmentPortal(ShipStationClient):
 
         data: FulfillmentGistRequest = {"fulfillments": fulfillments}
 
-        endpoint = f"{cls.v2_endpoint}/{Endpoints.FULFILLMENTS.value}"
+        endpoint = f"{connection.v2_endpoint}/{Endpoints.FULFILLMENTS.value}"
 
         try:
-            res = await cls.request(
+            res = await connection.request(
                 "POST",
                 endpoint,
                 json=data,  # type: ignore[arg-type]

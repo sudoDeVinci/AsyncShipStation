@@ -7,170 +7,236 @@
 ![PyPI - Version](https://img.shields.io/pypi/v/AsyncShipStation)
 ![PyPI - License](https://img.shields.io/pypi/l/AsyncShipStation)
 
-
-
-Async Python client for ShipStation V1 and V2 APIs with full type hints.
+Async Python client for ShipStation v1 and v2 APIs with an emphasis on typing.
 
 ## Install
 
 ### pip
 
-```bash
+~~~bash
 pip install AsyncShipStation
-```
+~~~
 
 ### Manual
 
-```bash
+~~~bash
 git clone git@github.com:sudoDeVinci/AsyncShipStation.git
 cd AsyncShipStation
 pip install -r requirements.txt
-```
+~~~
 
-## Setup 
+## Quick Start
 
-```python
-from AsyncShipStation import ShipStationClient
+Create a connection, then pass it to the portal you want to use.
 
-# Configure with both V1 and V2 credentials
-ShipStationClient.configure(
-    v2_key="your_v2_api_key",
-    v1_key="your_v1_api_key",
-    v1_secret="your_v1_secret",
-)
-```
+~~~python
+import asyncio
+
+from AsyncShipStation import ShipStationClient, ShipmentPortal
+
+
+async def main() -> None:
+    connection = await ShipStationClient.configure(
+        v2_key="your_v2_api_key",
+        v1_key="your_v1_api_key",
+        v1_secret="your_v1_secret",
+    )
+
+    async with ShipStationClient.scoped_client(connection=connection, version="v2"):
+        status, shipments = await ShipmentPortal.list(
+            connection,
+            page_size=10,
+            page=1,
+        )
+        print(status, shipments)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+~~~
 
 ## Client Lifecycle
 
-The library uses a shared `httpx.AsyncClient` under the hood. You have two options for managing it:
+### Use the async context manager
 
-### Option 1: Let it auto-start (simple)
+Use `scoped_client()` when you want the connection lifecycle handled for you.
 
-The client starts automatically on first request. Just remember to close it when done:
-
-```python
+~~~python
 import asyncio
 import os
+
 from dotenv import load_dotenv
-from AsyncShipStation import ShipStationClient, InventoryPortal
+
+from AsyncShipStation import ShipStationClient, ShipmentPortal
 
 load_dotenv()
-API_KEY: str | None = os.getenv("API_KEY")
+V2_API_KEY: str | None = os.getenv("SHIP_STATION_V2")
+V1_API_KEY: str | None = os.getenv("SHIP_STATION_V1")
+V1_SECRET: str | None = os.getenv("SHIP_STATION_SECRET")
+
 
 async def main() -> None:
-    ShipStationClient.configure(api_key=API_KEY)
+    connection = await ShipStationClient.configure(
+        v2_key=V2_API_KEY or "",
+        v1_key=V1_API_KEY,
+        v1_secret=V1_SECRET,
+    )
 
-    # Connection pool starts on first request
-    status, warehouses = await InventoryPortal.list_warehouses(page_size=10)
-    print(f"Status: {status}, Warehouses: {warehouses}")
-    
-    ...
-
-    # Clean up when done
-    await ShipStationClient.close()
+    async with ShipStationClient.scoped_client(connection=connection, version="v2"):
+        status, shipments = await ShipmentPortal.list(connection, page_size=10, page=1)
+        print(status, shipments)
 
 
 if __name__ == "__main__":
     asyncio.run(main())
-```
+~~~
 
-### Option 2: Use the async context manager (recommended)
-Scoped usage where you want automatic cleanup:
+### Start and close explicitly
 
-```python
+Use `start()` and `close()` if you want to manage the lifecycle yourself.
+
+~~~python
 import asyncio
 import os
+
 from dotenv import load_dotenv
-from AsyncShipStation import ShipStationClient, InventoryPortal
+
+from AsyncShipStation import ShipStationClient, ShipmentPortal
 
 load_dotenv()
-API_KEY: str | None = os.getenv("API_KEY")
+V2_API_KEY: str | None = os.getenv("SHIP_STATION_V2")
+V1_API_KEY: str | None = os.getenv("SHIP_STATION_V1")
+V1_SECRET: str | None = os.getenv("SHIP_STATION_SECRET")
+
 
 async def main() -> None:
-    ShipStationClient.configure(api_key=API_KEY)
+    connection = await ShipStationClient.configure(
+        v2_key=V2_API_KEY or "",
+        v1_key=V1_API_KEY,
+        v1_secret=V1_SECRET,
+    )
 
-    async with InventoryPortal.scoped_client() as _:
-        status, warehouses = await InventoryPortal.list_warehouses(page_size=10)
-        print(f"Status: {status}, Warehouses: {warehouses}")
-        
-        ...
-     
-        # Client closes automatically when exiting the context
+    await ShipStationClient.start(connection=connection, version="v2")
+    try:
+        status, shipments = await ShipmentPortal.list(connection, page_size=10, page=1)
+        print(status, shipments)
+    finally:
+        await ShipStationClient.close(connection=connection, version="v2")
+
 
 if __name__ == "__main__":
     asyncio.run(main())
-
-```
+~~~
 
 ## Concurrent Requests
 
-The client uses connection pooling, so concurrent requests share connections efficiently:
+A single connection can be shared across concurrent requests.
 
-```python
+~~~python
 import asyncio
+
 from AsyncShipStation import (
     BatchPortal,
-    InventoryPortal,
     LabelPortal,
+    ShipmentPortal,
     ShipStationClient,
 )
 
-        ...
 
-ShipStationClient.configure(api_key=API_KEY)
-async with ShipStationClient.scoped_client() as _:
-    results = await asyncio.gather(
-        InventoryPortal.list_warehouses(),
-        InventoryPortal.list(),
-        BatchPortal.list(),
-        LabelPortal.list(),
+async def main() -> None:
+    connection = await ShipStationClient.configure(
+        v2_key="your_v2_api_key",
+        v1_key="your_v1_api_key",
+        v1_secret="your_v1_secret",
     )
 
-for status, data in results:
-    if status in (200, 207, 201):
-        print(f"Success :: {data}")
-    else:
-        print(f"Error :: {data}")
-    
-        ...
+    async with ShipStationClient.scoped_client(connection=connection, version="v2"):
+        results = await asyncio.gather(
+            ShipmentPortal.list(connection, page_size=10, page=1),
+            BatchPortal.list(connection, page_size=10, page=1),
+            LabelPortal.list(connection, page_size=10, page=1),
+        )
 
-```
+    for status, data in results:
+        if status in (200, 201, 207):
+            print(f"Success :: {data}")
+        else:
+            print(f"Error :: {data}")
 
+
+if __name__ == "__main__":
+    asyncio.run(main())
+~~~
+
+## Connection Lookup
+
+If you need to retrieve a connection from the pool later, use `connection.pool_key`.
+
+~~~python
+import asyncio
+
+from AsyncShipStation import ShipStationClient, ShipmentPortal
+
+
+async def main() -> None:
+    connection = await ShipStationClient.configure(
+        v2_key="your_v2_api_key",
+        v1_key="your_v1_api_key",
+        v1_secret="your_v1_secret",
+    )
+
+    async with ShipStationClient.scoped_client(
+        connection_hash=connection.pool_key,
+        version="v2",
+    ) as scoped_connection:
+        status, shipments = await ShipmentPortal.list(
+            scoped_connection,
+            page_size=10,
+            page=1,
+        )
+        print(status, shipments)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+~~~
 
 ## Rate Limiting
-Accounts that send too many requests in quick succession will receive a 429 Too Many Requests error response and include a Retry-After header with the number of seconds to wait for. By default we get 200 requests per minute.
-ShipStation has bulk op endpoints. These only count as a single request.
+
+Accounts that send too many requests in quick succession will receive a `429 Too Many Requests` response with a `Retry-After` header that tells you how long to wait.
+
+ShipStation bulk operation endpoints count as a single request.
 
 ## Endpoints
-[/batches](/batches/_types.py)
-Process labels in bulk and receive a large number of labels and customs forms in bulk responses. Batching is ideal for workflows that need to process hundreds or thousands of labels quickly.
-200
 
-[/carriers](/carriers/_types.py)
-Retreive useful details about the carriers connected to your accounts, including carrier IDs, service IDs, advanced options, and available carrier package types.
+[/batches](/batches/_types.py)  
+Process labels in bulk and receive labels and customs forms in bulk responses.
 
-[/fulfillments](/fulfillments/_types.py)
-Manage fulfillments which represent completed shipments. Create fulfillments to mark orders as shipped with tracking information and notify customers and marketplaces.
+[/carriers](/carriers/_types.py)  
+Retrieve details about the carriers connected to your account, including carrier IDs, service IDs, advanced options, and package types.
 
-[/inventory](/inventory/_types.py)
-Manage inventory, adjust quantities, and handle warehouses and locations.
-  - [/inventory_warehouses](/inventory._types.py)
-  - [/inventory_locations](/inventory._types.py)
+[/fulfillments](/fulfillments/_types.py)  
+Manage fulfillments that represent completed shipments.
 
-[/labels](/labels/_types.py)
-Purchase and print shipping labels for any carrier active on your account. The labels endpoint also supports creating return labels, voiding labels, and getting label details like tracking.
+[/inventory](/inventory/_types.py)  
+Manage inventory, adjust quantities, and work with warehouses and locations.  
+- [/inventory_warehouses](/inventory._types.py)  
+- [/inventory_locations](/inventory._types.py)
 
-[/manifests](/manifests/_types.py)
-A manifest is a document that provides a list of the day's shipments. It typically contains a barcode that allows the pickup driver to scan a single document to register all shipments, rather than scanning each shipment individually.
+[/labels](/labels/_types.py)  
+Purchase and print shipping labels, create return labels, void labels, and retrieve label details.
 
-[/rates](/rates/_types.py) *(V2)*
-Calculate and estimate shipping rates across multiple carriers. Supports both full rate calculation with shipment details and quick rate estimates.
+[/manifests](/manifests/_types.py)  
+Retrieve and work with shipment manifests.
 
-[/shipments](/shipments/_types.py) *(V2)*
-Create, retrieve, and manage shipments. Includes support for getting rates, adding/removing tags, and cancellation.
+[/rates](/rates/_types.py) *(v2)*  
+Calculate and estimate shipping rates across multiple carriers.
 
-[/tags](/tags/_types.py) *(V2)*
-Manage tags for organizing shipments and orders. Create, list, and delete tags.
+[/shipments](/shipments/_types.py) *(v2)*  
+Create, retrieve, and manage shipments.
 
-[/warehouses](/warehouses/_types.py) *(V2)*
-Retrieve warehouse information including origin addresses for shipments.
+[/tags](/tags/_types.py) *(v2)*  
+Manage tags for organizing shipments and orders.
+
+[/warehouses](/warehouses/_types.py) *(v2)*  
+Retrieve warehouse information, including shipment origin addresses.

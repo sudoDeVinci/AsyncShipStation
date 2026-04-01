@@ -109,7 +109,6 @@ class LabelPortal(ShipStationClient):
         shipment_ids: List[str],
     ) -> tuple[int, LabelListResponse, list[ErrorResponse]]:
 
-        print(f"Listing labels for {len(shipment_ids)} shipments")
         all_labels: List[Label] = []
         errors: List[ErrorResponse] = []
         try:

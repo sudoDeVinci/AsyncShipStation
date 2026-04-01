@@ -103,6 +103,56 @@ class LabelPortal(ShipStationClient):
             return cls.parse_unknown_exception(e)
 
     @classmethod
+    async def list_for_shipments(
+        cls: type["LabelPortal"],
+        connection: ShipStationConnection,
+        shipment_ids: List[str],
+    ) -> tuple[int, LabelListResponse, list[ErrorResponse]]:
+
+        print(f"Listing labels for {len(shipment_ids)} shipments")
+        all_labels: List[Label] = []
+        errors: List[ErrorResponse] = []
+        try:
+            labels = await gather(
+                *[
+                    cls.list(
+                        connection,
+                        shipment_id=shipment_id,
+                        page_size=50,  # Assuming a shipment won't have more than 50 labels
+                    )
+                    for shipment_id in shipment_ids
+                ]
+            )
+
+            for stat, label_list in labels:
+                if stat in (200, 201, 207):
+                    all_labels.extend(label_list.get("labels", []))
+                else:
+                    errors.append(cast(ErrorResponse, label_list))
+
+            status = 200
+        except Exception as e:
+            status, error = cls.parse_unknown_exception(e)
+            errors.append(error)
+
+        return (
+            status,
+            cast(
+                LabelListResponse,
+                {
+                    "labels": all_labels,
+                    "pagination": {
+                        "page": 1,
+                        "page_size": len(all_labels),
+                        "total_pages": 1,
+                        "total_items": len(all_labels),
+                    },
+                },
+            ),
+            errors,
+        )
+
+    @classmethod
     async def poll_label_until_ready(
         cls: type["LabelPortal"],
         connection: ShipStationConnection,
@@ -122,7 +172,6 @@ class LabelPortal(ShipStationClient):
 
         terminal = ("completed", "error", "voided")
 
-        print(f"Pollin for label {label_id}")
         elapsed = 0.0
         while elapsed < _timeout:
             stat, label = await cls.get_by_id(connection, label_id=label_id)

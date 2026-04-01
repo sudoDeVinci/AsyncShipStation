@@ -16,6 +16,7 @@ ShipmentStatuses = Literal["pending", "processing", "label_purchased", "cancelle
 
 class Shipment(LabelShipment):
     shipment_id: str
+    shipment_status: ShipmentStatuses
 
 
 class ShipmentListResponse(PaginatinatedResponse):

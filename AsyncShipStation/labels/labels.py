@@ -1,3 +1,4 @@
+from asyncio import gather
 from asyncio import sleep as async_sleep
 from typing import ClassVar, List, Literal, cast
 
@@ -119,11 +120,9 @@ class LabelPortal(ShipStationClient):
         _timeout = timeout or cls._BATCH_POLL_TIMEOUT
         _interval = interval or cls._BATCH_POLL_INTERVAL
 
-        terminal = (
-            "completed",
-            "error",
-        )
+        terminal = ("completed", "error", "voided")
 
+        print(f"Pollin for label {label_id}")
         elapsed = 0.0
         while elapsed < _timeout:
             stat, label = await cls.get_by_id(connection, label_id=label_id)
@@ -154,22 +153,32 @@ class LabelPortal(ShipStationClient):
         label_ids: List[str],
         timeout: float | None = None,
         interval: float | None = None,
-    ) -> tuple[bool, List[Label] | ErrorResponse]:
+    ) -> tuple[bool, List[Label] | List[ErrorResponse]]:
 
         labels: list[Label] = []
-        for label_id in label_ids:
-            ready, label = await cls.poll_label_until_ready(
-                connection, label_id=label_id, timeout=timeout, interval=interval
-            )
+        label_states = await gather(
+            *[
+                cls.poll_label_until_ready(
+                    connection, label_id=label_id, timeout=timeout, interval=interval
+                )
+                for label_id in label_ids
+            ]
+        )
+
+        errors: List[tuple[bool, ErrorResponse]] = []
+        for ready, label in label_states:
             if not ready:
-                return False, cast(ErrorResponse, label)
+                errlabel = cast(ErrorResponse, label)
+                errors.append(
+                    (
+                        False,
+                        errlabel,
+                    )
+                )
 
             labels.append(cast(Label, label))
-            await async_sleep(
-                0.2
-            )  # slight delay between polling each label to avoid hitting rate limits
 
-        return True, labels
+        return (True, labels) if not errors else (False, [err for _, err in errors])
 
     @classmethod
     async def purchase(

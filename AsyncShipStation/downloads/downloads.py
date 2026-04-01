@@ -127,7 +127,7 @@ class DownloadPortal(ShipStationClient):
     ) -> tuple[int, bytes | ErrorResponse]:
 
         links = label["label_download"]
-        pdf_href = links.get("pdf", links.get("href", None))
+        pdf_href = links.get(dtype, links.get("href", None))
 
         try:
             if not pdf_href:
@@ -151,12 +151,20 @@ class DownloadPortal(ShipStationClient):
         labels: list[Label],
         dtype: LabelFormats = "pdf",
         include_dummy_slips: bool = True,
+        timeout: int | None = None,
+        interval: int = 2,
     ) -> tuple[int, tuple[bytes, list[DownloadError]]]:
 
-        print(f"Downloading {len(labels)} packing slips")
         try:
+            print(
+                f"Polling for packing slips to be ready (timeout={timeout}s, interval={interval}s)..."
+            )
+            timeout = timeout or max(5 * len(labels), 60)
             available, _ = await LabelPortal.poll_labels_until_ready(
-                connection, [label["label_id"] for label in labels]
+                connection,
+                [label["label_id"] for label in labels],
+                timeout=timeout,
+                interval=interval,
             )
 
             slips = await gather(

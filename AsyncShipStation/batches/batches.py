@@ -160,7 +160,9 @@ class BatchPortal(ShipStationClient):
             shipment_ids (list[str]): A list of shipment IDs to include in the batch.
             rate_ids (list[str] | None): A list of rate IDs to use for the shipments in the batch.
             batch_notes (str, optional): Notes for the batch. Defaults to "".
-
+            process_labels (ProcessLabel, optional): Instructions for processing labels for the shipments in the batch. Defaults to None.
+            timeout (float, optional): The maximum time to wait for the batch to reach a terminal state when processing labels. Defaults to None, which uses the class default.
+            interval (float, optional): The interval between polls when waiting for the batch to reach a terminal state. Defaults to None, which uses the class default.
         Returns:
             tuple[int, Batch | ErrorResponse]: A tuple containing the status code and either a Batch or an ErrorResponse.
         """
@@ -191,6 +193,10 @@ class BatchPortal(ShipStationClient):
 
             if stat not in (200, 207):
                 return stat, cast(ErrorResponse, response)
+
+            timeout = timeout or max(
+                3 * len(shipment_ids or []), cls._BATCH_POLL_TIMEOUT
+            )
 
             batch = cast(Batch, response)
             ready, batch_res = await cls._poll_batch_until_ready(
@@ -242,6 +248,38 @@ class BatchPortal(ShipStationClient):
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
+
+    @classmethod
+    async def get_by_batch_number(
+        cls: type["BatchPortal"],
+        connection: ShipStationConnection,
+        batch_number: str,
+        page: int = 1,
+        page_size: int = 25,
+    ) -> tuple[int, Batch | ErrorResponse]:
+        """
+        Retrieve a batch by its batch number.
+        There isn't a deedicated endpoint for this so we get all batches,
+        then filter client-side. This is not ideal but ShipStation doesn't provide a better option.
+        Args:
+            batch_number (str): The batch number of the batch to retrieve.
+
+        Returns:
+            tuple[int, Batch | ErrorResponse]: A tuple containing the status code and either a Batch or an ErrorResponse.
+        """
+
+        stat, out = await cls.list(
+            connection,
+            batch_number=batch_number,
+            page=page,
+            page_size=page_size,
+        )
+
+        if out.get("batches") is None:
+            return stat, cast(ErrorResponse, out)
+
+        batches = cast(BatchListResponse, out)["batches"]
+        return stat, batches[0]
 
     @classmethod
     async def get_by_id(

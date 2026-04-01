@@ -27,6 +27,7 @@ CWD: Path = Path(__file__).parent.resolve()
 TEST: Path = CWD / "__cache__"
 TEST.mkdir(exist_ok=True)
 SS_ORDER_JSON: Path = TEST / "ss_order.json"
+SHIPMENTS_JSON: Path = TEST / "shipments.json"
 HYGP_ORDER_JSON: Path = TEST / "hygp_order.json"
 FONT_GROUPINGS: Path = TEST / "font_groupings.json"
 CARRIER_JSON: Path = TEST / "carriers.json"
@@ -50,13 +51,22 @@ async def main() -> None:
         v2_key=V2_API_KEY, v1_key=V1_API_KEY, v1_secret=V1_SECRET
     )
 
-    async with ShipStationClient.scoped_client(
-        connection_hash=hash(connection), version="v2"
-    ) as _:
-        stat, shipments = await ShipmentPortal.list(connection, page_size=10, page=1)
+    await connection.start("v2")
+    _, batch = await BatchPortal.get_by_batch_number(connection, "100133")
+    # _, shipments = await ShipmentPortal.list(connection, batch_id=batch["batch_id"])
+    _, labels = await LabelPortal.list(
+        connection, batch_id=batch["batch_id"], page_size=100
+    )
+    _, (download, errs) = await DownloadPortal.download_packing_slips(
+        connection, labels=cast(LabelListResponse, labels)["labels"]
+    )
+    await connection.close()
 
-    with open(SS_ORDER_JSON, "w") as f:
-        f.write(dumps(shipments, indent=4))
+    with open(LABELS_JSON, "w") as f:
+        f.write(dumps(labels, indent=4))
+
+    with open(LABEL_PDF, "wb") as f:
+        f.write(download)
 
 
 if __name__ == "__main__":

@@ -66,11 +66,11 @@ class APIError(Exception):
 @dataclass(slots=True, frozen=True)
 class ConnectionConfig:
     version: Literal["v1", "v2"] = "v2"
-    timeout = 30
+    timeout = 500
     max_connections = 20
     max_keepalive_connections = 10
     http2 = False
-    retries = 3
+    retries = 4
     user_agent = "asyncShipStation/2.0.0"
     v2_endpoint = "https://api.shipstation.com/v2"
     v2_mock_endpoint = "https://docs.shipstation.com/_mock/openapi/v2"
@@ -142,11 +142,11 @@ class ShipStationConnection:
                 self._v1_client = AsyncClient(
                     base_url=self._config.v1_endpoint,
                     headers=cast(HeaderTypes, self._v1_headers),
-                    timeout=30,
-                    http2=False,  # Disable HTTP/2
+                    timeout=self._config.timeout,
+                    http2=self._config.http2,  # Disable HTTP/2
                     limits=Limits(
-                        max_connections=20,
-                        max_keepalive_connections=10,
+                        max_connections=self._config.max_connections,
+                        max_keepalive_connections=self._config.max_keepalive_connections,
                     ),
                 )
 
@@ -160,11 +160,11 @@ class ShipStationConnection:
                 self._v2_client = AsyncClient(
                     base_url=self._config.v2_endpoint,
                     headers=cast(HeaderTypes, self._v2_headers),
-                    timeout=30,
-                    http2=False,  # Disable HTTP/2
+                    timeout=self._config.timeout,
+                    http2=self._config.http2,  # Disable HTTP/2
                     limits=Limits(
-                        max_connections=20,
-                        max_keepalive_connections=10,
+                        max_connections=self._config.max_connections,
+                        max_keepalive_connections=self._config.max_keepalive_connections,
                     ),
                 )
             self._v2_ref_count += 1

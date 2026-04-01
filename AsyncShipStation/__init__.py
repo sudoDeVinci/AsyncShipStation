@@ -61,6 +61,7 @@ from .common import (
     PaperlessDownload,
     ShippingAddress,
     ShipStationClient,
+    ShipStationConnection,
     Tag,
     V1Address,
     V1Dimensions,
@@ -336,4 +337,5 @@ __all__ = (
     # Packages
     "CustomPackagePortal",
     "Package",
+    "ShipStationConnection",
 )

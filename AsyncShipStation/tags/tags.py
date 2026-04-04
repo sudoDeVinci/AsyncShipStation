@@ -12,7 +12,7 @@ class TagsPortal(ShipStationClient):
     """Portal for interacting with the ShipStation Tags API (V2)."""
 
     @classmethod
-    async def list(
+    async def all(
         cls: type["TagsPortal"],
         connection: ShipStationConnection,
     ) -> tuple[int, TagListResponse | ErrorResponse]:
@@ -136,7 +136,7 @@ class TagsPortal(ShipStationClient):
         Returns:
             Tuple of status code and TagInfo (if found), None (if not found), or ErrorResponse
         """
-        status_code, response = await cls.list(connection)
+        status_code, response = await cls.all(connection)
 
         if status_code != 200:
             return (status_code, response)  # type: ignore[return-value]

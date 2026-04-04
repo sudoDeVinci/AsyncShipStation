@@ -53,14 +53,17 @@ async def main() -> None:
 
     await connection.start("v2")
     _, batch = await BatchPortal.get_by_batch_number(connection, "100133")
-    # _, shipments = await ShipmentPortal.list(connection, batch_id=batch["batch_id"])
-    _, labels = await LabelPortal.list(
+    _, shipments = await ShipmentPortal.where(connection, batch_id=batch["batch_id"])
+    _, labels = await LabelPortal.where(
         connection, batch_id=batch["batch_id"], page_size=100
     )
     _, (download, errs) = await DownloadPortal.download_packing_slips(
         connection, labels=cast(LabelListResponse, labels)["labels"]
     )
     await connection.close()
+
+    with open(SHIPMENTS_JSON, "w") as f:
+        f.write(dumps(shipments, indent=4))
 
     with open(LABELS_JSON, "w") as f:
         f.write(dumps(labels, indent=4))

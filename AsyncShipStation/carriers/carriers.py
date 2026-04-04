@@ -15,7 +15,7 @@ from ._types import (
 
 class CarrierPortal(ShipStationClient):
     @classmethod
-    async def list_carriers(
+    async def all(
         cls: type["CarrierPortal"],
         connection: ShipStationConnection,
     ) -> tuple[int, CarrierListResponse | ErrorResponse]:

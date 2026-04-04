@@ -4,7 +4,7 @@ from ._types import Manifest, ManifestListResponse
 
 class ManifestsPortal(ShipStationClient):
     @classmethod
-    async def list(
+    async def where(
         cls: type["ManifestsPortal"],
         connection: ShipStationConnection,
         label_ids: list[str] | None = None,

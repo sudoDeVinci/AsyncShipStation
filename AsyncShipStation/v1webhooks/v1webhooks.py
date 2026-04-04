@@ -43,7 +43,7 @@ class V1WebhookPortal(ShipStationClient):
             return cls.parse_unknown_exception(e)
 
     @classmethod
-    async def list(
+    async def all(
         cls: type["V1WebhookPortal"],
         connection: ShipStationConnection,
     ) -> tuple[int, ErrorResponse | V1WebhookListResponse]:

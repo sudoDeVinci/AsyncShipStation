@@ -7,7 +7,6 @@ from ..common import (
     ErrorResponse,
     ShipStationClient,
     ShipStationConnection,
-    Tag,
     Weight,
 )
 from ..shipments import Shipment

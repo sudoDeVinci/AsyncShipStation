@@ -1,117 +1,217 @@
 from enum import Enum
 from typing import Literal, TypedDict
-from ..common import URL, Address, Contact, DeliveryConfirmationMethods, DisplayFormatSchemes, Fee, Identifier, IncoTerms, LabelDownload, LabelFormats, LabelLayouts, LabelMetaData, Option, OrderSources, Package, PaginatinatedResponse, ShippingAddress, Tag, Weight
-LabelStatuses = Literal['processing', 'completed', 'error', 'voided']
-ChargeEvents = Literal['carrier_default', 'on_creation', 'on_carrier_acceptance']
-PackageTypes = Literal['thick_envelope', 'small_flat_rate_box', 'large_package']
-TrackingStatuses = Literal['unknown', 'in_transit', 'error', 'delivered']
-ShipmentContents = Literal['merchandise', 'documents', 'gift', 'returned_goods', 'sample', 'other']
+from ..common import (
+    URL,
+    Address,
+    Contact,
+    DeliveryConfirmationMethods,
+    DisplayFormatSchemes,
+    Fee,
+    Identifier,
+    IncoTerms,
+    LabelDownload,
+    LabelFormats,
+    LabelLayouts,
+    LabelMetaData,
+    Option,
+    OrderSources,
+    Package,
+    PaginatinatedResponse,
+    ShippingAddress,
+    Tag,
+    Weight,
+)
+
+LabelStatuses = Literal["processing", "completed", "error", "voided"]
+ChargeEvents = Literal["carrier_default", "on_creation", "on_carrier_acceptance"]
+PackageTypes = Literal["thick_envelope", "small_flat_rate_box", "large_package"]
+TrackingStatuses = Literal["unknown", "in_transit", "error", "delivered"]
+ShipmentContents = Literal[
+    "merchandise", "documents", "gift", "returned_goods", "sample", "other"
+]
 
 class ShipmentContent(Enum):
-    MERCHANDISE = 'merchandise'
-    DOCUMENTS = 'documents'
-    GIFT = 'gift'
-    RETURNED_GOODS = 'returned_goods'
-    SAMPLE = 'sample'
-    OTHER = 'other'
+    MERCHANDISE = "merchandise"
+    DOCUMENTS = "documents"
+    GIFT = "gift"
+    RETURNED_GOODS = "returned_goods"
+    SAMPLE = "sample"
+    OTHER = "other"
 
 class ChargeEvent(Enum):
-    CARRIER_DEFAULT = 'carrier_default'
-    ON_CREATION = 'on_creation'
-    ON_CARRIER_ACCEPTANCE = 'on_carrier_acceptance'
+    CARRIER_DEFAULT = "carrier_default"
+    ON_CREATION = "on_creation"
+    ON_CARRIER_ACCEPTANCE = "on_carrier_acceptance"
 
 class LabelStatus(Enum):
-    PROCESSING = 'processing'
-    COMPLETED = 'completed'
-    ERROR = 'error'
-    VOIDED = 'voided'
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    ERROR = "error"
+    VOIDED = "voided"
 
 class PackageType(Enum):
-    THICK_ENVELOPE = 'thick_envelope'
-    SMALL_FLAT_RATE_BOX = 'small_flat_rate_box'
-    LARGE_PACKAGE = 'large_package'
+    THICK_ENVELOPE = "thick_envelope"
+    SMALL_FLAT_RATE_BOX = "small_flat_rate_box"
+    LARGE_PACKAGE = "large_package"
 
 class TrackingStatus(Enum):
-    UNKNOWN = 'unknown'
-    IN_TRANSIT = 'in_transit'
-    ERROR = 'error'
-    DELIVERED = 'delivered'
+    UNKNOWN = "unknown"
+    IN_TRANSIT = "in_transit"
+    ERROR = "error"
+    DELIVERED = "delivered"
 
-TrackingStatusCodes = Literal['COLLECTION_FAILED', 'AWAITING_DESPATCH', 'COLLECTION_REQUESTED', 'DESPATCHED', 'ELEC_ADVICE_RECD_BY_CARRIER', 'NOT_YET_RECEIVED_BY_CARRIER', 'COLLECTION_MADE', 'ATTEMPTED_DELIVERY', 'ATTEMPTED_DELIVERY_2ND', 'ATTEMPTED_DELIVERY_3RD', 'COD_AMOUNT_NOT_PAID', 'COD_AMOUNT_PAID', 'CUSTOMER_CARDED', 'CUSTOMER_IDENTIFICATION_FAILED', 'INVALID_METHOD_OF_PAYMENT', 'NO_ACCESS_TO_RECIPIENTS_ADDRESS', 'OUT_FOR_DELIVERY', 'DELIVERED', 'DELIVERED_DAMAGED', 'DELIVERED_IN_PART', 'DELIVERED_SPECIFIED_SAFE_PLACE', 'DELIVERED_TO_ALTERNATIVE_DELIVERY_LOCATION', 'DELIVERED_TO_NEIGHBOUR', 'DELIVERED_TO_PO_BOX', 'PARCEL_COLLECTED_FROM_PICKUP_POINT', 'POST_TRANSIT_STATUS', 'PROOF_OF_DELIVERY', 'CANCELLED', 'CANCELLED_BEFORE_DESPATCH', 'CUSTOMER_MOVED', 'HAZARDOUS_PROHIBITED', 'NOT_COLLECTED_FROM_PICKUP_POINT', 'NOT_DELIVERED', 'NOT_DELIVERED_ADDRESSEE_DECEASED', 'PARCEL_DAMAGED', 'PARCEL_DISPOSED', 'PARCEL_LOST', 'PARCEL_OUTSIDE_OF_SERVICE_CAPABILITY', 'REFUSED_BY_CUSTOMER', 'RETURN_TO_SENDER', 'ADDRESS_QUERY', 'CARRIER_DELAYS', 'CUSTOMS_CLEARED', 'CUSTOMS_PROCESSING', 'DELAYED_NOT_CARRIER', 'DELIVERY_ARRANGED_WITH_RECIPIENT', 'HELD_BY_CARRIER', 'HELD_BY_CARRIER_FOR_CLEARANCE_PRE_PROCESSING', 'HELD_BY_CUSTOMS', 'HELD_BY_EXPORT_CUSTOMS', 'HELD_BY_IMPORT_CUSTOMS', 'HUB_SCAN_OUT', 'IN_TRANSIT', 'INCORRECT_DECLARATION', 'INFORMATION', 'MISSORTED', 'PARCEL_OVER_LABELLED', 'PARCEL_REPACKED', 'PARCEL_UPDATE_NOTIFICATION_VIA_EMAIL', 'PARCEL_UPDATE_NOTIFICATION_VIA_SMS', 'RECEIVED_BY_CARRIER', 'RECEIVED_LOCAL_DELIVERY_DEPOT', 'ROUTING_ERROR', 'SUB_CONTRACTOR_EVENT', 'SUB_CONTRACTOR_RECEIVED', 'RECD_BY_CARRIER_NO_ELEC_ADVICE', 'AWAITING_ELECTRONIC_ADVICE', 'AWAITING_COLLECTION_FROM_PICKUP_POINT', 'COLLECT_AT_LOCAL_PO', 'CUSTOMER_TO_COLLECT_FROM_CARRIER', 'DELIVERED_TO_LOCKER_COLLECTION_POINT', 'CARRIER_STATUS_NOT_MAPPED']
+TrackingStatusCodes = Literal[
+    "COLLECTION_FAILED",
+    "AWAITING_DESPATCH",
+    "COLLECTION_REQUESTED",
+    "DESPATCHED",
+    "ELEC_ADVICE_RECD_BY_CARRIER",
+    "NOT_YET_RECEIVED_BY_CARRIER",
+    "COLLECTION_MADE",
+    "ATTEMPTED_DELIVERY",
+    "ATTEMPTED_DELIVERY_2ND",
+    "ATTEMPTED_DELIVERY_3RD",
+    "COD_AMOUNT_NOT_PAID",
+    "COD_AMOUNT_PAID",
+    "CUSTOMER_CARDED",
+    "CUSTOMER_IDENTIFICATION_FAILED",
+    "INVALID_METHOD_OF_PAYMENT",
+    "NO_ACCESS_TO_RECIPIENTS_ADDRESS",
+    "OUT_FOR_DELIVERY",
+    "DELIVERED",
+    "DELIVERED_DAMAGED",
+    "DELIVERED_IN_PART",
+    "DELIVERED_SPECIFIED_SAFE_PLACE",
+    "DELIVERED_TO_ALTERNATIVE_DELIVERY_LOCATION",
+    "DELIVERED_TO_NEIGHBOUR",
+    "DELIVERED_TO_PO_BOX",
+    "PARCEL_COLLECTED_FROM_PICKUP_POINT",
+    "POST_TRANSIT_STATUS",
+    "PROOF_OF_DELIVERY",
+    "CANCELLED",
+    "CANCELLED_BEFORE_DESPATCH",
+    "CUSTOMER_MOVED",
+    "HAZARDOUS_PROHIBITED",
+    "NOT_COLLECTED_FROM_PICKUP_POINT",
+    "NOT_DELIVERED",
+    "NOT_DELIVERED_ADDRESSEE_DECEASED",
+    "PARCEL_DAMAGED",
+    "PARCEL_DISPOSED",
+    "PARCEL_LOST",
+    "PARCEL_OUTSIDE_OF_SERVICE_CAPABILITY",
+    "REFUSED_BY_CUSTOMER",
+    "RETURN_TO_SENDER",
+    "ADDRESS_QUERY",
+    "CARRIER_DELAYS",
+    "CUSTOMS_CLEARED",
+    "CUSTOMS_PROCESSING",
+    "DELAYED_NOT_CARRIER",
+    "DELIVERY_ARRANGED_WITH_RECIPIENT",
+    "HELD_BY_CARRIER",
+    "HELD_BY_CARRIER_FOR_CLEARANCE_PRE_PROCESSING",
+    "HELD_BY_CUSTOMS",
+    "HELD_BY_EXPORT_CUSTOMS",
+    "HELD_BY_IMPORT_CUSTOMS",
+    "HUB_SCAN_OUT",
+    "IN_TRANSIT",
+    "INCORRECT_DECLARATION",
+    "INFORMATION",
+    "MISSORTED",
+    "PARCEL_OVER_LABELLED",
+    "PARCEL_REPACKED",
+    "PARCEL_UPDATE_NOTIFICATION_VIA_EMAIL",
+    "PARCEL_UPDATE_NOTIFICATION_VIA_SMS",
+    "RECEIVED_BY_CARRIER",
+    "RECEIVED_LOCAL_DELIVERY_DEPOT",
+    "ROUTING_ERROR",
+    "SUB_CONTRACTOR_EVENT",
+    "SUB_CONTRACTOR_RECEIVED",
+    "RECD_BY_CARRIER_NO_ELEC_ADVICE",
+    "AWAITING_ELECTRONIC_ADVICE",
+    "AWAITING_COLLECTION_FROM_PICKUP_POINT",
+    "COLLECT_AT_LOCAL_PO",
+    "CUSTOMER_TO_COLLECT_FROM_CARRIER",
+    "DELIVERED_TO_LOCKER_COLLECTION_POINT",
+    "CARRIER_STATUS_NOT_MAPPED",
+]
 
 class TrackingStatusCode(Enum):
-    COLLECTION_FAILED = 'COLLECTION_FAILED'
-    AWAITING_DESPATCH = 'AWAITING_DESPATCH'
-    COLLECTION_REQUESTED = 'COLLECTION_REQUESTED'
-    DESPATCHED = 'DESPATCHED'
-    ELEC_ADVICE_RECD_BY_CARRIER = 'ELEC_ADVICE_RECD_BY_CARRIER'
-    NOT_YET_RECEIVED_BY_CARRIER = 'NOT_YET_RECEIVED_BY_CARRIER'
-    COLLECTION_MADE = 'COLLECTION_MADE'
-    ATTEMPTED_DELIVERY = 'ATTEMPTED_DELIVERY'
-    ATTEMPTED_DELIVERY_2ND = 'ATTEMPTED_DELIVERY_2ND'
-    ATTEMPTED_DELIVERY_3RD = 'ATTEMPTED_DELIVERY_3RD'
-    COD_AMOUNT_NOT_PAID = 'COD_AMOUNT_NOT_PAID'
-    COD_AMOUNT_PAID = 'COD_AMOUNT_PAID'
-    CUSTOMER_CARDED = 'CUSTOMER_CARDED'
-    CUSTOMER_IDENTIFICATION_FAILED = 'CUSTOMER_IDENTIFICATION_FAILED'
-    INVALID_METHOD_OF_PAYMENT = 'INVALID_METHOD_OF_PAYMENT'
-    NO_ACCESS_TO_RECIPIENTS_ADDRESS = 'NO_ACCESS_TO_RECIPIENTS_ADDRESS'
-    OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY'
-    DELIVERED = 'DELIVERED'
-    DELIVERED_DAMAGED = 'DELIVERED_DAMAGED'
-    DELIVERED_IN_PART = 'DELIVERED_IN_PART'
-    DELIVERED_SPECIFIED_SAFE_PLACE = 'DELIVERED_SPECIFIED_SAFE_PLACE'
-    DELIVERED_TO_ALTERNATIVE_DELIVERY_LOCATION = 'DELIVERED_TO_ALTERNATIVE_DELIVERY_LOCATION'
-    DELIVERED_TO_NEIGHBOUR = 'DELIVERED_TO_NEIGHBOUR'
-    DELIVERED_TO_PO_BOX = 'DELIVERED_TO_PO_BOX'
-    PARCEL_COLLECTED_FROM_PICKUP_POINT = 'PARCEL_COLLECTED_FROM_PICKUP_POINT'
-    POST_TRANSIT_STATUS = 'POST_TRANSIT_STATUS'
-    PROOF_OF_DELIVERY = 'PROOF_OF_DELIVERY'
-    CANCELLED = 'CANCELLED'
-    CANCELLED_BEFORE_DESPATCH = 'CANCELLED_BEFORE_DESPATCH'
-    CUSTOMER_MOVED = 'CUSTOMER_MOVED'
-    HAZARDOUS_PROHIBITED = 'HAZARDOUS_PROHIBITED'
-    NOT_COLLECTED_FROM_PICKUP_POINT = 'NOT_COLLECTED_FROM_PICKUP_POINT'
-    NOT_DELIVERED = 'NOT_DELIVERED'
-    NOT_DELIVERED_ADDRESSEE_DECEASED = 'NOT_DELIVERED_ADDRESSEE_DECEASED'
-    PARCEL_DAMAGED = 'PARCEL_DAMAGED'
-    PARCEL_DISPOSED = 'PARCEL_DISPOSED'
-    PARCEL_LOST = 'PARCEL_LOST'
-    PARCEL_OUTSIDE_OF_SERVICE_CAPABILITY = 'PARCEL_OUTSIDE_OF_SERVICE_CAPABILITY'
-    REFUSED_BY_CUSTOMER = 'REFUSED_BY_CUSTOMER'
-    RETURN_TO_SENDER = 'RETURN_TO_SENDER'
-    ADDRESS_QUERY = 'ADDRESS_QUERY'
-    CARRIER_DELAYS = 'CARRIER_DELAYS'
-    CUSTOMS_CLEARED = 'CUSTOMS_CLEARED'
-    CUSTOMS_PROCESSING = 'CUSTOMS_PROCESSING'
-    DELAYED_NOT_CARRIER = 'DELAYED_NOT_CARRIER'
-    DELIVERY_ARRANGED_WITH_RECIPIENT = 'DELIVERY_ARRANGED_WITH_RECIPIENT'
-    HELD_BY_CARRIER = 'HELD_BY_CARRIER'
-    HELD_BY_CARRIER_FOR_CLEARANCE_PRE_PROCESSING = 'HELD_BY_CARRIER_FOR_CLEARANCE_PRE_PROCESSING'
-    HELD_BY_CUSTOMS = 'HELD_BY_CUSTOMS'
-    HELD_BY_EXPORT_CUSTOMS = 'HELD_BY_EXPORT_CUSTOMS'
-    HELD_BY_IMPORT_CUSTOMS = 'HELD_BY_IMPORT_CUSTOMS'
-    HUB_SCAN_OUT = 'HUB_SCAN_OUT'
-    IN_TRANSIT = 'IN_TRANSIT'
-    INCORRECT_DECLARATION = 'INCORRECT_DECLARATION'
-    INFORMATION = 'INFORMATION'
-    MISSORTED = 'MISSORTED'
-    PARCEL_OVER_LABELLED = 'PARCEL_OVER_LABELLED'
-    PARCEL_REPACKED = 'PARCEL_REPACKED'
-    PARCEL_UPDATE_NOTIFICATION_VIA_EMAIL = 'PARCEL_UPDATE_NOTIFICATION_VIA_EMAIL'
-    PARCEL_UPDATE_NOTIFICATION_VIA_SMS = 'PARCEL_UPDATE_NOTIFICATION_VIA_SMS'
-    RECEIVED_BY_CARRIER = 'RECEIVED_BY_CARRIER'
-    RECEIVED_LOCAL_DELIVERY_DEPOT = 'RECEIVED_LOCAL_DELIVERY_DEPOT'
-    ROUTING_ERROR = 'ROUTING_ERROR'
-    SUB_CONTRACTOR_EVENT = 'SUB_CONTRACTOR_EVENT'
-    SUB_CONTRACTOR_RECEIVED = 'SUB_CONTRACTOR_RECEIVED'
-    RECD_BY_CARRIER_NO_ELEC_ADVICE = 'RECD_BY_CARRIER_NO_ELEC_ADVICE'
-    AWAITING_ELECTRONIC_ADVICE = 'AWAITING_ELECTRONIC_ADVICE'
-    AWAITING_COLLECTION_FROM_PICKUP_POINT = 'AWAITING_COLLECTION_FROM_PICKUP_POINT'
-    COLLECT_AT_LOCAL_PO = 'COLLECT_AT_LOCAL_PO'
-    CUSTOMER_TO_COLLECT_FROM_CARRIER = 'CUSTOMER_TO_COLLECT_FROM_CARRIER'
-    DELIVERED_TO_LOCKER_COLLECTION_POINT = 'DELIVERED_TO_LOCKER_COLLECTION_POINT'
-    CARRIER_STATUS_NOT_MAPPED = 'CARRIER_STATUS_NOT_MAPPED'
+    COLLECTION_FAILED = "COLLECTION_FAILED"
+    AWAITING_DESPATCH = "AWAITING_DESPATCH"
+    COLLECTION_REQUESTED = "COLLECTION_REQUESTED"
+    DESPATCHED = "DESPATCHED"
+    ELEC_ADVICE_RECD_BY_CARRIER = "ELEC_ADVICE_RECD_BY_CARRIER"
+    NOT_YET_RECEIVED_BY_CARRIER = "NOT_YET_RECEIVED_BY_CARRIER"
+    COLLECTION_MADE = "COLLECTION_MADE"
+    ATTEMPTED_DELIVERY = "ATTEMPTED_DELIVERY"
+    ATTEMPTED_DELIVERY_2ND = "ATTEMPTED_DELIVERY_2ND"
+    ATTEMPTED_DELIVERY_3RD = "ATTEMPTED_DELIVERY_3RD"
+    COD_AMOUNT_NOT_PAID = "COD_AMOUNT_NOT_PAID"
+    COD_AMOUNT_PAID = "COD_AMOUNT_PAID"
+    CUSTOMER_CARDED = "CUSTOMER_CARDED"
+    CUSTOMER_IDENTIFICATION_FAILED = "CUSTOMER_IDENTIFICATION_FAILED"
+    INVALID_METHOD_OF_PAYMENT = "INVALID_METHOD_OF_PAYMENT"
+    NO_ACCESS_TO_RECIPIENTS_ADDRESS = "NO_ACCESS_TO_RECIPIENTS_ADDRESS"
+    OUT_FOR_DELIVERY = "OUT_FOR_DELIVERY"
+    DELIVERED = "DELIVERED"
+    DELIVERED_DAMAGED = "DELIVERED_DAMAGED"
+    DELIVERED_IN_PART = "DELIVERED_IN_PART"
+    DELIVERED_SPECIFIED_SAFE_PLACE = "DELIVERED_SPECIFIED_SAFE_PLACE"
+    DELIVERED_TO_ALTERNATIVE_DELIVERY_LOCATION = (
+        "DELIVERED_TO_ALTERNATIVE_DELIVERY_LOCATION"
+    )
+    DELIVERED_TO_NEIGHBOUR = "DELIVERED_TO_NEIGHBOUR"
+    DELIVERED_TO_PO_BOX = "DELIVERED_TO_PO_BOX"
+    PARCEL_COLLECTED_FROM_PICKUP_POINT = "PARCEL_COLLECTED_FROM_PICKUP_POINT"
+    POST_TRANSIT_STATUS = "POST_TRANSIT_STATUS"
+    PROOF_OF_DELIVERY = "PROOF_OF_DELIVERY"
+    CANCELLED = "CANCELLED"
+    CANCELLED_BEFORE_DESPATCH = "CANCELLED_BEFORE_DESPATCH"
+    CUSTOMER_MOVED = "CUSTOMER_MOVED"
+    HAZARDOUS_PROHIBITED = "HAZARDOUS_PROHIBITED"
+    NOT_COLLECTED_FROM_PICKUP_POINT = "NOT_COLLECTED_FROM_PICKUP_POINT"
+    NOT_DELIVERED = "NOT_DELIVERED"
+    NOT_DELIVERED_ADDRESSEE_DECEASED = "NOT_DELIVERED_ADDRESSEE_DECEASED"
+    PARCEL_DAMAGED = "PARCEL_DAMAGED"
+    PARCEL_DISPOSED = "PARCEL_DISPOSED"
+    PARCEL_LOST = "PARCEL_LOST"
+    PARCEL_OUTSIDE_OF_SERVICE_CAPABILITY = "PARCEL_OUTSIDE_OF_SERVICE_CAPABILITY"
+    REFUSED_BY_CUSTOMER = "REFUSED_BY_CUSTOMER"
+    RETURN_TO_SENDER = "RETURN_TO_SENDER"
+    ADDRESS_QUERY = "ADDRESS_QUERY"
+    CARRIER_DELAYS = "CARRIER_DELAYS"
+    CUSTOMS_CLEARED = "CUSTOMS_CLEARED"
+    CUSTOMS_PROCESSING = "CUSTOMS_PROCESSING"
+    DELAYED_NOT_CARRIER = "DELAYED_NOT_CARRIER"
+    DELIVERY_ARRANGED_WITH_RECIPIENT = "DELIVERY_ARRANGED_WITH_RECIPIENT"
+    HELD_BY_CARRIER = "HELD_BY_CARRIER"
+    HELD_BY_CARRIER_FOR_CLEARANCE_PRE_PROCESSING = (
+        "HELD_BY_CARRIER_FOR_CLEARANCE_PRE_PROCESSING"
+    )
+    HELD_BY_CUSTOMS = "HELD_BY_CUSTOMS"
+    HELD_BY_EXPORT_CUSTOMS = "HELD_BY_EXPORT_CUSTOMS"
+    HELD_BY_IMPORT_CUSTOMS = "HELD_BY_IMPORT_CUSTOMS"
+    HUB_SCAN_OUT = "HUB_SCAN_OUT"
+    IN_TRANSIT = "IN_TRANSIT"
+    INCORRECT_DECLARATION = "INCORRECT_DECLARATION"
+    INFORMATION = "INFORMATION"
+    MISSORTED = "MISSORTED"
+    PARCEL_OVER_LABELLED = "PARCEL_OVER_LABELLED"
+    PARCEL_REPACKED = "PARCEL_REPACKED"
+    PARCEL_UPDATE_NOTIFICATION_VIA_EMAIL = "PARCEL_UPDATE_NOTIFICATION_VIA_EMAIL"
+    PARCEL_UPDATE_NOTIFICATION_VIA_SMS = "PARCEL_UPDATE_NOTIFICATION_VIA_SMS"
+    RECEIVED_BY_CARRIER = "RECEIVED_BY_CARRIER"
+    RECEIVED_LOCAL_DELIVERY_DEPOT = "RECEIVED_LOCAL_DELIVERY_DEPOT"
+    ROUTING_ERROR = "ROUTING_ERROR"
+    SUB_CONTRACTOR_EVENT = "SUB_CONTRACTOR_EVENT"
+    SUB_CONTRACTOR_RECEIVED = "SUB_CONTRACTOR_RECEIVED"
+    RECD_BY_CARRIER_NO_ELEC_ADVICE = "RECD_BY_CARRIER_NO_ELEC_ADVICE"
+    AWAITING_ELECTRONIC_ADVICE = "AWAITING_ELECTRONIC_ADVICE"
+    AWAITING_COLLECTION_FROM_PICKUP_POINT = "AWAITING_COLLECTION_FROM_PICKUP_POINT"
+    COLLECT_AT_LOCAL_PO = "COLLECT_AT_LOCAL_PO"
+    CUSTOMER_TO_COLLECT_FROM_CARRIER = "CUSTOMER_TO_COLLECT_FROM_CARRIER"
+    DELIVERED_TO_LOCKER_COLLECTION_POINT = "DELIVERED_TO_LOCKER_COLLECTION_POINT"
+    CARRIER_STATUS_NOT_MAPPED = "CARRIER_STATUS_NOT_MAPPED"
 
 class LabelPackage(Package):
     tracking_number: str
@@ -172,17 +272,17 @@ class Label(LabelMetaData):
     ship_to: ShippingAddress
 
 class LabelGist(TypedDict):
-    validate_address: Literal['no_validation', 'validate_only', 'validate_and_clean']
+    validate_address: Literal["no_validation", "validate_only", "validate_and_clean"]
     label_layout: LabelLayouts
     label_format: LabelFormats
-    label_download_type: Literal['url', 'inline']
+    label_download_type: Literal["url", "inline"]
     display_scheme: DisplayFormatSchemes
 
 class LabelListResponse(PaginatinatedResponse):
     labels: list[Label]
 
 class ShipmentPayment(TypedDict):
-    payment_type: Literal['any', 'cash', 'cash_equivalent', 'none']
+    payment_type: Literal["any", "cash", "cash_equivalent", "none"]
     payment_amount: Fee
 
 class ShipmentItem(TypedDict):
@@ -210,8 +310,21 @@ class ShipmentItem(TypedDict):
     upc: str | None
 
 class TaxIdentifier(TypedDict):
-    taxable_entity_type: Literal['shipper', 'recipient', 'ior']
-    identifier_type: Literal['vateori', 'ssn', 'ein', 'tin', 'ioss', 'pan', 'voec', 'pccc', 'oss', 'passport', 'abn', 'ukims']
+    taxable_entity_type: Literal["shipper", "recipient", "ior"]
+    identifier_type: Literal[
+        "vateori",
+        "ssn",
+        "ein",
+        "tin",
+        "ioss",
+        "pan",
+        "voec",
+        "pccc",
+        "oss",
+        "passport",
+        "abn",
+        "ukims",
+    ]
     issuing_authority: str
     value: str
 
@@ -226,7 +339,7 @@ class InvoiceAdditionalDetails(TypedDict):
 class InternationalShipmentOptions(TypedDict):
     contents: ShipmentContents
     contents_explanations: str
-    non_delivery: Literal['return_to_sender', 'treat_as_abandoned']
+    non_delivery: Literal["return_to_sender", "treat_as_abandoned"]
     terms_of_trade_code: IncoTerms
     decleration: str
     invoice_additional_details: InvoiceAdditionalDetails
@@ -237,13 +350,13 @@ class FedexFreightOptions(TypedDict):
     booking_confirmation: str
 
 class WindsorFrameworkDetails(TypedDict):
-    movement_indicator: Literal['c2c', 'b2c', 'c2b', 'b2b']
+    movement_indicator: Literal["c2c", "b2c", "c2b", "b2b"]
     not_at_risk: bool
 
 class AdvancedShipmentOptions(TypedDict):
     bill_to_account: str | None
     bill_to_country_code: str | None
-    bill_to_party: Literal['recipient', 'third_party']
+    bill_to_party: Literal["recipient", "third_party"]
     bill_to_postal_code: str | None
     contains_alcohol: bool
     delivered_duty_paid: bool
@@ -302,7 +415,7 @@ class LabelShipment(TypedDict):
     confirmation: DeliveryConfirmationMethods
     customs: InternationalShipmentOptions
     advanced_options: AdvancedShipmentOptions
-    insurance_provider: Literal['none', 'shipsurance', 'carrier', 'third_party']
+    insurance_provider: Literal["none", "shipsurance", "carrier", "third_party"]
     tags: list[Tag]
     order_source_code: OrderSources
     packages: list[LabelPackage]
@@ -351,4 +464,12 @@ class TrackingInformation(TypedDict):
 class LabelVoidResponse(TypedDict):
     approved: bool
     message: str
-    reason_code: Literal['unknown', 'unspecified', 'validation_failed', 'label_not_found_within_void_period', 'label_already_used', 'label_already_voided', 'contact_carrier']
+    reason_code: Literal[
+        "unknown",
+        "unspecified",
+        "validation_failed",
+        "label_not_found_within_void_period",
+        "label_already_used",
+        "label_already_voided",
+        "contact_carrier",
+    ]

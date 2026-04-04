@@ -4,7 +4,7 @@ from ._types import ProductListResponse
 
 class ProductPortal(ShipStationClient):
     @classmethod
-    async def list(
+    async def where(
         cls: type["ProductPortal"],
         connection: ShipStationConnection,
         sku: str | None = None,

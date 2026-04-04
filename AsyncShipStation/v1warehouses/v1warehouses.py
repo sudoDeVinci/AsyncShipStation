@@ -75,7 +75,7 @@ class V1WarehousePortal(ShipStationClient):
             tuple[int, ErrorResponse | V1Warehouse]: A tuple containing the HTTP status code and either an ErrorResponse or a V1Warehouse object.
         """
 
-        status, warehouses = await cls.list(connection)
+        status, warehouses = await cls.where(connection)
         if status not in (200, 201):
             return status, cast(ErrorResponse, warehouses)
 
@@ -89,7 +89,7 @@ class V1WarehousePortal(ShipStationClient):
         )
 
     @classmethod
-    async def list(
+    async def where(
         cls: type["V1WarehousePortal"],
         connection: ShipStationConnection,
     ) -> tuple[int, ErrorResponse | list[V1Warehouse]]:

@@ -62,7 +62,7 @@ class CustomPackagePortal(ShipStationClient):
             return cls.parse_unknown_exception(e)
 
     @classmethod
-    async def list(
+    async def all(
         cls: type["CustomPackagePortal"],
         connection: ShipStationConnection,
     ) -> tuple[int, PackageList | ErrorResponse]:

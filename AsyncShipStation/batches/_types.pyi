@@ -1,17 +1,38 @@
 from enum import Enum
 from typing import Literal, TypedDict
-from ..common import URL, DisplayFormatScheme, Error, LabelDownload, LabelFormats, LabelLayouts, LabelMetaData, PaginatinatedResponse, PaginationLink, PaperlessDownload
-BatchStatuses = Literal['open', 'queued', 'processing', 'completed', 'completed_with_errors', 'archived', 'notifying', 'invalid']
+from ..common import (
+    URL,
+    DisplayFormatScheme,
+    Error,
+    LabelDownload,
+    LabelFormats,
+    LabelLayouts,
+    LabelMetaData,
+    PaginatinatedResponse,
+    PaginationLink,
+    PaperlessDownload,
+)
+
+BatchStatuses = Literal[
+    "open",
+    "queued",
+    "processing",
+    "completed",
+    "completed_with_errors",
+    "archived",
+    "notifying",
+    "invalid",
+]
 
 class BatchStatus(Enum):
-    OPEN = 'open'
-    QUEUED = 'queued'
-    PROCESSING = 'processing'
-    COMPLETED = 'completed'
-    COMPLETED_WITH_ERRORS = 'completed_with_errors'
-    ARCHIVED = 'archived'
-    NOTIFYING = 'notifying'
-    INVALID = 'invalid'
+    OPEN = "open"
+    QUEUED = "queued"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    COMPLETED_WITH_ERRORS = "completed_with_errors"
+    ARCHIVED = "archived"
+    NOTIFYING = "notifying"
+    INVALID = "invalid"
 
 class BatchLabel(LabelMetaData):
     display_scheme: DisplayFormatScheme

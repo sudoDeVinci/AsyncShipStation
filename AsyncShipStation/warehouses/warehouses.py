@@ -6,7 +6,7 @@ from ._types import Warehouse, WarehouseListResponse
 
 class WarehousePortal(ShipStationClient):
     @classmethod
-    async def list(
+    async def where(
         cls: type["WarehousePortal"],
         connection: ShipStationConnection,
     ) -> tuple[int, WarehouseListResponse | ErrorResponse]:
@@ -38,7 +38,7 @@ class WarehousePortal(ShipStationClient):
         connection: ShipStationConnection,
         warehouse_name: str,
     ) -> tuple[int, Warehouse | ErrorResponse]:
-        status, warehouses = await cls.list(connection)
+        status, warehouses = await cls.where(connection)
         if status != 200:
             return status, cast(ErrorResponse, warehouses)
         warehouselist = cast(WarehouseListResponse, warehouses)

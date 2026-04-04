@@ -16,7 +16,7 @@ from ._types import (
 
 class FulfillmentPortal(ShipStationClient):
     @classmethod
-    async def list(
+    async def where(
         cls: type["FulfillmentPortal"],
         connection: ShipStationConnection,
         ship_to_name: str | None,

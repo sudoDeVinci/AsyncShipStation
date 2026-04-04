@@ -1,5 +1,12 @@
 from typing import Literal, TypedDict
-from ..common import DeliveryConfirmationMethods, Option, PaginatinatedResponse, V1Address, V1Dimensions, V1Weight
+from ..common import (
+    DeliveryConfirmationMethods,
+    Option,
+    PaginatinatedResponse,
+    V1Address,
+    V1Dimensions,
+    V1Weight,
+)
 
 class V1AdvancedOptions(TypedDict):
     warehouseId: int
@@ -14,14 +21,16 @@ class V1AdvancedOptions(TypedDict):
     mergedOrSplit: bool
     mergedIds: list[int]
     parentId: int | None
-    billToParty: Literal['my_account', 'my_other_account', 'recipient', 'third_party'] | None
+    billToParty: (
+        Literal["my_account", "my_other_account", "recipient", "third_party"] | None
+    )
     billToAccount: str | None
     billToPostalCode: str | None
     billToCountryCode: str | None
     billToMyOtherAccount: str | None
 
 class V1InsuranceOptions(TypedDict):
-    provider: Literal['shipsurance', 'carrier', 'provider', 'xcover', 'parcelguard']
+    provider: Literal["shipsurance", "carrier", "provider", "xcover", "parcelguard"]
     insureShipment: bool
     insuredValue: float
 
@@ -34,9 +43,9 @@ class V1Customsitem(TypedDict):
     countryofOrigin: str
 
 class V1InternationalOptions(TypedDict):
-    contents: Literal['merchandise', 'documents', 'gift', 'returned_goods', 'sample']
+    contents: Literal["merchandise", "documents", "gift", "returned_goods", "sample"]
     customsItems: V1Customsitem
-    nonDelivery: Literal['return_to_sender', 'treat_as_abandoned']
+    nonDelivery: Literal["return_to_sender", "treat_as_abandoned"]
 
 class V1OrderItem(TypedDict):
     orderItemId: int
@@ -67,7 +76,9 @@ class V1Order(TypedDict):
     modifyDate: str
     paymentDate: str
     shipByDate: str | None
-    orderStatus: Literal['awaiting_payment', 'awaiting_shipment', 'shipped', 'on_hold', 'cancelled']
+    orderStatus: Literal[
+        "awaiting_payment", "awaiting_shipment", "shipped", "on_hold", "cancelled"
+    ]
     customerId: int
     customerUsername: str
     customerEmail: str

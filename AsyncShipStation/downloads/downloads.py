@@ -10,7 +10,6 @@ from reportlab.pdfgen import canvas
 
 from ..common import (
     Endpoints,
-    Error,
     ErrorResponse,
     LabelFormats,
     ShipStationClient,
@@ -156,9 +155,6 @@ class DownloadPortal(ShipStationClient):
     ) -> tuple[int, tuple[bytes, list[DownloadError]]]:
 
         try:
-            print(
-                f"Polling for packing slips to be ready (timeout={timeout}s, interval={interval}s)..."
-            )
             timeout = timeout or max(5 * len(labels), 60)
             available, _ = await LabelPortal.poll_labels_until_ready(
                 connection,

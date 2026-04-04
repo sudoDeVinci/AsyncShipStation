@@ -1,2 +1,3 @@
 from .packages import CustomPackagePortal
-__all__ = ('CustomPackagePortal',)
+
+__all__ = ("CustomPackagePortal",)

@@ -1,3 +1,37 @@
-from ._types import ChargeEvent, ChargeEvents, Label, LabelGist, LabelListResponse, LabelPackage, LabelShipment, LabelStatus, LabelStatuses, PackageType, PackageTypes, RateDetails, ShipmentItem, TrackingStatus, TrackingStatuses
+from ._types import (
+    ChargeEvent,
+    ChargeEvents,
+    Label,
+    LabelGist,
+    LabelListResponse,
+    LabelPackage,
+    LabelShipment,
+    LabelStatus,
+    LabelStatuses,
+    PackageType,
+    PackageTypes,
+    RateDetails,
+    ShipmentItem,
+    TrackingStatus,
+    TrackingStatuses,
+)
 from .labels import LabelPortal
-__all__ = ('ChargeEvent', 'ChargeEvents', 'Label', 'LabelListResponse', 'LabelStatus', 'LabelStatuses', 'LabelGist', 'LabelPackage', 'PackageType', 'PackageTypes', 'RateDetails', 'TrackingStatus', 'TrackingStatuses', 'LabelPortal', 'LabelShipment', 'ShipmentItem')
+
+__all__ = (
+    "ChargeEvent",
+    "ChargeEvents",
+    "Label",
+    "LabelListResponse",
+    "LabelStatus",
+    "LabelStatuses",
+    "LabelGist",
+    "LabelPackage",
+    "PackageType",
+    "PackageTypes",
+    "RateDetails",
+    "TrackingStatus",
+    "TrackingStatuses",
+    "LabelPortal",
+    "LabelShipment",
+    "ShipmentItem",
+)

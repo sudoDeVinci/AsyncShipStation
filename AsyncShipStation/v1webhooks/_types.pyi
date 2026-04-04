@@ -1,5 +1,13 @@
 from typing import Literal, TypedDict
-V1WebhookEventValues = Literal['ORDER_NOTIFY', 'ITEM_ORDER_NOTIFY', 'SHIP_NOTIFY', 'ITEM_SHIP_NOTIFY', 'FULFILLMENT_SHIPPED', 'FULFILLMENT_REJECTED']
+
+V1WebhookEventValues = Literal[
+    "ORDER_NOTIFY",
+    "ITEM_ORDER_NOTIFY",
+    "SHIP_NOTIFY",
+    "ITEM_SHIP_NOTIFY",
+    "FULFILLMENT_SHIPPED",
+    "FULFILLMENT_REJECTED",
+]
 
 class V1WebhookSubscriptionResult(TypedDict):
     id: int

@@ -28,7 +28,7 @@ class LabelPortal(ShipStationClient):
     _BATCH_POLL_TIMEOUT: ClassVar[float] = 20.0  # max seconds to wait
 
     @classmethod
-    async def list(
+    async def where(
         cls: type["LabelPortal"],
         connection: ShipStationConnection,
         label_status: LabelStatuses | None = None,
@@ -114,7 +114,7 @@ class LabelPortal(ShipStationClient):
         try:
             labels = await gather(
                 *[
-                    cls.list(
+                    cls.where(
                         connection,
                         shipment_id=shipment_id,
                         page_size=50,  # Assuming a shipment won't have more than 50 labels

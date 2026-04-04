@@ -6,7 +6,7 @@ from ._types import V1MarketPlace, V1Store
 
 class StorePortal(ShipStationClient):
     @classmethod
-    async def list(
+    async def all(
         cls: type["StorePortal"],
         connection: ShipStationConnection,
         showInactive: bool | None = None,

@@ -1,2 +1,3 @@
 from .downloads import DownloadPortal
-__all__ = ('DownloadPortal',)
+
+__all__ = ("DownloadPortal",)

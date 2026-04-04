@@ -1,7 +1,16 @@
 from typing import Literal, TypedDict
-from ..common import Error, Fee, Package, PaginatinatedResponse, Quantity, ShippingAddress, Tag
+from ..common import (
+    Error,
+    Fee,
+    Package,
+    PaginatinatedResponse,
+    Quantity,
+    ShippingAddress,
+    Tag,
+)
 from ..labels import LabelShipment, ShipmentItem
-ShipmentStatuses = Literal['pending', 'processing', 'label_purchased', 'cancelled']
+
+ShipmentStatuses = Literal["pending", "processing", "label_purchased", "cancelled"]
 
 class Shipment(LabelShipment):
     shipment_id: str
@@ -16,16 +25,23 @@ class DangerousGood(TypedDict):
     technical_name: str | None
     product_class: str | None
     product_class_subsidiary: str | None
-    packahging_group: Literal['i', 'ii', 'iii']
+    packahging_group: Literal["i", "ii", "iii"]
     dangerous_amount: Quantity
     quantity: int
     packaging_instruction: str | None
-    packaging_instruction_section: Literal['section_1', 'section_2', 'section_1a', 'section_1b']
+    packaging_instruction_section: Literal[
+        "section_1", "section_2", "section_1a", "section_1b"
+    ]
     packaging_type: str | None
     transport_mean: str
     transport_category: str | None
     regulation_authority: str | None
-    regulation_level: Literal['lightly_regulated', 'fully_regulated', 'limited_quantities', 'excepted_quantity']
+    regulation_level: Literal[
+        "lightly_regulated",
+        "fully_regulated",
+        "limited_quantities",
+        "excepted_quantity",
+    ]
     radioactive: bool | None
     reportable_quantity: bool | None
     tunnel_code: str | None
@@ -51,7 +67,7 @@ class ShipmentPackage(Package):
     products: list[Product]
 
 class ShipmentCreationRequest(TypedDict):
-    validate_address: Literal['no_validation', 'validate_only', 'validate_and_clean']
+    validate_address: Literal["no_validation", "validate_only", "validate_and_clean"]
     external_shipment_id: str | None
     carrier_id: str | None
     create_sales_order: bool
@@ -77,7 +93,7 @@ class ShipmentCreationResponse(TypedDict):
 
 class ShippingRate(TypedDict):
     rate_id: str
-    rate_type: Literal['check', 'shipment']
+    rate_type: Literal["check", "shipment"]
     carrier_id: str
     shipping_amount: Fee
     insurance_amount: Fee
@@ -99,7 +115,7 @@ class ShippingRate(TypedDict):
     carrier_code: str
     carrier_nickname: str
     carrier_friendly_name: str
-    validation_status: Literal['valid', 'invalid', 'unknown', 'has_warnings']
+    validation_status: Literal["valid", "invalid", "unknown", "has_warnings"]
     warning_messages: list[str]
     error_messages: list[str]
 

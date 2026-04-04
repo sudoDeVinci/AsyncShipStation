@@ -25,7 +25,7 @@ class BatchPortal(ShipStationClient):
     _BATCH_POLL_TIMEOUT: ClassVar[float] = 20.0  # max seconds to wait
 
     @classmethod
-    async def list(
+    async def where(
         cls: type["BatchPortal"],
         connection: ShipStationConnection,
         status: BatchStatuses | None = None,
@@ -268,7 +268,7 @@ class BatchPortal(ShipStationClient):
             tuple[int, Batch | ErrorResponse]: A tuple containing the status code and either a Batch or an ErrorResponse.
         """
 
-        stat, out = await cls.list(
+        stat, out = await cls.where(
             connection,
             batch_number=batch_number,
             page=page,

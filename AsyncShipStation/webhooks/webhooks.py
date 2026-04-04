@@ -13,7 +13,7 @@ from ._types import Webhook, WebhookEventValues
 
 class WebhookPortal(ShipStationClient):
     @classmethod
-    async def list(
+    async def where(
         cls: type["WebhookPortal"],
         connection: ShipStationConnection,
         webhook_id: str | None = None,

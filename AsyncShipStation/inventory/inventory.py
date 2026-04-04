@@ -18,7 +18,7 @@ from ._types import (
 
 class InventoryPortal(ShipStationClient):
     @classmethod
-    async def list(
+    async def where(
         cls: type["InventoryPortal"],
         connection: ShipStationConnection,
         sku: str | None = None,

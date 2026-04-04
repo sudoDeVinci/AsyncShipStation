@@ -1,29 +1,40 @@
 from enum import Enum
 from typing import Literal, NotRequired, Required, TypedDict
-from ..common import DeliveryConfirmationMethods, Dimensions, Error, Fee, Package, ShippingAddress, Tag, Weight
+from ..common import (
+    DeliveryConfirmationMethods,
+    Dimensions,
+    Error,
+    Fee,
+    Package,
+    ShippingAddress,
+    Tag,
+    Weight,
+)
 from ..shipments import Shipment
-RateTypes = Literal['check', 'shipment']
-RateResponseStatuses = Literal['working', 'completed', 'partial', 'error']
-ValidationStatuses = Literal['valid', 'invalid', 'unknown', 'has_warnings']
+
+RateTypes = Literal["check", "shipment"]
+RateResponseStatuses = Literal["working", "completed", "partial", "error"]
+ValidationStatuses = Literal["valid", "invalid", "unknown", "has_warnings"]
 
 class RateType(Enum):
-    CHECK = 'check'
-    SHIPMENT = 'shipment'
+    CHECK = "check"
+    SHIPMENT = "shipment"
 
 class RateResponseStatus(Enum):
-    WORKING = 'working'
-    COMPLETED = 'completed'
-    PARTIAL = 'partial'
-    ERROR = 'error'
+    WORKING = "working"
+    COMPLETED = "completed"
+    PARTIAL = "partial"
+    ERROR = "error"
 
 class ValidationStatus(Enum):
-    VALID = 'valid'
-    INVALID = 'invalid'
-    UNKNOWN = 'unknown'
-    HAS_WARNINGS = 'has_warnings'
+    VALID = "valid"
+    INVALID = "invalid"
+    UNKNOWN = "unknown"
+    HAS_WARNINGS = "has_warnings"
 
 class Rate(TypedDict):
-    'A shipping rate returned by the API.'
+    "A shipping rate returned by the API."
+
     rate_id: str
     rate_type: RateTypes
     carrier_id: str
@@ -52,7 +63,8 @@ class Rate(TypedDict):
     error_messages: list[str]
 
 class RateEstimate(TypedDict):
-    'A rate estimate (without full shipment details).'
+    "A rate estimate (without full shipment details)."
+
     rate_type: RateTypes
     carrier_id: str
     shipping_amount: Fee
@@ -79,7 +91,8 @@ class RateEstimate(TypedDict):
     error_messages: list[str]
 
 class RatesResponse(TypedDict):
-    'Response from the rates information endpoint.'
+    "Response from the rates information endpoint."
+
     rates: list[Rate]
     invalid_rates: list[Rate]
     rate_request_id: str
@@ -89,7 +102,8 @@ class RatesResponse(TypedDict):
     errors: list[Error]
 
 class RateRequestOptions(TypedDict, total=False):
-    'Options for a rate request.'
+    "Options for a rate request."
+
     carrier_ids: list[str]
     package_types: NotRequired[list[str]]
     service_codes: NotRequired[list[str]]
@@ -98,7 +112,8 @@ class RateRequestOptions(TypedDict, total=False):
     is_return: NotRequired[bool]
 
 class RateEstimateOptions(TypedDict, total=False):
-    'Options for a rate estimate request.'
+    "Options for a rate estimate request."
+
     from_country_code: str
     from_postal_code: str
     from_city_locality: str
@@ -110,25 +125,29 @@ class RateEstimateOptions(TypedDict, total=False):
     weight: Weight
     dimensions: Dimensions
     confirmation: DeliveryConfirmationMethods
-    address_residential_indicator: Literal['unknown', 'yes', 'no']
+    address_residential_indicator: Literal["unknown", "yes", "no"]
     ship_date: str
 
 class RateEstimateByCarrierIds(RateEstimateOptions, total=False):
-    'Options for a rate estimate request.'
+    "Options for a rate estimate request."
+
     carrier_ids: Required[list[str]]
 
 class RateEstimateByCarrierId(RateEstimateOptions, total=False):
-    'Options for a rate estimate request.'
+    "Options for a rate estimate request."
+
     carrier_id: Required[str]
 
 class CalculateRatesRequest(TypedDict, total=False):
-    'Request body for calculating rates.'
+    "Request body for calculating rates."
+
     shipment_id: str
     shipment: NotRequired[Shipment]
     rate_options: RateRequestOptions
 
 class CalculateRatesResponse(TypedDict):
-    'Response from calculate rates endpoint.'
+    "Response from calculate rates endpoint."
+
     shipment_id: str
     carrier_id: str | None
     service_code: str | None

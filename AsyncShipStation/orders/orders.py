@@ -25,7 +25,7 @@ from ._types import (
 
 class OrderPortal(ShipStationClient):
     @classmethod
-    async def list(
+    async def where(
         cls: type["OrderPortal"],
         connection: ShipStationConnection,
         customerName: str | None = None,

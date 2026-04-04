@@ -40,6 +40,7 @@ class AdvancedCarrierOptionList(TypedDict):
 
 
 class Carrier(TypedDict):
+    allows_returns: bool
     carrier_id: str
     carrier_code: str
     account_number: str

@@ -31,7 +31,7 @@ class PackageList(TypedDict):
 
 class AdvancedCarrierOption(TypedDict):
     name: str
-    default_value: str
+    default_value: str | None
     description: str
 
 

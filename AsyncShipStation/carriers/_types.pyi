@@ -1,4 +1,5 @@
 from typing import TypedDict
+
 from ..common import Dimensions, Error
 
 class Service(TypedDict):
@@ -25,7 +26,7 @@ class PackageList(TypedDict):
 
 class AdvancedCarrierOption(TypedDict):
     name: str
-    default_value: str
+    default_value: str | None
     description: str
 
 class AdvancedCarrierOptionList(TypedDict):

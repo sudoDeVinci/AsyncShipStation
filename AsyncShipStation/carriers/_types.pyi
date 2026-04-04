@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from ..common import Dimensions, Error
+from ..common import Dimensions, DisplayFormatSchemes, Error
 
 class Service(TypedDict):
     carrier_id: str
@@ -10,6 +10,8 @@ class Service(TypedDict):
     domestic: bool
     international: bool
     is_multi_package_supported: bool
+    is_return_supported: bool
+    display_schemes: list[DisplayFormatSchemes]
 
 class ServiceList(TypedDict):
     services: list[Service]

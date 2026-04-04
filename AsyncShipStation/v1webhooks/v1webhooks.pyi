@@ -1,0 +1,12 @@
+from ..common import Endpoints, ErrorResponse, ShipStationClient, ShipStationConnection
+from ._types import V1WebhookEventValues, V1WebhookListResponse, V1WebhookSubscriptionResult
+
+class V1WebhookPortal(ShipStationClient):
+    @classmethod
+    async def subscribe(cls: type['V1WebhookPortal'], connection: ShipStationConnection, event: V1WebhookEventValues, target_url: str, store_id: int | None = None, friendly_name: str | None = None) -> tuple[int, ErrorResponse | V1WebhookSubscriptionResult]: ...
+
+    @classmethod
+    async def unsubscribe(cls: type['V1WebhookPortal'], connection: ShipStationConnection, webhookId: int) -> tuple[int, ErrorResponse | None]: ...
+
+    @classmethod
+    async def list(cls: type['V1WebhookPortal'], connection: ShipStationConnection) -> tuple[int, ErrorResponse | V1WebhookListResponse]: ...

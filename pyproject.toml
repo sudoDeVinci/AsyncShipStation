@@ -48,10 +48,16 @@ Issues = "https://github.com/sudoDeVinci/AsyncShipStation/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["AsyncShipStation"]
+include = [
+    "AsyncShipStation/**/*.pyi",
+    "AsyncShipStation/**/py.typed",
+]
 
 [tool.hatch.build.targets.sdist]
 include = [
     "AsyncShipStation/**/*.py",
+    "AsyncShipStation/**/*.pyi",
+    "AsyncShipStation/**/py.typed",
     "README.md",
     "LICENSE",
 ]

@@ -1,0 +1,20 @@
+from typing import Literal, cast
+from ..common import Endpoints, ErrorResponse, ShipStationClient, ShipStationConnection
+from ._types import TagCreateResponse, TagInfo, TagListResponse
+
+class TagsPortal(ShipStationClient):
+    'Portal for interacting with the ShipStation Tags API (V2).'
+
+    @classmethod
+    async def list(cls: type['TagsPortal'], connection: ShipStationConnection) -> tuple[int, TagListResponse | ErrorResponse]: ...
+
+    @classmethod
+    async def create(cls: type['TagsPortal'], connection: ShipStationConnection, tag_name: str, color: Literal['red', 'orange', 'yellow', 'green', 'blue', 'purple', 'pink', 'gray'] | None = None) -> tuple[int, TagCreateResponse | ErrorResponse]: ...
+
+    @classmethod
+    async def delete(cls: type['TagsPortal'], connection: ShipStationConnection, tag_name: str) -> tuple[int, None | ErrorResponse]: ...
+
+    @classmethod
+    async def get_by_name(cls: type['TagsPortal'], connection: ShipStationConnection, tag_name: str) -> tuple[int, TagInfo | None | ErrorResponse]: ...
+
+__all__ = ['TagsPortal']

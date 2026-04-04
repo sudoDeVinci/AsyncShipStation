@@ -381,22 +381,25 @@ class V1Weight(TypedDict):
 
 class V1Address(TypedDict):
     name: str
-    company: str
+    company: str | None
     street1: str
-    street2: str
-    street3: str
+    street2: str | None
+    street3: str | None
     city: str
     state: str
     postalCode: str
     country: str
-    phone: str
+    phone: str | None
     residential: bool
-    addressVerified: Literal[
-        "Address not yet validated",
-        "Address validated successfully",
-        "Address validation warning",
-        "Address validation failed",
-    ]
+    addressVerified: (
+        Literal[
+            "Address not yet validated",
+            "Address validated successfully",
+            "Address validation warning",
+            "Address validation failed",
+        ]
+        | None
+    )
 
 
 class Address(TypedDict):

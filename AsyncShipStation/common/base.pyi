@@ -4,8 +4,10 @@ from dataclasses import dataclass
 from logging import Logger
 from pathlib import Path
 from typing import Any, ClassVar, Literal, TypeVar
+
 from httpx import Response
 from pydantic import EmailStr, HttpUrl
+
 from ._types import ErrorResponse
 
 LOGGER: Logger
@@ -54,6 +56,7 @@ class ShipStationConnection:
         "_v2_enabled",
         "_pool_key",
         "_config",
+        "_uid",
     )
 
     def __init__(
@@ -105,6 +108,8 @@ class ShipStationConnection:
     @property
     def ref_count(self) -> int: ...
     @property
+    def uid(self) -> int: ...
+    @property
     def pool_key(self) -> int: ...
     async def increment_v2_ref(self) -> None: ...
     async def decrement_v2_ref(self) -> None: ...
@@ -112,16 +117,28 @@ class ShipStationConnection:
     async def decrement_v1_ref(self) -> None: ...
     def __eq__(self, other: object) -> bool: ...
     @staticmethod
-    def hash(v2_key: str | None, v1_key: str | None, v1_secret: str | None) -> int: ...
+    def hash(
+        v2_key: str | None,
+        v1_key: str | None,
+        v1_secret: str | None,
+        config: ConnectionConfig,
+    ) -> int: ...
     def __hash__(self) -> int: ...
 
 class ShipStationClient:
     __slots__ = ()
-    _v2_endpoint: ClassVar[str]
-    _v2_mock_endpoint: ClassVar[str]
-    _v1_endpoint: ClassVar[str]
-    _pool: ClassVar[dict[int, ShipStationConnection]]
-    _pool_lock: ClassVar[Lock]
+    _physical_pool: ClassVar[dict[int, ShipStationConnection]] = {}
+    """
+    The pool of all connection objects, where the key is the hashed config value.
+    """
+    _virtual_pool: ClassVar[dict[int, int]] = {}
+    """
+    A dict of "virtual" addresses which map to the "physical" hashes of each value.
+    This gives a layer of abstraction between the uuid provided to the user, and the
+    actual physical hash of an object.
+    """
+
+    _pool_lock: ClassVar[Lock] = Lock()
 
     @classmethod
     def validate_response(
@@ -135,61 +152,72 @@ class ShipStationClient:
         exception: Exception,
     ) -> tuple[Literal[500], ErrorResponse]: ...
     @classmethod
-    async def evict_connection(cls, connection_hash: int) -> None: ...
+    async def evict_connection(cls: type["ShipStationClient"], uid: int) -> None: ...
     @classmethod
-    async def _add_connection(cls, connection: ShipStationConnection) -> None: ...
+    async def _add_connection(
+        cls: type["ShipStationClient"], connection: ShipStationConnection
+    ) -> None: ...
     @classmethod
     async def get_connection(
-        cls,
+        cls: type["ShipStationClient"],
+        uid: int | None = None,
         v2_key: str | None = None,
         v1_key: str | None = None,
         v1_secret: str | None = None,
-        connection_hash: int | None = None,
+        config: ConnectionConfig | None = None,
     ) -> ShipStationConnection | None: ...
     @classmethod
-    async def configure(
-        cls, v2_key: str, v1_key: str | None = None, v1_secret: str | None = None
+    async def connect(
+        cls: type["ShipStationClient"],
+        uid: int | None = None,
+        v2_key: str | None = None,
+        v1_key: str | None = None,
+        v1_secret: str | None = None,
+        config: ConnectionConfig | None = None,
     ) -> ShipStationConnection: ...
     @classmethod
     async def start(
-        cls,
+        cls: type["ShipStationClient"],
+        uid: int | None = None,
         v1_key: str | None = None,
         v1_secret: str | None = None,
         v2_key: str | None = None,
         connection: ShipStationConnection | None = None,
-        connection_hash: int | None = None,
+        config: ConnectionConfig | None = None,
         version: Literal["v1", "v2", "both"] = "both",
     ) -> ShipStationConnection: ...
     @classmethod
     async def close(
-        cls,
+        cls: type["ShipStationClient"],
         v1_key: str | None = None,
         v1_secret: str | None = None,
         v2_key: str | None = None,
         connection: ShipStationConnection | None = None,
-        connection_hash: int | None = None,
+        uid: int | None = None,
+        config: ConnectionConfig | None = None,
         version: Literal["v1", "v2", "both"] = "v2",
         force: bool = False,
     ) -> None: ...
     @classmethod
     def scoped_client(
-        cls,
+        cls: type["ShipStationClient"],
         v1_key: str | None = None,
         v1_secret: str | None = None,
         v2_key: str | None = None,
         connection: ShipStationConnection | None = None,
-        connection_hash: int | None = None,
+        uid: int | None = None,
+        config: ConnectionConfig | None = None,
         version: Literal["v1", "v2", "both"] = "v2",
         mock: bool = False,
     ) -> AbstractAsyncContextManager[ShipStationConnection | None]: ...
     @classmethod
     async def request(
-        cls,
+        cls: type["ShipStationClient"],
         method: Literal["GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS"],
         url: str,
         version: Literal["v1", "v2"] = "v2",
         connection: ShipStationConnection | None = None,
-        connection_hash: int | None = None,
+        uid: int | None = None,
         **kwargs: dict[str, str | int | bool | EmailStr | HttpUrl | None],
     ) -> Response | APIError: ...
 

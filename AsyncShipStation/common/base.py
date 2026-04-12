@@ -6,17 +6,17 @@ from hashlib import sha256
 from json import JSONDecodeError, dump, dumps, load
 from logging import Logger, getLogger
 from pathlib import Path
-from typing import Any, AsyncGenerator, ClassVar, Literal, TypeVar, cast
+from typing import Any, AsyncGenerator, ClassVar, Final, Literal, TypeVar, cast
+from uuid import uuid4
 
 from httpx import AsyncClient, Limits, Response
 from httpx._types import HeaderTypes
-from pydantic import EmailStr, HttpUrl
+from pydantic import EmailStr, HttpUrl, SecretStr
 
 from ._types import ErrorResponse
 
 LOGGER: Logger = getLogger("AsyncShipStation")
-LOGGER.setLevel("INFO")
-
+VERSION: Final[str] = "0.2.0.9"
 T = TypeVar("T")
 
 
@@ -65,16 +65,39 @@ class APIError(Exception):
 
 @dataclass(slots=True, frozen=True)
 class ConnectionConfig:
-    version: Literal["v1", "v2"] = "v2"
-    timeout = 500
-    max_connections = 20
-    max_keepalive_connections = 10
-    http2 = False
-    retries = 4
-    user_agent = "asyncShipStation/2.0.0"
-    v2_endpoint = "https://api.shipstation.com/v2"
-    v2_mock_endpoint = "https://docs.shipstation.com/_mock/openapi/v2"
-    v1_endpoint = "https://ssapi.shipstation.com"
+    version: Literal["v1", "v2", "both"] = "v2"
+    timeout: int = 500
+    max_connections: int = 20
+    max_keepalive_connections: int = 10
+    http2: bool = False
+    retries: int = 4
+    user_agent: str = f"asyncShipStation/{VERSION}"
+    v2_endpoint: str = "https://api.shipstation.com/v2"
+    v2_mock_endpoint: str = "https://docs.shipstation.com/_mock/openapi/v2"
+    v1_endpoint: str = "https://ssapi.shipstation.com"
+
+    def __hash__(self: "ConnectionConfig") -> int:
+        raw = f"{self.version}:{self.timeout}:{self.max_connections}:{self.max_keepalive_connections}:{self.user_agent}:{self.v2_endpoint}:{self.v1_endpoint}:{self.v2_mock_endpoint}:{self.retries}:{self.http2}"
+        digest = int.from_bytes(
+            sha256(raw.encode("utf-8")).digest()[:8], "big", signed=True
+        )
+        return -2 if digest == -1 else digest
+
+    def __eq__(self: "ConnectionConfig", other: object) -> bool:
+        if not isinstance(other, ConnectionConfig):
+            return NotImplemented
+        return (
+            self.version == other.version
+            and self.timeout == other.timeout
+            and self.max_connections == other.max_connections
+            and self.max_keepalive_connections == other.max_keepalive_connections
+            and self.user_agent == other.user_agent
+            and self.v2_endpoint == other.v2_endpoint
+            and self.v1_endpoint == other.v1_endpoint
+            and self.v2_mock_endpoint == other.v2_mock_endpoint
+            and self.retries == other.retries
+            and self.http2 == other.http2
+        )
 
 
 class ShipStationConnection:
@@ -94,6 +117,7 @@ class ShipStationConnection:
         "_v2_enabled",
         "_pool_key",
         "_config",
+        "_uid",
     )
 
     def __init__(
@@ -103,18 +127,17 @@ class ShipStationConnection:
         v1_secret: str | None = None,
         config: ConnectionConfig | None = None,
     ) -> None:
-
-        self._v2_key: str | None = v2_key
-        self._v1_key: str | None = v1_key
-        self._v1_secret: str | None = v1_secret
+        self._v2_key: SecretStr | None = SecretStr(v2_key) if v2_key else None
+        self._v1_key: SecretStr | None = SecretStr(v1_key) if v1_key else None
+        self._v1_secret: SecretStr | None = SecretStr(v1_secret) if v1_secret else None
         self._v1_enabled: bool = False
         self._v2_enabled: bool = False
         self._config: ConnectionConfig = config or ConnectionConfig()
-        self._pool_key: int = self.hash(v2_key, v1_key, v1_secret)
+        self._pool_key: int = self.hash(v2_key, v1_key, v1_secret, self._config)
         if self._v2_key:
             self._v2_headers: dict[str, str] = {
-                "User-Agent": "asyncShipStation/1.0.0",
-                "api-key": self._v2_key,
+                "User-Agent": self._config.user_agent,
+                "api-key": self._v2_key.get_secret_value(),
             }
             self._v2_enabled = True
 
@@ -122,7 +145,7 @@ class ShipStationConnection:
             credentials = f"{v1_key}:{v1_secret}"
             encoded_credentials = b64encode(credentials.encode("utf-8")).decode("utf-8")
             self._v1_headers: dict[str, str] = {
-                "User-Agent": "asyncShipStation/1.1.2",
+                "User-Agent": self._config.user_agent,
                 "Authorization": f"Basic {encoded_credentials}",
             }
             self._v1_enabled = True
@@ -133,6 +156,7 @@ class ShipStationConnection:
         self._v2_client: AsyncClient | None = None
         self._v1_ref_count: int = 0
         self._v2_ref_count: int = 0
+        self._uid = uuid4().int
 
     async def start_v1(self: "ShipStationConnection") -> None:
         if not self._v1_enabled:
@@ -255,15 +279,15 @@ class ShipStationConnection:
             return APIError(400, f"Unsupported API version: {version}")
 
     @property
-    def v2_key(self) -> str | None:
+    def v2_key(self) -> SecretStr | None:
         return self._v2_key
 
     @property
-    def v1_key(self) -> str | None:
+    def v1_key(self) -> SecretStr | None:
         return self._v1_key
 
     @property
-    def v1_secret(self) -> str | None:
+    def v1_secret(self) -> SecretStr | None:
         return self._v1_secret
 
     @property
@@ -285,6 +309,10 @@ class ShipStationConnection:
     @property
     def ref_count(self) -> int:
         return self._v1_ref_count + self._v2_ref_count
+
+    @property
+    def uid(self) -> int:
+        return self._uid
 
     @property
     def pool_key(self) -> int:
@@ -319,11 +347,17 @@ class ShipStationConnection:
             self._v2_key == other._v2_key
             and self._v1_key == other._v1_key
             and self._v1_secret == other._v1_secret
+            and self._config == other._config
         )
 
     @staticmethod
-    def hash(v2_key: str | None, v1_key: str | None, v1_secret: str | None) -> int:
-        raw = f"{v2_key or ''}:{v1_key or ''}:{v1_secret or ''}"
+    def hash(
+        v2_key: str | None,
+        v1_key: str | None,
+        v1_secret: str | None,
+        config: ConnectionConfig,
+    ) -> int:
+        raw = f"{v2_key or ''}:{v1_key or ''}:{v1_secret or ''}:{hash(config)}"
         digest = int.from_bytes(
             sha256(raw.encode("utf-8")).digest()[:8], "big", signed=True
         )
@@ -336,11 +370,17 @@ class ShipStationConnection:
 class ShipStationClient:
     __slots__ = ()
 
-    _v2_endpoint: ClassVar[str] = "https://api.shipstation.com/v2"
-    _v2_mock_endpoint: ClassVar[str] = "https://docs.shipstation.com/_mock/openapi/v2"
-    _v1_endpoint: ClassVar[str] = "https://ssapi.shipstation.com"
+    _physical_pool: ClassVar[dict[int, ShipStationConnection]] = {}
+    """
+    The pool of all connection objects, where the key is the hashed config value.
+    """
+    _virtual_pool: ClassVar[dict[int, int]] = {}
+    """
+    A dict of "virtual" addresses which map to the "physical" hashes of each value.
+    This gives a layer of abstraction between the uuid provided to the user, and the
+    actual physical hash of an object.
+    """
 
-    _pool: ClassVar[dict[int, ShipStationConnection]] = {}
     _pool_lock: ClassVar[Lock] = Lock()
 
     @classmethod
@@ -395,104 +435,92 @@ class ShipStationClient:
         )
 
     @classmethod
-    async def evict_connection(
-        cls: type["ShipStationClient"], connection_hash: int
-    ) -> None:
+    async def evict_connection(cls: type["ShipStationClient"], uid: int) -> None:
         async with cls._pool_lock:
-            if connection_hash in cls._pool:
-                del cls._pool[connection_hash]
+            physical_addr = cls._virtual_pool.get(uid, None)
+            if not physical_addr:
                 LOGGER.info(
-                    f"evict_connection:::Connection with hash {connection_hash} evicted from pool"
+                    f"evict_connection:::Could not find any connection with uuid {uid}"
                 )
+                return
+
+            del cls._physical_pool[physical_addr]
+            del cls._virtual_pool[uid]
+            LOGGER.info(
+                f"evict_connection:::Connection with uuid {uid} evicted from pool"
+            )
 
     @classmethod
     async def _add_connection(
         cls: type["ShipStationClient"], connection: ShipStationConnection
-    ) -> None:
+    ) -> int:
+        uid = connection.uid
         async with cls._pool_lock:
-            cls._pool[hash(connection)] = connection
+            cls._physical_pool[connection.pool_key] = connection
+            cls._virtual_pool[uid] = connection.pool_key
             LOGGER.info(
-                f"_add_connection:::Connection with hash {hash(connection)} added to pool"
+                f"_add_connection:::Connection with uid {connection.uid} added to pool"
             )
+            return uid
 
     @classmethod
     async def get_connection(
         cls: type["ShipStationClient"],
+        uid: int | None = None,
         v2_key: str | None = None,
         v1_key: str | None = None,
         v1_secret: str | None = None,
-        connection_hash: int | None = None,
+        config: ConnectionConfig | None = None,
     ) -> ShipStationConnection | None:
-        """
-        Retrieves a ShipStationConnection from the pool based on the provided API keys.
-        Args:
-            v2_key (str): The API key for ShipStation API v2.
-            v1_key (str | None): The API key for ShipStation API v1.
-            v1_secret (str | None): The API secret for ShipStation API v1.
-            connection_hash (int | None): An optional hash to look up a ShipStationConnection in the pool.
-        Returns:
-            ShipStationConnection | None: The retrieved ShipStationConnection if found, or None if no matching connection exists in the pool.
-        """
-        if connection_hash is not None:
-            async with cls._pool_lock:
-                return cls._pool.get(connection_hash, None)
 
-        if not (v2_key or (v1_key and v1_secret)):
-            raise ValueError("Insufficient credentials to identify a connection.")
-
-        hashed = ShipStationConnection.hash(v2_key, v1_key, v1_secret)
         async with cls._pool_lock:
-            return cls._pool.get(hashed, None)
+            if uid is not None:
+                physical = cls._virtual_pool.get(uid, None)
+                if physical is None:
+                    LOGGER.info(
+                        f"get_connection:::No connection object with uuid {uid} found."
+                    )
+                    return None
+                return cls._physical_pool.get(physical, None)
+
+            if config:
+                physical = ShipStationConnection.hash(v2_key, v1_key, v1_secret, config)
+                return cls._physical_pool.get(physical, None)
+
+            return None
 
     @classmethod
-    async def configure(
+    async def connect(
         cls: type["ShipStationClient"],
-        v2_key: str,
+        uid: int | None = None,
+        v2_key: str | None = None,
         v1_key: str | None = None,
         v1_secret: str | None = None,
+        config: ConnectionConfig | None = None,
     ) -> ShipStationConnection:
-        """
-        TODO: Rename to "connect"
-        Configures the ShipStation client with the provided API key.
-        Args:
-            api_key (str): The API key for authenticating requests.
-        """
 
         out: ShipStationConnection | None = await cls.get_connection(
-            v2_key, v1_key, v1_secret
+            uid, v2_key, v1_key, v1_secret, config
         )
         if out is None:
-            out = ShipStationConnection(v2_key, v1_key, v1_secret)
-            await cls._add_connection(out)
-            LOGGER.info(
-                f"configure:::New connection entry created with hash {out.pool_key}"
-            )
+            out = ShipStationConnection(v2_key, v1_key, v1_secret, config)
+            uid = await cls._add_connection(out)
+            LOGGER.info(f"configure:::New connection entry created with uid {uid}")
 
         return out
 
     @classmethod
     async def start(
         cls: type["ShipStationClient"],
+        uid: int | None = None,
         v1_key: str | None = None,
         v1_secret: str | None = None,
         v2_key: str | None = None,
         connection: ShipStationConnection | None = None,
-        connection_hash: int | None = None,
+        config: ConnectionConfig | None = None,
         version: Literal["v1", "v2", "both"] = "both",
     ) -> ShipStationConnection:
-        """
-        Retrieve and start a ShipStationConnection from the pool based on any provided conenction info.
-        If a ``connection_hash`` is provided, the pool will be checked for a matching connection. If found, it will be started and returned.
-        If no hash is provided but a ``connection`` object is, that connection will be started and returned.
-        If neither of those are provided, the method will attempt to create a new connection using the provided credentials.
-        Args:
-            v1_key (str | None): The API key for ShipStation API v1.
-            v1_secret (str | None): The API secret for ShipStation API v1.
-            v2_key (str | None): The API key for ShipStation API v2.
-            connection (ShipStationConnection | None): An optional ShipStationConnection object to start.
-            connection_hash (int | None): An optional hash to look up a ShipStationConnection in the pool.
-            version (Literal["v1", "v2", "both"]): The API version(s) to start the connection for. Defaults to "both".
-        """
+
         if version not in ("v1", "v2", "both"):
             raise ValueError(f"Unsupported version: {version}")
 
@@ -500,13 +528,9 @@ class ShipStationClient:
             await connection.start(version)
             return connection
 
-        connection = await cls.get_connection(
-            v2_key, v1_key, v1_secret, connection_hash
-        )
+        connection = await cls.get_connection(uid, v2_key, v1_key, v1_secret, config)
         if connection is None:
-            connection = await cls.configure(
-                v2_key or "", v1_key or "", v1_secret or ""
-            )
+            connection = await cls.connect(uid, v2_key, v1_key, v1_secret, config)
 
         if connection is None:
             raise ValueError(
@@ -523,7 +547,8 @@ class ShipStationClient:
         v1_secret: str | None = None,
         v2_key: str | None = None,
         connection: ShipStationConnection | None = None,
-        connection_hash: int | None = None,
+        uid: int | None = None,
+        config: ConnectionConfig | None = None,
         version: Literal["v1", "v2", "both"] = "v2",
         force: bool = False,
     ) -> None:
@@ -540,17 +565,17 @@ class ShipStationClient:
         conn = (
             connection
             if connection is not None
-            else await cls.get_connection(v2_key, v1_key, v1_secret, connection_hash)
+            else await cls.get_connection(uid, v2_key, v1_key, v1_secret, config)
         )
 
         if conn is None:
             raise ValueError(
-                "No connection found to close. Provide a valid connection, connection hash, or credentials."
+                "No connection found to close. Provide a valid connection, uid, or credentials."
             )
 
         await conn.close(version, force=force)
         if conn.ref_count == 0:
-            await cls.evict_connection(hash(conn))
+            await cls.evict_connection(conn.uid)
 
     @classmethod
     @asynccontextmanager
@@ -560,17 +585,19 @@ class ShipStationClient:
         v1_secret: str | None = None,
         v2_key: str | None = None,
         connection: ShipStationConnection | None = None,
-        connection_hash: int | None = None,
+        uid: int | None = None,
+        config: ConnectionConfig | None = None,
         version: Literal["v1", "v2", "both"] = "v2",
         mock: bool = False,
     ) -> AsyncGenerator[ShipStationConnection | None, None]:
         connection = await cls.start(
+            uid=uid,
             v1_key=v1_key,
             v1_secret=v1_secret,
             v2_key=v2_key,
             connection=connection,
-            connection_hash=connection_hash,
             version=version,
+            config=config,
         )
 
         try:
@@ -585,15 +612,15 @@ class ShipStationClient:
         url: str,
         version: Literal["v1", "v2"] = "v2",
         connection: ShipStationConnection | None = None,
-        connection_hash: int | None = None,
+        uid: int | None = None,
         **kwargs: dict[str, str | int | bool | EmailStr | HttpUrl | None],
     ) -> Response | APIError:
         if connection is None:
-            if not connection_hash:
+            if uid is None:
                 raise ValueError(
                     "Either a connection or connection_hash must be provided."
                 )
-            connection = await cls.get_connection(connection_hash=connection_hash)
+            connection = await cls.get_connection(uid=uid)
             if not connection:
                 raise ValueError(
                     "No connection found for the provided hash. A connection must be started before making requests."

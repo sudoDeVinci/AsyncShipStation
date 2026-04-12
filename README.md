@@ -36,7 +36,7 @@ from AsyncShipStation import ShipStationClient, ShipmentPortal
 
 
 async def main() -> None:
-    connection = await ShipStationClient.configure(
+    connection = await ShipStationClient.connect(
         v2_key="your_v2_api_key",
         v1_key="your_v1_api_key",
         v1_secret="your_v1_secret",
@@ -55,9 +55,31 @@ if __name__ == "__main__":
     asyncio.run(main())
 ~~~
 
+The library comes pre-configured with 'sensible' default values for connections, but you can configure these parameters by passing a `ConnectionConfig` object with the parameters you would like changed.
+
+~~~python
+config  = ConnectionConfig(
+    version="v2",
+    timeout=30,
+    max_connections=20,
+    max_keepalive_connections=10,
+    http2=False,
+    retries=4,
+    user_agent="your_custom_UA_string",
+)
+connection = await ShipStationClient.connect(
+    v2_key="your_v2_api_key",
+    v1_key="your_v1_api_key",
+    v1_secret="your_v1_secret",
+    config=config,
+    )
+~~~
+
+**NOTE:* A connection's config is tied to its identity. Two connections to the ssame credentials, if using different configs, will be treated as separate connections.*
+
 ## Client Lifecycle
 
-### Use the async context manager
+### Use the async context manager w/ existing connection object
 
 Use `scoped_client()` when you want the connection lifecycle handled for you.
 
@@ -76,13 +98,48 @@ V1_SECRET: str | None = os.getenv("SHIP_STATION_SECRET")
 
 
 async def main() -> None:
-    connection = await ShipStationClient.configure(
+    connection = await ShipStationClient.connect(
         v2_key=V2_API_KEY or "",
         v1_key=V1_API_KEY,
         v1_secret=V1_SECRET,
     )
 
     async with ShipStationClient.scoped_client(connection=connection, version="v2"):
+        status, shipments = await ShipmentPortal.list(connection, page_size=10, page=1)
+        print(status, shipments)
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+~~~
+
+### Use the async context manager w/o existing connection object
+
+If you don't need to reuse the connection object, you can skip the explicit configuration step and pass the credentials directly to `scoped_client()`.
+~~~python
+import asyncio
+import os
+
+from dotenv import load_dotenv
+
+from AsyncShipStation import ShipStationClient, ShipmentPortal
+
+load_dotenv()
+V2_API_KEY: str | None = os.getenv("SHIP_STATION_V2")
+V1_API_KEY: str | None = os.getenv("SHIP_STATION_V1")
+V1_SECRET: str | None = os.getenv("SHIP_STATION_SECRET")
+
+
+async def main() -> None:
+    connection = await ShipStationClient.connect(
+        
+    )
+
+    async with ShipStationClient.scoped_client(
+        v2_key=V2_API_KEY or "",
+        v1_key=V1_API_KEY,
+        v1_secret=V1_SECRET, version="v2"
+    ):
         status, shipments = await ShipmentPortal.list(connection, page_size=10, page=1)
         print(status, shipments)
 
@@ -110,7 +167,7 @@ V1_SECRET: str | None = os.getenv("SHIP_STATION_SECRET")
 
 
 async def main() -> None:
-    connection = await ShipStationClient.configure(
+    connection = await ShipStationClient.connect(
         v2_key=V2_API_KEY or "",
         v1_key=V1_API_KEY,
         v1_secret=V1_SECRET,
@@ -130,7 +187,7 @@ if __name__ == "__main__":
 
 ## Concurrent Requests
 
-A single connection can be shared across concurrent requests.
+A single connection is meant to be shared across concurrent requests.
 
 ~~~python
 import asyncio
@@ -144,7 +201,7 @@ from AsyncShipStation import (
 
 
 async def main() -> None:
-    connection = await ShipStationClient.configure(
+    connection = await ShipStationClient.connect(
         v2_key="your_v2_api_key",
         v1_key="your_v1_api_key",
         v1_secret="your_v1_secret",
@@ -170,7 +227,7 @@ if __name__ == "__main__":
 
 ## Connection Lookup
 
-If you need to retrieve a connection from the pool later, use `connection.pool_key`.
+If you need to retrieve a connection from the pool later, use `connection.uid`.
 
 ~~~python
 import asyncio
@@ -179,7 +236,7 @@ from AsyncShipStation import ShipStationClient, ShipmentPortal
 
 
 async def main() -> None:
-    connection = await ShipStationClient.configure(
+    connection = await ShipStationClient.connect(
         v2_key="your_v2_api_key",
         v1_key="your_v1_api_key",
         v1_secret="your_v1_secret",
@@ -207,36 +264,4 @@ Accounts that send too many requests in quick succession will receive a `429 Too
 
 ShipStation bulk operation endpoints count as a single request.
 
-## Endpoints
-
-[/batches](/batches/_types.py)  
-Process labels in bulk and receive labels and customs forms in bulk responses.
-
-[/carriers](/carriers/_types.py)  
-Retrieve details about the carriers connected to your account, including carrier IDs, service IDs, advanced options, and package types.
-
-[/fulfillments](/fulfillments/_types.py)  
-Manage fulfillments that represent completed shipments.
-
-[/inventory](/inventory/_types.py)  
-Manage inventory, adjust quantities, and work with warehouses and locations.  
-- [/inventory_warehouses](/inventory._types.py)  
-- [/inventory_locations](/inventory._types.py)
-
-[/labels](/labels/_types.py)  
-Purchase and print shipping labels, create return labels, void labels, and retrieve label details.
-
-[/manifests](/manifests/_types.py)  
-Retrieve and work with shipment manifests.
-
-[/rates](/rates/_types.py) *(v2)*  
-Calculate and estimate shipping rates across multiple carriers.
-
-[/shipments](/shipments/_types.py) *(v2)*  
-Create, retrieve, and manage shipments.
-
-[/tags](/tags/_types.py) *(v2)*  
-Manage tags for organizing shipments and orders.
-
-[/warehouses](/warehouses/_types.py) *(v2)*  
-Retrieve warehouse information, including shipment origin addresses.
+## TODO

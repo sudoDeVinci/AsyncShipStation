@@ -13,7 +13,6 @@ from AsyncShipStation import (
     DownloadPortal,
     LabelListResponse,
     LabelPortal,
-    ShipmentListResponse,
     ShipmentPortal,
     ShipStationClient,
 )
@@ -47,20 +46,26 @@ async def main() -> None:
     if not V1_SECRET:
         raise ValueError("SHIP_STATION_SECRET environment variable not set")
 
-    connection = await ShipStationClient.configure(
-        v2_key=V2_API_KEY, v1_key=V1_API_KEY, v1_secret=V1_SECRET
-    )
+    async with ShipStationClient.scoped_client(
+        v2_key=V2_API_KEY, v1_key=V1_API_KEY, v1_secret=V1_SECRET, version="both"
+    ) as connection:
+        if not connection:
+            raise ValueError("Failed to create ShipStationClient")
 
-    await connection.start("v2")
-    _, batch = await BatchPortal.get_by_batch_number(connection, "100133")
-    _, shipments = await ShipmentPortal.where(connection, batch_id=batch["batch_id"])
-    _, labels = await LabelPortal.where(
-        connection, batch_id=batch["batch_id"], page_size=100
-    )
-    _, (download, errs) = await DownloadPortal.download_packing_slips(
-        connection, labels=cast(LabelListResponse, labels)["labels"]
-    )
-    await connection.close()
+        _, batches = await BatchPortal.where(connection, page_size=1)
+        if not batches:
+            raise ValueError("No batches found")
+
+        batch = cast(BatchListResponse, batches)["batches"][0]
+        _, shipments = await ShipmentPortal.where(
+            connection, batch_id=batch["batch_id"]
+        )
+        _, labels = await LabelPortal.where(
+            connection, batch_id=batch["batch_id"], page_size=100
+        )
+        _, (download, errs) = await DownloadPortal.download_packing_slips(
+            connection, labels=cast(LabelListResponse, labels)["labels"]
+        )
 
     with open(SHIPMENTS_JSON, "w") as f:
         f.write(dumps(shipments, indent=4))

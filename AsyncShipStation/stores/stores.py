@@ -9,7 +9,6 @@ class StorePortal(ShipStationClient):
     async def all(
         cls: type["StorePortal"],
         connection: ShipStationConnection,
-
         identity: bool = False,
         showInactive: bool | None = None,
         marketplaceId: int | None = None,
@@ -30,7 +29,6 @@ class StorePortal(ShipStationClient):
     async def list_marketplaces(
         cls: type["StorePortal"],
         connection: ShipStationConnection,
-
         identity: bool = False,
     ) -> tuple[int, ErrorResponse | List[V1MarketPlace]]:
         endpoint = f"{connection.v1_endpoint}/{Endpoints.STORES.value}/marketplaces"

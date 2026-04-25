@@ -1,4 +1,4 @@
-from typing import Literal, TypedDict
+from typing import Literal
 
 from ..common import (
     Error,
@@ -9,8 +9,8 @@ from ..common import (
     ShippingAddress,
     Tag,
 )
-from ..labels import LabelShipment, ShipmentItem
 from ..common._types import Taggable
+from ..labels import LabelShipment, ShipmentItem
 
 ShipmentStatuses = Literal["pending", "processing", "label_purchased", "cancelled"]
 

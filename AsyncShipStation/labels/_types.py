@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Literal, TypedDict
+from typing import Literal
 
 from ..common import (
     URL,
@@ -415,6 +415,9 @@ class LabelShipment(Taggable):
     external_order_id: str | None
     hold_until_date: str | None
     ship_by_date: str | None
+    deliver_by_date: str | None
+    created_at: str | None
+    modified_at: str | None
     retail_rate: Fee | None
     store_id: str | None
     items: list[ShipmentItem]

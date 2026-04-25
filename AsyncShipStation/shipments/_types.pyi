@@ -1,4 +1,5 @@
-from typing import Literal, TypedDict
+from typing import Literal
+
 from ..common import (
     Error,
     Fee,
@@ -7,6 +8,7 @@ from ..common import (
     Quantity,
     ShippingAddress,
     Tag,
+    Taggable,
 )
 from ..labels import LabelShipment, ShipmentItem
 
@@ -19,7 +21,7 @@ class Shipment(LabelShipment):
 class ShipmentListResponse(PaginatinatedResponse):
     shipments: list[Shipment]
 
-class DangerousGood(TypedDict):
+class DangerousGood(Taggable):
     id_number: str | None
     shipping_name: str | None
     technical_name: str | None
@@ -47,7 +49,7 @@ class DangerousGood(TypedDict):
     tunnel_code: str | None
     additional_description: str | None
 
-class Product(TypedDict):
+class Product(Taggable):
     description: str
     quantity: int
     value: Fee
@@ -66,7 +68,7 @@ class ShipmentPackage(Package):
     package_name: str
     products: list[Product]
 
-class ShipmentCreationRequest(TypedDict):
+class ShipmentCreationRequest(Taggable):
     validate_address: Literal["no_validation", "validate_only", "validate_and_clean"]
     external_shipment_id: str | None
     carrier_id: str | None
@@ -87,11 +89,11 @@ class ShipmentCreationRequest(TypedDict):
     items: list[ShipmentItem]
     packages: list[ShipmentPackage]
 
-class ShipmentCreationResponse(TypedDict):
+class ShipmentCreationResponse(Taggable):
     has_errors: bool
     shipments: list[Shipment]
 
-class ShippingRate(TypedDict):
+class ShippingRate(Taggable):
     rate_id: str
     rate_type: Literal["check", "shipment"]
     carrier_id: str
@@ -119,7 +121,7 @@ class ShippingRate(TypedDict):
     warning_messages: list[str]
     error_messages: list[str]
 
-class RateQueryResponse(TypedDict):
+class RateQueryResponse(Taggable):
     rates: list[ShippingRate]
     invalid_rates: list[ShippingRate]
     rate_request_id: str

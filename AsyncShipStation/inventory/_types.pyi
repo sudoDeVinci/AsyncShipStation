@@ -1,7 +1,6 @@
-from typing import TypedDict
-from ..common import Fee, PaginatinatedResponse
+from ..common import Fee, PaginatinatedResponse, Taggable
 
-class InventoryItem(TypedDict):
+class InventoryItem(Taggable):
     sku: str
     on_hand: int
     allocated: int
@@ -13,7 +12,7 @@ class InventoryItem(TypedDict):
 class Inventory(PaginatinatedResponse):
     inventory: list[InventoryItem]
 
-class InventoryWarehouse(TypedDict):
+class InventoryWarehouse(Taggable):
     inventory_warehouse_id: str
     name: str
     created_at: str

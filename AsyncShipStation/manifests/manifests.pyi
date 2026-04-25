@@ -15,14 +15,18 @@ class ManifestsPortal(ShipStationClient):
         carrier_id: str | None = None,
         page: int = 1,
         page_size: int = 25,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | ManifestListResponse]: ...
     @classmethod
     async def create(
-        cls: type["ManifestsPortal"], connection: ShipStationConnection
+        cls: type["ManifestsPortal"],
+        connection: ShipStationConnection,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse, ManifestListResponse]: ...
     @classmethod
     async def get_by_id(
         cls: type["ManifestsPortal"],
         connection: ShipStationConnection,
         manifest_id: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse, Manifest]: ...

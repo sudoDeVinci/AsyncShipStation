@@ -1,5 +1,6 @@
 from enum import Enum
-from typing import Literal, TypedDict
+from typing import Literal
+
 from ..common import (
     URL,
     DisplayFormatScheme,
@@ -11,6 +12,7 @@ from ..common import (
     PaginatinatedResponse,
     PaginationLink,
     PaperlessDownload,
+    Taggable,
 )
 
 BatchStatuses = Literal[
@@ -40,7 +42,7 @@ class BatchLabel(LabelMetaData):
 class ProcessLabel(BatchLabel):
     create_batch_and_process_labels: bool
 
-class Batch(TypedDict):
+class Batch(Taggable):
     label_layout: LabelLayouts
     label_format: LabelFormats
     batch_id: str
@@ -66,7 +68,7 @@ class Batch(TypedDict):
 class BatchListResponse(PaginatinatedResponse):
     batches: list[Batch]
 
-class BatchResponseError(TypedDict):
+class BatchResponseError(Taggable):
     error: str
     shipment_id: str
     external_shipment_id: str

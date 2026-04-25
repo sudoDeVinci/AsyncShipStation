@@ -20,6 +20,7 @@ class V1WarehousePortal(ShipStationClient):
         cls: type["V1WarehousePortal"],
         connection: ShipStationConnection,
         warehouseId: int,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | dict[str, str]]:
 
         endpoint = (
@@ -41,6 +42,7 @@ class V1WarehousePortal(ShipStationClient):
         cls: type["V1WarehousePortal"],
         connection: ShipStationConnection,
         warehouseId: int,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | V1Warehouse]:
 
         endpoint = (
@@ -53,6 +55,7 @@ class V1WarehousePortal(ShipStationClient):
                 res,
                 (200, 201),
                 V1Warehouse,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -62,6 +65,7 @@ class V1WarehousePortal(ShipStationClient):
         cls: type["V1WarehousePortal"],
         connection: ShipStationConnection,
         warehouseName: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | V1Warehouse]:
         """
         Get a warehouse from the V1 endpoint. There is no way to directly get warehouses by their name,
@@ -92,6 +96,7 @@ class V1WarehousePortal(ShipStationClient):
     async def where(
         cls: type["V1WarehousePortal"],
         connection: ShipStationConnection,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | list[V1Warehouse]]:
 
         endpoint = f"{connection.v1_endpoint}/{Endpoints.WAREHOUSES.value}"
@@ -102,6 +107,7 @@ class V1WarehousePortal(ShipStationClient):
                 res,
                 (200, 201),
                 list[V1Warehouse],
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -114,6 +120,7 @@ class V1WarehousePortal(ShipStationClient):
         warehouseName: str | None = None,
         returnAddress: V1Address | None = None,
         isDefault: bool = False,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | V1Warehouse]:
 
         payload = {
@@ -135,6 +142,7 @@ class V1WarehousePortal(ShipStationClient):
                 res,
                 (200, 201),
                 V1Warehouse,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)

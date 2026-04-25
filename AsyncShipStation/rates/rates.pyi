@@ -26,6 +26,7 @@ class RatesPortal(ShipStationClient):
         calculate_tax_amount: bool = False,
         preferred_currency: str | None = None,
         is_return: bool = False,
+        identity: bool = False,
     ) -> tuple[int, CalculateRatesResponse | ErrorResponse]: ...
     @classmethod
     async def estimate_rates(
@@ -46,10 +47,14 @@ class RatesPortal(ShipStationClient):
         confirmation: DeliveryConfirmationMethods | None = None,
         address_residential_indicator: Literal["unknown", "yes", "no"] = "unknown",
         ship_date: str | None = None,
+        identity: bool = False,
     ) -> tuple[int, List[RateEstimate] | ErrorResponse]: ...
     @classmethod
     async def get_by_id(
-        cls: type["RatesPortal"], connection: ShipStationConnection, rate_id: str
+        cls: type["RatesPortal"],
+        connection: ShipStationConnection,
+        rate_id: str,
+        identity: bool = False,
     ) -> tuple[int, Rate | ErrorResponse]: ...
 
 __all__ = ["RatesPortal"]

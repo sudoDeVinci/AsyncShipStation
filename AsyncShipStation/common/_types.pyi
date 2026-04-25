@@ -1,8 +1,12 @@
 from enum import Enum
 from typing import Literal, NotRequired, TypedDict
+
 from pydantic import EmailStr, HttpUrl
 
 JSONDict = dict[str, str | int | bool | EmailStr | HttpUrl | None]
+
+class Taggable(TypedDict, total=False):
+    __kind__: NotRequired[str]
 
 class Endpoints(Enum):
     BATCHES = "batches"
@@ -261,87 +265,87 @@ class IncoTerm(Enum):
     DEQ = "deq"
     DES = "des"
 
-class URL(TypedDict):
+class URL(Taggable):
     href: str
     type: str | None
 
-class LabelDownload(TypedDict):
+class LabelDownload(Taggable):
     href: str
     pdf: str
     png: str
     zpl: str
 
-class LabelMetaData(TypedDict):
+class LabelMetaData(Taggable):
     ship_date: str
     label_layout: LabelLayouts
     label_format: LabelFormats
 
-class PaperlessDownload(TypedDict):
+class PaperlessDownload(Taggable):
     href: str
     instructions: str | None
     handoff_code: str | None
 
-class PaginationLink(TypedDict):
+class PaginationLink(Taggable):
     first: URL
     last: URL
     prev: URL | None
     next: URL | None
 
-class Error(TypedDict):
+class Error(Taggable):
     error_source: ErrorSources
     error_type: ErrorTypes
     error_code: ErrorCodes
     message: str
 
-class ErrorResponse(TypedDict):
+class ErrorResponse(Taggable):
     errors: list[Error]
     request_id: str | None
 
-class Header(TypedDict):
+class Header(Taggable):
     key: str
     value: str
 
-class Dimensions(TypedDict):
+class Dimensions(Taggable):
     unit: Literal["inch", "centimeters"]
     length: float
     width: float
     height: float
 
-class Fee(TypedDict):
+class Fee(Taggable):
     amount: float
     currency: str
 
-class Weight(TypedDict):
+class Weight(Taggable):
     value: float
     unit: Literal["pound", "ounce", "gram", "kilogram"]
 
-class Identifier(TypedDict):
+class Identifier(Taggable):
     type: str
     value: str
 
-class Option(TypedDict):
+class Option(Taggable):
     name: str
     value: str
 
-class Quantity(TypedDict):
+class Quantity(Taggable):
     amount: int
     unit: str | None
 
-class Tag(TypedDict):
+class Tag(Taggable):
     name: str
 
-class V1Dimensions(TypedDict):
+class V1Dimensions(Taggable):
     length: float
     width: float
     height: float
     units: Literal["inches", "feet", "centimeters"]
 
-class V1Weight(TypedDict):
+class V1Weight(Taggable):
     value: float
     units: Literal["ounces", "pounds", "grams", "kilograms"]
     WeightUnits: float
 
-class V1Address(TypedDict):
+class V1Address(Taggable):
     name: str
     company: str | None
     street1: str
@@ -363,7 +367,7 @@ class V1Address(TypedDict):
         | None
     )
 
-class Address(TypedDict):
+class Address(Taggable):
     name: str
     company_name: str | None
     email: str | None
@@ -376,12 +380,12 @@ class Address(TypedDict):
     postal_code: str
     country_code: str
 
-class LabelMessages(TypedDict):
+class LabelMessages(Taggable):
     reference1: str | None
     reference2: str | None
     reference3: str | None
 
-class Package(TypedDict):
+class Package(Taggable):
     package_code: str
     name: str
     dimensions: Dimensions
@@ -393,13 +397,13 @@ class Package(TypedDict):
     external_package_id: str
     content_description: str | None
 
-class PaginatinatedResponse(TypedDict):
+class PaginatinatedResponse(Taggable):
     total: int
     page: int
     pages: int
     links: PaginationLink
 
-class Contact(TypedDict):
+class Contact(Taggable):
     name: str
     phone: str
 

@@ -38,6 +38,7 @@ from ._types import (
     Quantity,
     ShippingAddress,
     Tag,
+    Taggable,
     V1Address,
     V1Dimensions,
     V1Weight,
@@ -53,6 +54,7 @@ from .base import (
 )
 
 __all__ = (
+    "Taggable",
     "V1Address",
     "V1Weight",
     "V1Dimensions",

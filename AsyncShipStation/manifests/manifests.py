@@ -16,6 +16,7 @@ class ManifestsPortal(ShipStationClient):
         carrier_id: str | None = None,
         page: int = 1,
         page_size: int = 25,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | ManifestListResponse]:
         """Get a list of manifests.
 
@@ -56,6 +57,7 @@ class ManifestsPortal(ShipStationClient):
                 res,
                 (200,),
                 ManifestListResponse,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -64,6 +66,7 @@ class ManifestsPortal(ShipStationClient):
     async def create(
         cls: type["ManifestsPortal"],
         connection: ShipStationConnection,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse, ManifestListResponse]:
         """Create a new manifest.
 
@@ -77,6 +80,7 @@ class ManifestsPortal(ShipStationClient):
         cls: type["ManifestsPortal"],
         connection: ShipStationConnection,
         manifest_id: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse, Manifest]:
         """Get a manifest by its ID.
 

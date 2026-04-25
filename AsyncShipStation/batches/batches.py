@@ -34,6 +34,7 @@ class BatchPortal(ShipStationClient):
         page: int = 1,
         page_size: int = 25,
         sort_dir: Literal["asc", "desc"] = "desc",
+        identity: bool = False,
     ) -> tuple[int, BatchListResponse | ErrorResponse]:
         """
         List the batches associated with your ShipStation account.
@@ -74,6 +75,7 @@ class BatchPortal(ShipStationClient):
                 res,
                 (200,),
                 BatchListResponse,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -86,6 +88,7 @@ class BatchPortal(ShipStationClient):
         process_labels: bool = False,
         timeout: float | None = None,
         interval: float | None = None,
+        identity: bool = False,
     ) -> tuple[bool, Batch | ErrorResponse]:
         """
         Poll ``BatchPortal.get_by_id`` until the batch reaches a terminal
@@ -150,6 +153,7 @@ class BatchPortal(ShipStationClient):
         process_labels: ProcessLabel | None = None,
         timeout: float | None = None,
         interval: float | None = None,
+        identity: bool = False,
     ) -> tuple[int, Batch | ErrorResponse]:
         """
         Create a new batch in your ShipStation account.
@@ -189,6 +193,7 @@ class BatchPortal(ShipStationClient):
                 res,
                 (200, 207),
                 Batch,
+                identity=identity,
             )
 
             if stat not in (200, 207):
@@ -222,6 +227,7 @@ class BatchPortal(ShipStationClient):
         cls: type["BatchPortal"],
         connection: ShipStationConnection,
         external_batch_id: str,
+        identity: bool = False,
     ) -> tuple[int, Batch | ErrorResponse]:
         """
         Retrieve a batch by its external ID.
@@ -245,6 +251,7 @@ class BatchPortal(ShipStationClient):
                 res,
                 (200,),
                 Batch,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -256,6 +263,7 @@ class BatchPortal(ShipStationClient):
         batch_number: str,
         page: int = 1,
         page_size: int = 25,
+        identity: bool = False,
     ) -> tuple[int, Batch | ErrorResponse]:
         """
         Retrieve a batch by its batch number.
@@ -286,6 +294,7 @@ class BatchPortal(ShipStationClient):
         cls: type["BatchPortal"],
         connection: ShipStationConnection,
         batch_id: str,
+        identity: bool = False,
     ) -> tuple[int, Batch | ErrorResponse]:
         """
         Retrieve a batch by its ID.
@@ -309,6 +318,7 @@ class BatchPortal(ShipStationClient):
                 res,
                 (200,),
                 Batch,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -318,6 +328,7 @@ class BatchPortal(ShipStationClient):
         cls: type["BatchPortal"],
         connection: ShipStationConnection,
         batch_id: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]:
         """
         Delete a batch by its ID.
@@ -343,6 +354,7 @@ class BatchPortal(ShipStationClient):
                 res,
                 (204,),
                 type(None),
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -352,6 +364,7 @@ class BatchPortal(ShipStationClient):
         cls: type["BatchPortal"],
         connection: ShipStationConnection,
         batch_id: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]:
         """
         Archive a batch by its ID.
@@ -377,6 +390,7 @@ class BatchPortal(ShipStationClient):
                 res,
                 (204,),
                 type(None),
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -391,6 +405,7 @@ class BatchPortal(ShipStationClient):
         shipment_ids: List[str] | None = None,
         rate_ids: List[str] | None = None,
         process_labels: ProcessLabel | None = None,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]:
         """
         Add shipments to an existing batch.
@@ -432,6 +447,7 @@ class BatchPortal(ShipStationClient):
                 res,
                 (204,),
                 type(None),
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -443,6 +459,7 @@ class BatchPortal(ShipStationClient):
         batch_id: str,
         page: int = 1,
         page_size: int = 25,
+        identity: bool = False,
     ) -> tuple[int, BatchProcessErrorResponse | ErrorResponse]:
 
         params = {
@@ -465,6 +482,7 @@ class BatchPortal(ShipStationClient):
                 res,
                 (200,),
                 BatchProcessErrorResponse,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -478,6 +496,7 @@ class BatchPortal(ShipStationClient):
         label_format: LabelFormats = "pdf",
         display_scheme: DisplayFormatSchemes = "label",
         ship_date: str | None = None,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]:
         """
         Process labels for a batch by its ID.
@@ -514,6 +533,7 @@ class BatchPortal(ShipStationClient):
                 res,
                 (204,),
                 type(None),
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -525,6 +545,7 @@ class BatchPortal(ShipStationClient):
         batch_id: str,
         shipment_ids: List[str] | None = None,
         rate_ids: List[str] | None = None,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]:
         params: dict[str, object] = {}
         if shipment_ids is not None:
@@ -568,6 +589,7 @@ class BatchPortal(ShipStationClient):
                 res,
                 (204,),
                 type(None),
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)

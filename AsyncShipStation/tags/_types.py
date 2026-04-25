@@ -1,7 +1,8 @@
 from typing import TypedDict
+from ..common._types import Taggable
 
 
-class TagInfo(TypedDict):
+class TagInfo(Taggable):
     """A tag in ShipStation V2 API."""
 
     tag_id: int
@@ -9,13 +10,13 @@ class TagInfo(TypedDict):
     color: str
 
 
-class TagListResponse(TypedDict):
+class TagListResponse(Taggable):
     """Response from listing tags."""
 
     tags: list[TagInfo]
 
 
-class TagCreateResponse(TypedDict):
+class TagCreateResponse(Taggable):
     """Response from creating a tag."""
 
     tag_id: int
@@ -23,7 +24,7 @@ class TagCreateResponse(TypedDict):
     color: str
 
 
-class TagDeleteResponse(TypedDict):
+class TagDeleteResponse(Taggable):
     """Response from deleting a tag."""
 
     pass  # Empty response on successful deletion

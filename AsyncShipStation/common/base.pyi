@@ -3,14 +3,15 @@ from contextlib import AbstractAsyncContextManager
 from dataclasses import dataclass
 from logging import Logger
 from pathlib import Path
-from typing import Any, ClassVar, Literal, TypeVar
+from typing import Any, ClassVar, Final, Literal, TypeVar
 
 from httpx import Response
 from pydantic import EmailStr, HttpUrl
 
-from ._types import ErrorResponse
+from ._types import ErrorResponse, Taggable
 
 LOGGER: Logger
+VERSION: Final[str]
 T = TypeVar("T")
 
 class APIError(Exception):
@@ -141,11 +142,17 @@ class ShipStationClient:
     _pool_lock: ClassVar[Lock] = Lock()
 
     @classmethod
+    def _apply_identity_tag(
+        payload: object,
+        return_type: type[object],
+    ) -> object: ...
+    @classmethod
     def validate_response(
         cls,
         res: Response | APIError,
         accepted_statuses: tuple[int, ...],
         return_type: type[T],
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | T]: ...
     @staticmethod
     def parse_unknown_exception(

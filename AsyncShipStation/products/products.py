@@ -7,6 +7,8 @@ class ProductPortal(ShipStationClient):
     async def where(
         cls: type["ProductPortal"],
         connection: ShipStationConnection,
+
+        identity: bool = False,
         sku: str | None = None,
         name: str | None = None,
         active: bool | None = None,
@@ -32,6 +34,7 @@ class ProductPortal(ShipStationClient):
                 res,
                 (200,),
                 ProductListResponse,
+            identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)

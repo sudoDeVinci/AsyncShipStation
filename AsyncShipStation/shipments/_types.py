@@ -10,6 +10,7 @@ from ..common import (
     Tag,
 )
 from ..labels import LabelShipment, ShipmentItem
+from ..common._types import Taggable
 
 ShipmentStatuses = Literal["pending", "processing", "label_purchased", "cancelled"]
 
@@ -23,7 +24,7 @@ class ShipmentListResponse(PaginatinatedResponse):
     shipments: list[Shipment]
 
 
-class DangerousGood(TypedDict):
+class DangerousGood(Taggable):
     id_number: str | None
     shipping_name: str | None
     technical_name: str | None
@@ -52,7 +53,7 @@ class DangerousGood(TypedDict):
     additional_description: str | None
 
 
-class Product(TypedDict):
+class Product(Taggable):
     description: str
     quantity: int
     value: Fee
@@ -73,7 +74,7 @@ class ShipmentPackage(Package):
     products: list[Product]
 
 
-class ShipmentCreationRequest(TypedDict):
+class ShipmentCreationRequest(Taggable):
     validate_address: Literal["no_validation", "validate_only", "validate_and_clean"]
     external_shipment_id: str | None
     carrier_id: str | None
@@ -95,12 +96,12 @@ class ShipmentCreationRequest(TypedDict):
     packages: list[ShipmentPackage]
 
 
-class ShipmentCreationResponse(TypedDict):
+class ShipmentCreationResponse(Taggable):
     has_errors: bool
     shipments: list[Shipment]
 
 
-class ShippingRate(TypedDict):
+class ShippingRate(Taggable):
     rate_id: str
     rate_type: Literal["check", "shipment"]
     carrier_id: str
@@ -129,7 +130,7 @@ class ShippingRate(TypedDict):
     error_messages: list[str]
 
 
-class RateQueryResponse(TypedDict):
+class RateQueryResponse(Taggable):
     rates: list[ShippingRate]
     invalid_rates: list[ShippingRate]
     rate_request_id: str

@@ -1,7 +1,8 @@
 from typing import TypedDict
+from ..common._types import Taggable
 
 
-class V1Store(TypedDict):
+class V1Store(Taggable):
     storeId: str
     storeName: str
     marketplaceId: int
@@ -21,7 +22,7 @@ class V1Store(TypedDict):
     autoRefresh: bool
 
 
-class V1MarketPlace(TypedDict):
+class V1MarketPlace(Taggable):
     name: str
     marketplaceId: int
     canRefresh: bool

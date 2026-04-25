@@ -20,6 +20,7 @@ from ..common import (
     PaginatinatedResponse,
     ShippingAddress,
     Tag,
+    Taggable,
     Weight,
 )
 
@@ -236,7 +237,7 @@ class LabelPackage(Package):
     alternative_identifiers: list[Identifier] | None
 
 
-class RateDetails(TypedDict):
+class RateDetails(Taggable):
     rate_detail_type: str
     carrier_description: str
     carrier_billing_code: str
@@ -283,7 +284,7 @@ class Label(LabelMetaData):
     ship_to: ShippingAddress
 
 
-class LabelGist(TypedDict):
+class LabelGist(Taggable):
     validate_address: Literal["no_validation", "validate_only", "validate_and_clean"]
     label_layout: LabelLayouts
     label_format: LabelFormats
@@ -295,12 +296,12 @@ class LabelListResponse(PaginatinatedResponse):
     labels: list[Label]
 
 
-class ShipmentPayment(TypedDict):
+class ShipmentPayment(Taggable):
     payment_type: Literal["any", "cash", "cash_equivalent", "none"]
     payment_amount: Fee
 
 
-class ShipmentItem(TypedDict):
+class ShipmentItem(Taggable):
     name: str
     sales_order_id: str | None
     sales_order_item_id: str | None
@@ -325,7 +326,7 @@ class ShipmentItem(TypedDict):
     upc: str | None
 
 
-class TaxIdentifier(TypedDict):
+class TaxIdentifier(Taggable):
     taxable_entity_type: Literal["shipper", "recipient", "ior"]
     identifier_type: Literal[
         "vateori",
@@ -345,7 +346,7 @@ class TaxIdentifier(TypedDict):
     value: str
 
 
-class InvoiceAdditionalDetails(TypedDict):
+class InvoiceAdditionalDetails(Taggable):
     freight_charge: Fee
     insurance_charge: Fee
     discount: Fee
@@ -354,7 +355,7 @@ class InvoiceAdditionalDetails(TypedDict):
     other_charge_description: str
 
 
-class InternationalShipmentOptions(TypedDict):
+class InternationalShipmentOptions(Taggable):
     contents: ShipmentContents  # default "merchandise"
     contents_explanations: str
     non_delivery: Literal["return_to_sender", "treat_as_abandoned"]
@@ -364,17 +365,17 @@ class InternationalShipmentOptions(TypedDict):
     importer_of_record: Address
 
 
-class FedexFreightOptions(TypedDict):
+class FedexFreightOptions(Taggable):
     shipper_load_and_count: str
     booking_confirmation: str
 
 
-class WindsorFrameworkDetails(TypedDict):
+class WindsorFrameworkDetails(Taggable):
     movement_indicator: Literal["c2c", "b2c", "c2b", "b2b"]
     not_at_risk: bool
 
 
-class AdvancedShipmentOptions(TypedDict):
+class AdvancedShipmentOptions(Taggable):
     bill_to_account: str | None
     bill_to_country_code: str | None
     bill_to_party: Literal["recipient", "third_party"]
@@ -406,7 +407,7 @@ class AdvancedShipmentOptions(TypedDict):
     event_notification: bool  # default false
 
 
-class LabelShipment(TypedDict):
+class LabelShipment(Taggable):
     carrier_id: str | None
     service_code: str | None
     requested_shipment_service: str | None
@@ -446,7 +447,7 @@ class LabelShipment(TypedDict):
     comparison_rate_type: str | None
 
 
-class TrackingEvent(TypedDict):
+class TrackingEvent(Taggable):
     occurred_at: str
     carrier_occurred_at: str
     description: str
@@ -469,7 +470,7 @@ class TrackingEvent(TypedDict):
     proof_of_delivery_url: str
 
 
-class TrackingInformation(TypedDict):
+class TrackingInformation(Taggable):
     tracking_number: str
     tracking_url: str
     status_code: TrackingStatusCodes
@@ -488,7 +489,7 @@ class TrackingInformation(TypedDict):
     events: list[TrackingEvent]
 
 
-class LabelVoidResponse(TypedDict):
+class LabelVoidResponse(Taggable):
     approved: bool
     message: str
     reason_code: Literal[

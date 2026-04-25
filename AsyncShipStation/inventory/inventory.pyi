@@ -25,6 +25,7 @@ class InventoryPortal(ShipStationClient):
         group_by: Literal["warehouse", "location"] | None = None,
         page_size: int = 25,
         page: int = 1,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | Inventory]: ...
     @classmethod
     async def update(
@@ -47,6 +48,7 @@ class InventoryPortal(ShipStationClient):
         new_condition: (
             Literal["sellable", "damaged", "expired", "qa_hold"] | None
         ) = None,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | None]: ...
     @classmethod
     async def list_warehouses(
@@ -54,16 +56,21 @@ class InventoryPortal(ShipStationClient):
         connection: ShipStationConnection,
         page_size: int = 25,
         page: int = 1,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | InventoryWarehouseListResponse]: ...
     @classmethod
     async def create_warehouse(
-        cls: type["InventoryPortal"], connection: ShipStationConnection, name: str
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
+        name: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | InventoryWarehouse]: ...
     @classmethod
     async def get_warehouse_by_id(
         cls: type["InventoryPortal"],
         connection: ShipStationConnection,
         inventory_warehouse_id: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | InventoryWarehouse]: ...
     @classmethod
     async def update_warehouse_name(
@@ -71,6 +78,7 @@ class InventoryPortal(ShipStationClient):
         connection: ShipStationConnection,
         inventory_warehouse_id: str,
         name: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | None]: ...
     @classmethod
     async def delete_warehouse(
@@ -78,10 +86,14 @@ class InventoryPortal(ShipStationClient):
         connection: ShipStationConnection,
         inventory_warehouse_id: str,
         remove_inventory: Literal["0", "1"],
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | None]: ...
     @classmethod
     async def list_locations(
-        cls: type["InventoryPortal"], connection: ShipStationConnection, page_size: int
+        cls: type["InventoryPortal"],
+        connection: ShipStationConnection,
+        page_size: int,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | LocationListResponse]: ...
     @classmethod
     async def create_new_location(
@@ -89,12 +101,14 @@ class InventoryPortal(ShipStationClient):
         connection: ShipStationConnection,
         name: str,
         inventory_warehouse_id: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | InventoryWarehouse]: ...
     @classmethod
     async def get_location_by_id(
         cls: type["InventoryPortal"],
         connection: ShipStationConnection,
         inventory_location_id: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | InventoryLocation]: ...
     @classmethod
     async def update_location_name(
@@ -102,6 +116,7 @@ class InventoryPortal(ShipStationClient):
         connection: ShipStationConnection,
         inventory_location_id: str,
         name: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | None]: ...
     @classmethod
     async def delete_location(
@@ -109,4 +124,5 @@ class InventoryPortal(ShipStationClient):
         connection: ShipStationConnection,
         inventory_location_id: str,
         remove_inventory: Literal["0", "1"],
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | None]: ...

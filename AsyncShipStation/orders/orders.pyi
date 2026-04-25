@@ -55,6 +55,7 @@ class OrderPortal(ShipStationClient):
         sortDir: Literal["DESC", "ASC"] | None = None,
         page: int | None = None,
         pageSize: int | None = None,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | V1OrderListResponse]: ...
     @classmethod
     async def create_label(
@@ -73,6 +74,7 @@ class OrderPortal(ShipStationClient):
         internationalOptions: V1InternationalOptions | None = None,
         advancedOptions: V1AdvancedOptions | None = None,
         testLabel: bool = False,
+        identity: bool = False,
     ) -> tuple[int, V1OrderLabel | ErrorResponse]: ...
     @classmethod
     async def update_order(
@@ -118,6 +120,7 @@ class OrderPortal(ShipStationClient):
         customsCountryCode: str | None = None,
         advancedOptions: V1AdvancedOptions | None = None,
         tagIds: Sequence[int] | None = None,
+        identity: bool = False,
     ) -> tuple[int, V1Order | ErrorResponse]: ...
     @classmethod
     async def create_order(
@@ -162,10 +165,12 @@ class OrderPortal(ShipStationClient):
         customsCountryCode: str | None = None,
         advancedOptions: V1AdvancedOptions | None = None,
         tagIds: Sequence[int] | None = None,
+        identity: bool = False,
     ) -> tuple[int, V1Order | ErrorResponse]: ...
     @classmethod
     async def create_or_update_orders(
         cls: type["OrderPortal"],
         connection: ShipStationConnection,
         orders: Sequence[V1Order],
+        identity: bool = False,
     ) -> tuple[int, V1BatchOrderCreationResponse | ErrorResponse]: ...

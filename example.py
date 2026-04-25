@@ -13,6 +13,7 @@ from AsyncShipStation import (
     DownloadPortal,
     LabelListResponse,
     LabelPortal,
+    OrderPortal,
     ShipmentPortal,
     ShipStationClient,
 )
@@ -46,35 +47,33 @@ async def main() -> None:
     if not V1_SECRET:
         raise ValueError("SHIP_STATION_SECRET environment variable not set")
 
+    shipment_number = "2844843368"
+
     async with ShipStationClient.scoped_client(
         v2_key=V2_API_KEY, v1_key=V1_API_KEY, v1_secret=V1_SECRET, version="both"
     ) as connection:
         if not connection:
             raise ValueError("Failed to create ShipStationClient")
 
-        _, batches = await BatchPortal.where(connection, page_size=1)
-        if not batches:
-            raise ValueError("No batches found")
+        _, orders = await OrderPortal.where(
+            connection, orderNumber=shipment_number, pageSize=1, page=1, identity=True
+        )
+        if not orders:
+            raise ValueError("No orders found")
 
-        batch = cast(BatchListResponse, batches)["batches"][0]
         _, shipments = await ShipmentPortal.where(
-            connection, batch_id=batch["batch_id"]
-        )
-        _, labels = await LabelPortal.where(
-            connection, batch_id=batch["batch_id"], page_size=100
-        )
-        _, (download, errs) = await DownloadPortal.download_packing_slips(
-            connection, labels=cast(LabelListResponse, labels)["labels"]
+            connection,
+            external_shipment_id=shipment_number,
+            page_size=1,
+            page=1,
+            identity=True,
         )
 
     with open(SHIPMENTS_JSON, "w") as f:
         f.write(dumps(shipments, indent=4))
 
-    with open(LABELS_JSON, "w") as f:
-        f.write(dumps(labels, indent=4))
-
-    with open(LABEL_PDF, "wb") as f:
-        f.write(download)
+    with open(SS_ORDER_JSON, "w") as f:
+        f.write(dumps(orders, indent=4))
 
 
 if __name__ == "__main__":

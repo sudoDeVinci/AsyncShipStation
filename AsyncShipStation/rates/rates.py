@@ -35,6 +35,7 @@ class RatesPortal(ShipStationClient):
         calculate_tax_amount: bool = False,
         preferred_currency: str | None = None,
         is_return: bool = False,
+        identity: bool = False,
     ) -> tuple[int, CalculateRatesResponse | ErrorResponse]:
         """
         Get shipping rates for a shipment.
@@ -103,6 +104,7 @@ class RatesPortal(ShipStationClient):
                 res,
                 (200,),
                 CalculateRatesResponse,
+                identity=identity,
             )
 
         except Exception as e:
@@ -127,6 +129,7 @@ class RatesPortal(ShipStationClient):
         confirmation: DeliveryConfirmationMethods | None = None,
         address_residential_indicator: Literal["unknown", "yes", "no"] = "unknown",
         ship_date: str | None = None,
+        identity: bool = False,
     ) -> tuple[int, List[RateEstimate] | ErrorResponse]:
         """
         Get rate estimates without creating a full shipment.
@@ -195,6 +198,7 @@ class RatesPortal(ShipStationClient):
         cls: type["RatesPortal"],
         connection: ShipStationConnection,
         rate_id: str,
+        identity: bool = False,
     ) -> tuple[int, Rate | ErrorResponse]:
         """
         Retrieve a previously queried rate by its ID.
@@ -215,6 +219,7 @@ class RatesPortal(ShipStationClient):
                 res,
                 (200,),
                 Rate,
+                identity=identity,
             )
 
         except Exception as e:

@@ -20,6 +20,7 @@ class CustomPackagePortal(ShipStationClient):
         dimensions: Dimensions,
         package_id: str | None = None,
         description: str | None = None,
+        identity: bool = False,
     ) -> tuple[int, PackageGist | ErrorResponse]:
         """
         You can define as many package types as you need, each with their own name, package code, and set of dimensions.
@@ -57,7 +58,12 @@ class CustomPackagePortal(ShipStationClient):
 
         try:
             res = await connection.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
-            return cls.validate_response(res, (200, 207, 201), PackageGist)
+            return cls.validate_response(
+                res,
+                (200, 207, 201),
+                PackageGist,
+                identity=identity,
+            )
         except Exception as e:
             return cls.parse_unknown_exception(e)
 
@@ -65,6 +71,7 @@ class CustomPackagePortal(ShipStationClient):
     async def all(
         cls: type["CustomPackagePortal"],
         connection: ShipStationConnection,
+        identity: bool = False,
     ) -> tuple[int, PackageList | ErrorResponse]:
         """
         List your package types to get a response with an array of all the available custom packaging available in your account.
@@ -74,7 +81,12 @@ class CustomPackagePortal(ShipStationClient):
 
         try:
             res = await connection.request("GET", endpoint)
-            return cls.validate_response(res, (200,), PackageList)
+            return cls.validate_response(
+                res,
+                (200,),
+                PackageList,
+                identity=identity,
+            )
         except Exception as e:
             return cls.parse_unknown_exception(e)
 
@@ -83,6 +95,7 @@ class CustomPackagePortal(ShipStationClient):
         cls: type["CustomPackagePortal"],
         connection: ShipStationConnection,
         package_id: str,
+        identity: bool = False,
     ) -> tuple[int, PackageGist | ErrorResponse]:
         """
         Retrieve a custom package by its ID.
@@ -98,7 +111,12 @@ class CustomPackagePortal(ShipStationClient):
 
         try:
             res = await connection.request("GET", endpoint)
-            return cls.validate_response(res, (200,), PackageGist)
+            return cls.validate_response(
+                res,
+                (200,),
+                PackageGist,
+                identity=identity,
+            )
         except Exception as e:
             return cls.parse_unknown_exception(e)
 
@@ -108,6 +126,7 @@ class CustomPackagePortal(ShipStationClient):
         connection: ShipStationConnection,
         package_id: str,
         new_values: PackageGist,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]:
         """
         You can update the individual properties of your custom packages using the PUT method with the /v2/packages endpoint and the package_id.
@@ -124,7 +143,12 @@ class CustomPackagePortal(ShipStationClient):
         endpoint = f"{connection.v2_endpoint}/{Endpoints.PACKAGES.value}/{package_id}"
         try:
             res = await connection.request("PUT", endpoint, json=new_values)  # type: ignore[arg-type]
-            return cls.validate_response(res, (200,), type(None))
+            return cls.validate_response(
+                res,
+                (200,),
+                type(None),
+                identity=identity,
+            )
         except Exception as e:
             return cls.parse_unknown_exception(e)
 
@@ -133,6 +157,7 @@ class CustomPackagePortal(ShipStationClient):
         cls: type["CustomPackagePortal"],
         connection: ShipStationConnection,
         package_id: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]:
         """
         You can delete a custom package using the DELETE method with the /v2/packages endpoint and the package_id.
@@ -149,7 +174,12 @@ class CustomPackagePortal(ShipStationClient):
         endpoint = f"{connection.v2_endpoint}/{Endpoints.PACKAGES.value}/{package_id}"
         try:
             res = await connection.request("DELETE", endpoint)
-            return cls.validate_response(res, (204,), type(None))
+            return cls.validate_response(
+                res,
+                (204,),
+                type(None),
+                identity=identity,
+            )
         except Exception as e:
             return cls.parse_unknown_exception(e)
 

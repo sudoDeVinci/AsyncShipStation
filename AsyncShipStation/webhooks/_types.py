@@ -1,6 +1,7 @@
 from typing import Literal, NotRequired, TypedDict
 
 from ..common import Header
+from ..common._types import Taggable
 
 WebhookEventValues = Literal[
     "batch",
@@ -19,7 +20,7 @@ WebhookEventValues = Literal[
 ]
 
 
-class Webhook(TypedDict, total=True):
+class Webhook(Taggable, total=True):
     webhook_id: NotRequired[str]  # read-only
     url: str
     event: WebhookEventValues

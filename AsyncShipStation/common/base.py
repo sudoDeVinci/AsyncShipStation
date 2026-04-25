@@ -13,7 +13,7 @@ from httpx import AsyncClient, Limits, Response
 from httpx._types import HeaderTypes
 from pydantic import EmailStr, HttpUrl, SecretStr
 
-from ._types import ErrorResponse
+from ._types import ErrorResponse, Taggable
 
 LOGGER: Logger = getLogger("AsyncShipStation")
 VERSION: Final[str] = "0.2.0.9"
@@ -383,27 +383,42 @@ class ShipStationClient:
 
     _pool_lock: ClassVar[Lock] = Lock()
 
+    @staticmethod
+    def _apply_identity_tag(
+        payload: object,
+        return_type: type[object],
+    ) -> object:
+        if isinstance(payload, dict):
+            tagged = dict(payload)
+            tagged["__kind__"] = return_type.__name__
+            return tagged
+
+        return payload
+
     @classmethod
     def validate_response(
         cls: type["ShipStationClient"],
         res: Response | APIError,
         accepted_statuses: tuple[int, ...],
-        return_type: type[T],
+        return_type: GenType[T],
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | T]:
         try:
-            json = cast(str | dict[str, object], res.json())
+            payload = cast(object, res.json())
         except JSONDecodeError as e:
-            # Return raw response text for debugging
             return cls.parse_unknown_exception(
                 Exception(f"JSON decode error: {e}. Raw response: {res.text[:500]}")
             )
 
         if res.status_code not in accepted_statuses:
-            if "errors" in json:
-                return res.status_code, cast(ErrorResponse, json)
-            raise APIError(res.status_code, json)
+            if isinstance(payload, dict) and "errors" in payload:
+                return res.status_code, cast(ErrorResponse, payload)
+            raise APIError(res.status_code, cast(str | dict[str, object], payload))
 
-        return res.status_code, cast(T, json)
+        if identity:
+            payload = cls._apply_identity_tag(payload, cast(type[object], return_type))
+
+        return res.status_code, cast(T, payload)
 
     @staticmethod
     def parse_unknown_exception(

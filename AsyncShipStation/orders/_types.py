@@ -1,16 +1,17 @@
-from typing import Literal, TypedDict
+from typing import Literal
 
 from ..common import (
     DeliveryConfirmationMethods,
     Option,
     PaginatinatedResponse,
+    Taggable,
     V1Address,
     V1Dimensions,
     V1Weight,
 )
 
 
-class V1AdvancedOptions(TypedDict):
+class V1AdvancedOptions(Taggable):
     warehouseId: int
     nonMachinable: bool
     saturdayDelivery: bool
@@ -32,13 +33,13 @@ class V1AdvancedOptions(TypedDict):
     billToMyOtherAccount: str | None
 
 
-class V1InsuranceOptions(TypedDict):
+class V1InsuranceOptions(Taggable):
     provider: Literal["shipsurance", "carrier", "provider", "xcover", "parcelguard"]
     insureShipment: bool
     insuredValue: float
 
 
-class V1Customsitem(TypedDict):
+class V1Customsitem(Taggable):
     customsItemId: str
     description: str
     quantity: int
@@ -47,13 +48,13 @@ class V1Customsitem(TypedDict):
     countryofOrigin: str
 
 
-class V1InternationalOptions(TypedDict):
+class V1InternationalOptions(Taggable):
     contents: Literal["merchandise", "documents", "gift", "returned_goods", "sample"]
     customsItems: V1Customsitem
     nonDelivery: Literal["return_to_sender", "treat_as_abandoned"]
 
 
-class V1OrderItem(TypedDict):
+class V1OrderItem(Taggable):
     orderItemId: int
     lineItemKey: int
     sku: str
@@ -74,7 +75,7 @@ class V1OrderItem(TypedDict):
     modifyDate: str | None
 
 
-class V1Order(TypedDict):
+class V1Order(Taggable):
     orderId: int
     orderNumber: str
     orderKey: str
@@ -122,7 +123,7 @@ class V1OrderListResponse(PaginatinatedResponse):
     orders: list[V1Order]
 
 
-class V1OrderCreationResponseResult(TypedDict):
+class V1OrderCreationResponseResult(Taggable):
     orderId: int
     orderNumber: str
     orderkey: str
@@ -130,12 +131,12 @@ class V1OrderCreationResponseResult(TypedDict):
     errorMessage: str | None
 
 
-class V1BatchOrderCreationResponse(TypedDict):
+class V1BatchOrderCreationResponse(Taggable):
     hasErrors: bool
     results: list[V1OrderCreationResponseResult]
 
 
-class V1OrderLabel(TypedDict):
+class V1OrderLabel(Taggable):
     shipmentId: int
     shipmentCost: float
     insuranceCost: float

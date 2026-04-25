@@ -12,6 +12,7 @@ from ..common import (
     Weight,
 )
 from ..shipments import Shipment
+from ..common._types import Taggable
 
 RateTypes = Literal["check", "shipment"]
 RateResponseStatuses = Literal["working", "completed", "partial", "error"]
@@ -37,7 +38,7 @@ class ValidationStatus(Enum):
     HAS_WARNINGS = "has_warnings"
 
 
-class Rate(TypedDict):
+class Rate(Taggable):
     """A shipping rate returned by the API."""
 
     rate_id: str
@@ -68,7 +69,7 @@ class Rate(TypedDict):
     error_messages: list[str]
 
 
-class RateEstimate(TypedDict):
+class RateEstimate(Taggable):
     """A rate estimate (without full shipment details)."""
 
     rate_type: RateTypes
@@ -97,7 +98,7 @@ class RateEstimate(TypedDict):
     error_messages: list[str]
 
 
-class RatesResponse(TypedDict):
+class RatesResponse(Taggable):
     """Response from the rates information endpoint."""
 
     rates: list[Rate]
@@ -109,7 +110,7 @@ class RatesResponse(TypedDict):
     errors: list[Error]
 
 
-class RateRequestOptions(TypedDict, total=False):
+class RateRequestOptions(Taggable, total=False):
     """Options for a rate request."""
 
     carrier_ids: list[str]
@@ -120,7 +121,7 @@ class RateRequestOptions(TypedDict, total=False):
     is_return: NotRequired[bool]
 
 
-class RateEstimateOptions(TypedDict, total=False):
+class RateEstimateOptions(Taggable, total=False):
     """Options for a rate estimate request."""
 
     from_country_code: str
@@ -150,7 +151,7 @@ class RateEstimateByCarrierId(RateEstimateOptions, total=False):
     carrier_id: Required[str]
 
 
-class CalculateRatesRequest(TypedDict, total=False):
+class CalculateRatesRequest(Taggable, total=False):
     """Request body for calculating rates."""
 
     shipment_id: str
@@ -158,7 +159,7 @@ class CalculateRatesRequest(TypedDict, total=False):
     rate_options: RateRequestOptions
 
 
-class CalculateRatesResponse(TypedDict):
+class CalculateRatesResponse(Taggable):
     """Response from calculate rates endpoint."""
 
     shipment_id: str

@@ -1,7 +1,6 @@
-from typing import TypedDict
-from AsyncShipStation.common import URL, Error, PaginatinatedResponse
+from ..common import URL, Error, PaginatinatedResponse, Taggable
 
-class Manifest(TypedDict):
+class Manifest(Taggable):
     manifest_id: str
     form_id: str
     created_at: str

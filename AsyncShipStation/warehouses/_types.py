@@ -1,9 +1,10 @@
 from typing import TypedDict
 
 from ..common import Address
+from ..common._types import Taggable
 
 
-class Warehouse(TypedDict):
+class Warehouse(Taggable):
     """A warehouse location for shipment origins."""
 
     warehouse_id: str
@@ -14,7 +15,7 @@ class Warehouse(TypedDict):
     return_address: Address
 
 
-class WarehouseListResponse(TypedDict):
+class WarehouseListResponse(Taggable):
     """Response from listing warehouses."""
 
     warehouses: list[Warehouse]

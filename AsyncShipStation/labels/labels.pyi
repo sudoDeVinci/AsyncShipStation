@@ -40,12 +40,14 @@ class LabelPortal(ShipStationClient):
         page_size: int = 25,
         sort_dir: Literal["asc", "desc"] = "desc",
         sort_by: Literal["created_at", "modified_at"] = "created_at",
+        identity: bool = False,
     ) -> tuple[int, LabelListResponse | ErrorResponse]: ...
     @classmethod
     async def list_for_shipments(
         cls: type["LabelPortal"],
         connection: ShipStationConnection,
         shipment_ids: List[str],
+        identity: bool = False,
     ) -> tuple[int, LabelListResponse, list[ErrorResponse]]: ...
     @classmethod
     async def poll_label_until_ready(
@@ -54,6 +56,7 @@ class LabelPortal(ShipStationClient):
         label_id: str,
         timeout: float | None = None,
         interval: float | None = None,
+        identity: bool = False,
     ) -> tuple[bool, Label | ErrorResponse]: ...
     @classmethod
     async def poll_labels_until_ready(
@@ -62,6 +65,7 @@ class LabelPortal(ShipStationClient):
         label_ids: List[str],
         timeout: float | None = None,
         interval: float | None = None,
+        identity: bool = False,
     ) -> tuple[bool, List[Label] | List[ErrorResponse]]: ...
     @classmethod
     async def purchase(
@@ -83,6 +87,7 @@ class LabelPortal(ShipStationClient):
         label_layout: LabelLayouts = "4x6",
         label_image_id: str | None = None,
         test_label: bool = False,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | Label]: ...
     @classmethod
     async def purchase_with_rate_id(
@@ -96,6 +101,7 @@ class LabelPortal(ShipStationClient):
         label_format: LabelFormats = "pdf",
         label_download_type: Literal["url", "inline"] = "url",
         display_scheme: DisplayFormatSchemes = "label",
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | Label]: ...
     @classmethod
     async def purchase_with_shipment_id(
@@ -109,6 +115,7 @@ class LabelPortal(ShipStationClient):
         label_format: LabelFormats = "pdf",
         label_download_type: Literal["url", "inline"] = "url",
         display_scheme: DisplayFormatSchemes = "label",
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | Label]: ...
     @classmethod
     async def get_by_id(
@@ -116,6 +123,7 @@ class LabelPortal(ShipStationClient):
         connection: ShipStationConnection,
         label_id: str,
         label_download_type: Literal["url", "inline"] = "url",
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | Label]: ...
     @classmethod
     async def create_return_label(
@@ -128,12 +136,19 @@ class LabelPortal(ShipStationClient):
         label_download_type: Literal["url", "inline"] = "url",
         display_scheme: DisplayFormatSchemes = "label",
         label_image_id: str | None = None,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | Label]: ...
     @classmethod
     async def get_tracking_information(
-        cls: type["LabelPortal"], connection: ShipStationConnection, label_id: str
+        cls: type["LabelPortal"],
+        connection: ShipStationConnection,
+        label_id: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | TrackingInformation]: ...
     @classmethod
     async def void_label(
-        cls: type["LabelPortal"], connection: ShipStationConnection, label_id: str
+        cls: type["LabelPortal"],
+        connection: ShipStationConnection,
+        label_id: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | LabelVoidResponse]: ...

@@ -15,6 +15,7 @@ class TagsPortal(ShipStationClient):
     async def all(
         cls: type["TagsPortal"],
         connection: ShipStationConnection,
+        identity: bool = False,
     ) -> tuple[int, TagListResponse | ErrorResponse]:
         """
         List all tags in the account.
@@ -32,6 +33,7 @@ class TagsPortal(ShipStationClient):
                 res,
                 (200,),
                 TagListResponse,
+                identity=identity,
             )
 
         except Exception as e:
@@ -55,6 +57,7 @@ class TagsPortal(ShipStationClient):
             ]
             | None
         ) = None,
+        identity: bool = False,
     ) -> tuple[int, TagCreateResponse | ErrorResponse]:
         """
         Create a new tag.
@@ -80,6 +83,7 @@ class TagsPortal(ShipStationClient):
                 res,
                 (200, 201),
                 TagCreateResponse,
+                identity=identity,
             )
 
         except Exception as e:
@@ -90,6 +94,7 @@ class TagsPortal(ShipStationClient):
         cls: type["TagsPortal"],
         connection: ShipStationConnection,
         tag_name: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]:
         """
         Delete a tag by name.
@@ -113,6 +118,7 @@ class TagsPortal(ShipStationClient):
                 res,
                 (204,),
                 type(None),
+                identity=identity,
             )
 
         except Exception as e:
@@ -123,6 +129,7 @@ class TagsPortal(ShipStationClient):
         cls: type["TagsPortal"],
         connection: ShipStationConnection,
         tag_name: str,
+        identity: bool = False,
     ) -> tuple[int, TagInfo | None | ErrorResponse]:
         """
         Get a tag by name by listing all tags and filtering.

@@ -29,10 +29,12 @@ class FulfillmentPortal(ShipStationClient):
         page_size: int = 25,
         sort_dir: Literal["asc", "desc"] = "asc",
         sort_by: Literal["created_at", "modified_at", "shipped_at"] = "created_at",
+        identity: bool = False,
     ) -> tuple[int, FulfillmentListResponse | ErrorResponse]: ...
     @classmethod
     async def create(
         cls: type["FulfillmentPortal"],
         connection: ShipStationConnection,
         fulfillments: List[FulfillmentGist],
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | BatchFulfillmentCreationResponse]: ...

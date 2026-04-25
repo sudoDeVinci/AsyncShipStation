@@ -1,4 +1,6 @@
-from typing import Literal, TypedDict
+from typing import Literal
+
+from ..common import Taggable
 
 V1WebhookEventValues = Literal[
     "ORDER_NOTIFY",
@@ -9,14 +11,14 @@ V1WebhookEventValues = Literal[
     "FULFILLMENT_REJECTED",
 ]
 
-class V1WebhookSubscriptionResult(TypedDict):
+class V1WebhookSubscriptionResult(Taggable):
     id: int
 
-class V1WebhookGist(TypedDict):
+class V1WebhookGist(Taggable):
     resource_url: str
     resource_type: V1WebhookEventValues
 
-class V1Webhook(TypedDict):
+class V1Webhook(Taggable):
     IsLabelAPIHook: bool
     WebHookID: int
     SellerID: int
@@ -32,5 +34,5 @@ class V1Webhook(TypedDict):
     Seller: str | None
     Store: str | None
 
-class V1WebhookListResponse(TypedDict):
+class V1WebhookListResponse(Taggable):
     webhooks: list[V1Webhook]

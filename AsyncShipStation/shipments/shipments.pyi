@@ -35,26 +35,35 @@ class ShipmentPortal(ShipStationClient):
         sort_by: Literal["modified_at", "created_at"] | None = None,
         page: int = 1,
         page_size: int = 25,
+        identity: bool = False,
     ) -> tuple[int, ShipmentListResponse | ErrorResponse]: ...
     @classmethod
     async def create(
         cls: type["ShipmentPortal"],
         connection: ShipStationConnection,
         shipments: List[ShipmentCreationRequest],
+        identity: bool = False,
     ) -> tuple[int, ShipmentCreationResponse | ErrorResponse]: ...
     @classmethod
     async def get_by_external_id(
         cls: type["ShipmentPortal"],
         connection: ShipStationConnection,
         external_shipment_id: str,
+        identity: bool = False,
     ) -> tuple[int, Shipment | ErrorResponse]: ...
     @classmethod
     async def get_by_id(
-        cls: type["ShipmentPortal"], connection: ShipStationConnection, shipment_id: str
+        cls: type["ShipmentPortal"],
+        connection: ShipStationConnection,
+        shipment_id: str,
+        identity: bool = False,
     ) -> tuple[int, Shipment | ErrorResponse]: ...
     @classmethod
     async def cancel_by_id(
-        cls: type["ShipmentPortal"], connection: ShipStationConnection, shipment_id: str
+        cls: type["ShipmentPortal"],
+        connection: ShipStationConnection,
+        shipment_id: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]: ...
     @classmethod
     async def get_rates(
@@ -62,6 +71,7 @@ class ShipmentPortal(ShipStationClient):
         connection: ShipStationConnection,
         shipment_id: str,
         created_at_start: str | None = None,
+        identity: bool = False,
     ) -> tuple[int, RateQueryResponse | ErrorResponse]: ...
     @classmethod
     async def add_tag(
@@ -69,6 +79,7 @@ class ShipmentPortal(ShipStationClient):
         connection: ShipStationConnection,
         shipment_id: str,
         tag_name: str,
+        identity: bool = False,
     ) -> tuple[int, ShipmentTag | ErrorResponse]: ...
     @classmethod
     async def remove_tag(
@@ -76,6 +87,7 @@ class ShipmentPortal(ShipStationClient):
         connection: ShipStationConnection,
         shipment_id: str,
         tag_name: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]: ...
 
 __all__ = ["ShipmentPortal"]

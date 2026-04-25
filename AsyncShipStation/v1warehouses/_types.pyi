@@ -1,7 +1,6 @@
-from typing import TypedDict
-from ..common import V1Address
+from ..common import Taggable, V1Address
 
-class V1Warehouse(TypedDict):
+class V1Warehouse(Taggable):
     warehouseId: int
     warehouseName: str
     originAddress: V1Address

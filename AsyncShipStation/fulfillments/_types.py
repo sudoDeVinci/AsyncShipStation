@@ -1,9 +1,10 @@
 from typing import NotRequired, TypedDict
 
 from ..common import Address, Fee, PaginatinatedResponse
+from ..common._types import Taggable
 
 
-class Fulfillment(TypedDict):
+class Fulfillment(Taggable):
     fulfillment_id: str
     shipment_id: str
     shipment_number: str
@@ -26,7 +27,7 @@ class Fulfillment(TypedDict):
     ship_to: Address
 
 
-class FulfillmentGist(TypedDict):
+class FulfillmentGist(Taggable):
     shipment_id: str
     tracking_number: str
     carrier_code: str
@@ -35,17 +36,17 @@ class FulfillmentGist(TypedDict):
     notify_order_source: NotRequired[bool]
 
 
-class FulfillmentGistRequest(TypedDict):
+class FulfillmentGistRequest(Taggable):
     fulfillments: list[FulfillmentGist]
 
 
-class FulfillmentCreationResponse(TypedDict):
+class FulfillmentCreationResponse(Taggable):
     shipment_id: str
     shipment_number: str
     error_message: str | None
 
 
-class BatchFulfillmentCreationResponse(TypedDict):
+class BatchFulfillmentCreationResponse(Taggable):
     has_errors: bool
     fulfillments: list[FulfillmentCreationResponse]
 

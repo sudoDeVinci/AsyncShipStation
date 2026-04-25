@@ -45,6 +45,7 @@ class LabelPortal(ShipStationClient):
         page_size: int = 25,
         sort_dir: Literal["asc", "desc"] = "desc",
         sort_by: Literal["created_at", "modified_at"] = "created_at",
+        identity: bool = False,
     ) -> tuple[int, LabelListResponse | ErrorResponse]:
         """
         This method returns a list of labels that you've created. You can optionally filter the results as well as control their sort order and the number of results returned at a time.
@@ -98,6 +99,7 @@ class LabelPortal(ShipStationClient):
                 res,
                 (200,),
                 LabelListResponse,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -107,6 +109,7 @@ class LabelPortal(ShipStationClient):
         cls: type["LabelPortal"],
         connection: ShipStationConnection,
         shipment_ids: List[str],
+        identity: bool = False,
     ) -> tuple[int, LabelListResponse, list[ErrorResponse]]:
 
         all_labels: List[Label] = []
@@ -158,6 +161,7 @@ class LabelPortal(ShipStationClient):
         label_id: str,
         timeout: float | None = None,
         interval: float | None = None,
+        identity: bool = False,
     ) -> tuple[bool, Label | ErrorResponse]:
         """
         This method is a helper function that polls the list endpoint for a batch of labels until they are all ready. This is useful for the purchase endpoint which can return a 207 status code if some labels in the batch are ready while others are still being processed.
@@ -201,13 +205,18 @@ class LabelPortal(ShipStationClient):
         label_ids: List[str],
         timeout: float | None = None,
         interval: float | None = None,
+        identity: bool = False,
     ) -> tuple[bool, List[Label] | List[ErrorResponse]]:
 
         labels: list[Label] = []
         label_states = await gather(
             *[
                 cls.poll_label_until_ready(
-                    connection, label_id=label_id, timeout=timeout, interval=interval
+                    connection,
+                    label_id=label_id,
+                    timeout=timeout,
+                    interval=interval,
+                    identity=identity,
                 )
                 for label_id in label_ids
             ]
@@ -248,6 +257,7 @@ class LabelPortal(ShipStationClient):
         label_layout: LabelLayouts = "4x6",
         label_image_id: str | None = None,
         test_label: bool = False,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | Label]:
         """
         This method allows you to purchase a shipping and print a label for a given shipment. You can specify various options such as the charge event, label format, and whether it's a return label.
@@ -299,6 +309,7 @@ class LabelPortal(ShipStationClient):
                 res,
                 (200,),
                 Label,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -315,6 +326,7 @@ class LabelPortal(ShipStationClient):
         label_format: LabelFormats = "pdf",
         label_download_type: Literal["url", "inline"] = "url",
         display_scheme: DisplayFormatSchemes = "label",
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | Label]:
         """
         When retrieving rates for shipments using the /rates endpoint, the returned information contains a rate_id property that can be used to generate a label without having to refill in the shipment information repeatedly
@@ -347,6 +359,7 @@ class LabelPortal(ShipStationClient):
                 res,
                 (200,),
                 Label,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -363,6 +376,7 @@ class LabelPortal(ShipStationClient):
         label_format: LabelFormats = "pdf",
         label_download_type: Literal["url", "inline"] = "url",
         display_scheme: DisplayFormatSchemes = "label",
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | Label]:
         """
         Purchase a label using a shipment ID that has already been created with the desired address and package info.
@@ -397,6 +411,7 @@ class LabelPortal(ShipStationClient):
                 res,
                 (200,),
                 Label,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -407,6 +422,7 @@ class LabelPortal(ShipStationClient):
         connection: ShipStationConnection,
         label_id: str,
         label_download_type: Literal["url", "inline"] = "url",
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | Label]:
         """
         This method retrieves the details of a specific label using its unique ID.
@@ -426,6 +442,7 @@ class LabelPortal(ShipStationClient):
                 res,
                 (200,),
                 Label,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -441,6 +458,7 @@ class LabelPortal(ShipStationClient):
         label_download_type: Literal["url", "inline"] = "url",
         display_scheme: DisplayFormatSchemes = "label",
         label_image_id: str | None = None,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | Label]:
         """
         Create a return label for a previously created outbound label.
@@ -479,6 +497,7 @@ class LabelPortal(ShipStationClient):
                 res,
                 (200,),
                 Label,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -488,6 +507,7 @@ class LabelPortal(ShipStationClient):
         cls: type["LabelPortal"],
         connection: ShipStationConnection,
         label_id: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | TrackingInformation]:
         endpoint = f"{connection.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/track"
 
@@ -498,6 +518,7 @@ class LabelPortal(ShipStationClient):
                 res,
                 (200,),
                 TrackingInformation,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -507,6 +528,7 @@ class LabelPortal(ShipStationClient):
         cls: type["LabelPortal"],
         connection: ShipStationConnection,
         label_id: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | LabelVoidResponse]:
         endpoint = f"{connection.v2_endpoint}/{Endpoints.LABELS.value}/{label_id}/void"
 
@@ -517,6 +539,7 @@ class LabelPortal(ShipStationClient):
                 res,
                 (200,),
                 LabelVoidResponse,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)

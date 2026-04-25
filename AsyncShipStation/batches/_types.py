@@ -12,6 +12,7 @@ from ..common import (
     PaginatinatedResponse,
     PaginationLink,
     PaperlessDownload,
+    Taggable,
 )
 
 BatchStatuses = Literal[
@@ -45,7 +46,7 @@ class ProcessLabel(BatchLabel):
     create_batch_and_process_labels: bool
 
 
-class Batch(TypedDict):
+class Batch(Taggable):
     label_layout: LabelLayouts
     label_format: LabelFormats
     batch_id: str
@@ -73,7 +74,7 @@ class BatchListResponse(PaginatinatedResponse):
     batches: list[Batch]
 
 
-class BatchResponseError(TypedDict):
+class BatchResponseError(Taggable):
     error: str
     shipment_id: str
     external_shipment_id: str

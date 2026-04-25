@@ -1,27 +1,26 @@
-from typing import TypedDict
-from ..common import Dimensions, Fee, PaginatinatedResponse, Weight
+from ..common import Dimensions, Fee, PaginatinatedResponse, Taggable, Weight
 
-class ProductCategory(TypedDict):
+class ProductCategory(Taggable):
     product_category_id: int
     name: str
 
-class ProductTag(TypedDict):
+class ProductTag(Taggable):
     tag_id: int
     name: str
     color: str
 
-class ProductAlias(TypedDict):
+class ProductAlias(Taggable):
     store_id: int
     sku_alias: str
 
-class ProductBundleComponent(TypedDict):
+class ProductBundleComponent(Taggable):
     bundle_product_id: int
     component_product_id: int
     sku: str
     quantity: int
     active: bool
 
-class Product(TypedDict):
+class Product(Taggable):
     product_id: int
     name: str
     sku: str

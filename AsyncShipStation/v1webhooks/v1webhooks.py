@@ -15,6 +15,7 @@ class V1WebhookPortal(ShipStationClient):
         target_url: str,
         store_id: int | None = None,
         friendly_name: str | None = None,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | V1WebhookSubscriptionResult]:
         payload = {
             "event": event,
@@ -25,7 +26,12 @@ class V1WebhookPortal(ShipStationClient):
         endpoint = f"{connection.v1_endpoint}/{Endpoints.V1WEBHOOKS.value}/subscribe"
         try:
             res = await connection.request("POST", endpoint, "v2", json=payload)  # type: ignore[arg-type]
-            return cls.validate_response(res, (200, 201), V1WebhookSubscriptionResult)
+            return cls.validate_response(
+                res,
+                (200, 201),
+                V1WebhookSubscriptionResult,
+                identity=identity,
+            )
         except Exception as e:
             return cls.parse_unknown_exception(e)
 
@@ -34,11 +40,17 @@ class V1WebhookPortal(ShipStationClient):
         cls: type["V1WebhookPortal"],
         connection: ShipStationConnection,
         webhookId: int,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | None]:
         endpoint = f"{connection.v1_endpoint}/{Endpoints.V1WEBHOOKS.value}/{webhookId}"
         try:
             res = await connection.request("DELETE", endpoint, "v1")
-            return cls.validate_response(res, (200, 201), type(None))
+            return cls.validate_response(
+                res,
+                (200, 201),
+                type(None),
+                identity=identity,
+            )
         except Exception as e:
             return cls.parse_unknown_exception(e)
 
@@ -46,10 +58,16 @@ class V1WebhookPortal(ShipStationClient):
     async def all(
         cls: type["V1WebhookPortal"],
         connection: ShipStationConnection,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | V1WebhookListResponse]:
         endpoint = f"{connection.v1_endpoint}/{Endpoints.V1WEBHOOKS.value}"
         try:
             res = await connection.request("GET", endpoint, "v1")
-            return cls.validate_response(res, (200, 201), V1WebhookListResponse)
+            return cls.validate_response(
+                res,
+                (200, 201),
+                V1WebhookListResponse,
+                identity=identity,
+            )
         except Exception as e:
             return cls.parse_unknown_exception(e)

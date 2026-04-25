@@ -30,6 +30,7 @@ class BatchPortal(ShipStationClient):
         page: int = 1,
         page_size: int = 25,
         sort_dir: Literal["asc", "desc"] = "desc",
+        identity: bool = False,
     ) -> tuple[int, BatchListResponse | ErrorResponse]: ...
     @classmethod
     async def _poll_batch_until_ready(
@@ -39,6 +40,7 @@ class BatchPortal(ShipStationClient):
         process_labels: bool = False,
         timeout: float | None = None,
         interval: float | None = None,
+        identity: bool = False,
     ) -> tuple[bool, Batch | ErrorResponse]: ...
     @classmethod
     async def create(
@@ -51,12 +53,14 @@ class BatchPortal(ShipStationClient):
         process_labels: ProcessLabel | None = None,
         timeout: float | None = None,
         interval: float | None = None,
+        identity: bool = False,
     ) -> tuple[int, Batch | ErrorResponse]: ...
     @classmethod
     async def get_by_external_id(
         cls: type["BatchPortal"],
         connection: ShipStationConnection,
         external_batch_id: str,
+        identity: bool = False,
     ) -> tuple[int, Batch | ErrorResponse]: ...
     @classmethod
     async def get_by_batch_number(
@@ -65,18 +69,28 @@ class BatchPortal(ShipStationClient):
         batch_number: str,
         page: int = 1,
         page_size: int = 25,
+        identity: bool = False,
     ) -> tuple[int, Batch | ErrorResponse]: ...
     @classmethod
     async def get_by_id(
-        cls: type["BatchPortal"], connection: ShipStationConnection, batch_id: str
+        cls: type["BatchPortal"],
+        connection: ShipStationConnection,
+        batch_id: str,
+        identity: bool = False,
     ) -> tuple[int, Batch | ErrorResponse]: ...
     @classmethod
     async def delete_by_id(
-        cls: type["BatchPortal"], connection: ShipStationConnection, batch_id: str
+        cls: type["BatchPortal"],
+        connection: ShipStationConnection,
+        batch_id: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]: ...
     @classmethod
     async def archive_by_id(
-        cls: type["BatchPortal"], connection: ShipStationConnection, batch_id: str
+        cls: type["BatchPortal"],
+        connection: ShipStationConnection,
+        batch_id: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]: ...
     @classmethod
     async def add_to_batch(
@@ -88,6 +102,7 @@ class BatchPortal(ShipStationClient):
         shipment_ids: List[str] | None = None,
         rate_ids: List[str] | None = None,
         process_labels: ProcessLabel | None = None,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]: ...
     @classmethod
     async def get_batch_errors(
@@ -96,6 +111,7 @@ class BatchPortal(ShipStationClient):
         batch_id: str,
         page: int = 1,
         page_size: int = 25,
+        identity: bool = False,
     ) -> tuple[int, BatchProcessErrorResponse | ErrorResponse]: ...
     @classmethod
     async def process_batch_id_labels(
@@ -106,6 +122,7 @@ class BatchPortal(ShipStationClient):
         label_format: LabelFormats = "pdf",
         display_scheme: DisplayFormatSchemes = "label",
         ship_date: str | None = None,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]: ...
     @classmethod
     async def remove_from_batch(
@@ -114,4 +131,5 @@ class BatchPortal(ShipStationClient):
         batch_id: str,
         shipment_ids: List[str] | None = None,
         rate_ids: List[str] | None = None,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]: ...

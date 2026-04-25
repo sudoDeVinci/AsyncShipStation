@@ -1,25 +1,25 @@
-from typing import TypedDict
+from ..common import Taggable
 
-class TagInfo(TypedDict):
+class TagInfo(Taggable):
     "A tag in ShipStation V2 API."
 
     tag_id: int
     name: str
     color: str
 
-class TagListResponse(TypedDict):
+class TagListResponse(Taggable):
     "Response from listing tags."
 
     tags: list[TagInfo]
 
-class TagCreateResponse(TypedDict):
+class TagCreateResponse(Taggable):
     "Response from creating a tag."
 
     tag_id: int
     name: str
     color: str
 
-class TagDeleteResponse(TypedDict):
+class TagDeleteResponse(Taggable):
     "Response from deleting a tag."
 
     ...

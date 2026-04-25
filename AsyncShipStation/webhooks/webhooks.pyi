@@ -13,6 +13,7 @@ class WebhookPortal(ShipStationClient):
         headers: Sequence[Header] | None = None,
         name: str | None = None,
         store_id: int | None = None,
+        identity: bool = False,
     ) -> tuple[int, list[Webhook] | ErrorResponse]: ...
     @classmethod
     async def create(
@@ -23,14 +24,21 @@ class WebhookPortal(ShipStationClient):
         url: str,
         headers: Sequence[Header] | None = None,
         store_id: int | None = None,
+        identity: bool = False,
     ) -> tuple[int, Webhook | ErrorResponse]: ...
     @classmethod
     async def get_by_id(
-        cls: type["WebhookPortal"], connection: ShipStationConnection, webhook_id: str
+        cls: type["WebhookPortal"],
+        connection: ShipStationConnection,
+        webhook_id: str,
+        identity: bool = False,
     ) -> tuple[int, Webhook | ErrorResponse]: ...
     @classmethod
     async def delete_by_id(
-        cls: type["WebhookPortal"], connection: ShipStationConnection, webhook_id: str
+        cls: type["WebhookPortal"],
+        connection: ShipStationConnection,
+        webhook_id: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]: ...
     @classmethod
     async def update_by_id(
@@ -40,6 +48,7 @@ class WebhookPortal(ShipStationClient):
         name: str | None = None,
         url: str | None = None,
         headers: Sequence[Header] | None = None,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]: ...
 
 __all__ = ("WebhookPortal",)

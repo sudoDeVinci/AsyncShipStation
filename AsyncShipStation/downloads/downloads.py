@@ -92,6 +92,7 @@ class DownloadPortal(ShipStationClient):
         filename: str,
         download: str = "string",
         rotation: int = 0,
+        identity: bool = False,
     ) -> tuple[int, bytes | ErrorResponse]:
         endpoint = f"{connection.v2_endpoint}/{Endpoints.DOWNLOADS.value}/{dir}/{subdir}/{filename}"
         params = {
@@ -123,6 +124,7 @@ class DownloadPortal(ShipStationClient):
         connection: ShipStationConnection,
         label: Label,
         dtype: LabelFormats = "pdf",
+        identity: bool = False,
     ) -> tuple[int, bytes | ErrorResponse]:
 
         links = label["label_download"]
@@ -141,7 +143,13 @@ class DownloadPortal(ShipStationClient):
         except Exception as e:
             return cls.parse_unknown_exception(e)
 
-        return await cls.download_file(connection, dir_part, subdir_part, filename_part)
+        return await cls.download_file(
+            connection,
+            dir_part,
+            subdir_part,
+            filename_part,
+            identity=identity,
+        )
 
     @classmethod
     async def download_packing_slips(
@@ -152,6 +160,7 @@ class DownloadPortal(ShipStationClient):
         include_dummy_slips: bool = True,
         timeout: int | None = None,
         interval: int = 2,
+        identity: bool = False,
     ) -> tuple[int, tuple[bytes, list[DownloadError]]]:
 
         try:
@@ -165,7 +174,12 @@ class DownloadPortal(ShipStationClient):
 
             slips = await gather(
                 *[
-                    cls.download_packing_slip(connection, label, dtype)
+                    cls.download_packing_slip(
+                        connection,
+                        label,
+                        dtype,
+                        identity=identity,
+                    )
                     for label in labels
                 ]
             )

@@ -27,6 +27,7 @@ class InventoryPortal(ShipStationClient):
         group_by: Literal["warehouse", "location"] | None = None,
         page_size: int = 25,
         page: int = 1,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | Inventory]:
         params = {
             "sku": sku,
@@ -48,6 +49,7 @@ class InventoryPortal(ShipStationClient):
                 res,
                 (200,),
                 Inventory,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -73,6 +75,7 @@ class InventoryPortal(ShipStationClient):
         new_condition: (
             Literal["sellable", "damaged", "expired", "qa_hold"] | None
         ) = None,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | None]:
         payload = {
             "transaction_type": transaction_type,
@@ -110,6 +113,7 @@ class InventoryPortal(ShipStationClient):
                 res,
                 (204,),
                 type(None),
+                identity=identity,
             )
             return status_code, cast(ErrorResponse, result)
         except Exception as e:
@@ -121,6 +125,7 @@ class InventoryPortal(ShipStationClient):
         connection: ShipStationConnection,
         page_size: int = 25,
         page: int = 1,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | InventoryWarehouseListResponse]:
         params = {"page_size": page_size, "page": page}
         endpoint = f"{connection.v2_endpoint}/{Endpoints.INVENTORY_WAREHOUSES.value}"
@@ -132,6 +137,7 @@ class InventoryPortal(ShipStationClient):
                 res,
                 (200,),
                 InventoryWarehouseListResponse,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -141,6 +147,7 @@ class InventoryPortal(ShipStationClient):
         cls: type["InventoryPortal"],
         connection: ShipStationConnection,
         name: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | InventoryWarehouse]:
         raise NotImplementedError("This method is not yet implemented.")
 
@@ -149,6 +156,7 @@ class InventoryPortal(ShipStationClient):
         cls: type["InventoryPortal"],
         connection: ShipStationConnection,
         inventory_warehouse_id: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | InventoryWarehouse]:
         raise NotImplementedError("This method is not yet implemented.")
 
@@ -158,6 +166,7 @@ class InventoryPortal(ShipStationClient):
         connection: ShipStationConnection,
         inventory_warehouse_id: str,
         name: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | None]:
         raise NotImplementedError("This method is not yet implemented.")
 
@@ -167,6 +176,7 @@ class InventoryPortal(ShipStationClient):
         connection: ShipStationConnection,
         inventory_warehouse_id: str,
         remove_inventory: Literal["0", "1"],
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | None]:
         f"""
         GET a warehouse by its ID.
@@ -183,6 +193,7 @@ class InventoryPortal(ShipStationClient):
         cls: type["InventoryPortal"],
         connection: ShipStationConnection,
         page_size: int,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | LocationListResponse]:
         """
         GET a list of inventory locations.
@@ -196,6 +207,7 @@ class InventoryPortal(ShipStationClient):
         connection: ShipStationConnection,
         name: str,
         inventory_warehouse_id: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | InventoryWarehouse]:
         """
         POST a new inventory location.
@@ -208,6 +220,7 @@ class InventoryPortal(ShipStationClient):
         cls: type["InventoryPortal"],
         connection: ShipStationConnection,
         inventory_location_id: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | InventoryLocation]:
         """
         GET an inventory location by its ID.
@@ -221,6 +234,7 @@ class InventoryPortal(ShipStationClient):
         connection: ShipStationConnection,
         inventory_location_id: str,
         name: str,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | None]:
         """
         PUT an inventory location's name.
@@ -234,6 +248,7 @@ class InventoryPortal(ShipStationClient):
         connection: ShipStationConnection,
         inventory_location_id: str,
         remove_inventory: Literal["0", "1"],
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | None]:
         """
         DELETE an inventory location.

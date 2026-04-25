@@ -21,6 +21,7 @@ class WebhookPortal(ShipStationClient):
         headers: Sequence[Header] | None = None,
         name: str | None = None,
         store_id: int | None = None,
+        identity: bool = False,
     ) -> tuple[int, list[Webhook] | ErrorResponse]:
         """
         List all webhooks.
@@ -42,7 +43,7 @@ class WebhookPortal(ShipStationClient):
         try:
             res = await connection.request("GET", endpoint, params=params)  # type: ignore[arg-type]
 
-            return cls.validate_response(res, (200,), list[Webhook])
+            return cls.validate_response(res, (200,), list[Webhook], identity=identity)
 
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -56,6 +57,7 @@ class WebhookPortal(ShipStationClient):
         url: str,
         headers: Sequence[Header] | None = None,
         store_id: int | None = None,
+        identity: bool = False,
     ) -> tuple[int, Webhook | ErrorResponse]:
 
         payload = {
@@ -73,7 +75,7 @@ class WebhookPortal(ShipStationClient):
         try:
             res = await connection.request("POST", endpoint, json=payload)  # type: ignore[arg-type]
 
-            return cls.validate_response(res, (200,), Webhook)
+            return cls.validate_response(res, (200,), Webhook, identity=identity)
 
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -83,6 +85,7 @@ class WebhookPortal(ShipStationClient):
         cls: type["WebhookPortal"],
         connection: ShipStationConnection,
         webhook_id: str,
+        identity: bool = False,
     ) -> tuple[int, Webhook | ErrorResponse]:
 
         endpoint = f"{connection.v2_endpoint}/{Endpoints.WEBHOOKS.value}/{webhook_id}"
@@ -90,7 +93,7 @@ class WebhookPortal(ShipStationClient):
         try:
             res = await connection.request("GET", endpoint)
 
-            return cls.validate_response(res, (200,), Webhook)
+            return cls.validate_response(res, (200,), Webhook, identity=identity)
 
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -100,6 +103,7 @@ class WebhookPortal(ShipStationClient):
         cls: type["WebhookPortal"],
         connection: ShipStationConnection,
         webhook_id: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]:
 
         endpoint = f"{connection.v2_endpoint}/{Endpoints.WEBHOOKS.value}/{webhook_id}"
@@ -107,7 +111,7 @@ class WebhookPortal(ShipStationClient):
         try:
             res = await connection.request("DELETE", endpoint)
 
-            return cls.validate_response(res, (204,), type(None))
+            return cls.validate_response(res, (204,), type(None), identity=identity)
 
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -120,6 +124,7 @@ class WebhookPortal(ShipStationClient):
         name: str | None = None,
         url: str | None = None,
         headers: Sequence[Header] | None = None,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]:
 
         payload = {
@@ -154,7 +159,7 @@ class WebhookPortal(ShipStationClient):
         try:
             res = await connection.request("PUT", endpoint, json=payload)  # type: ignore[arg-type]
 
-            return cls.validate_response(res, (204,), type(None))
+            return cls.validate_response(res, (204,), type(None), identity=identity)
 
         except Exception as e:
             return cls.parse_unknown_exception(e)

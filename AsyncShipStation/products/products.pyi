@@ -6,6 +6,7 @@ class ProductPortal(ShipStationClient):
     async def where(
         cls: type["ProductPortal"],
         connection: ShipStationConnection,
+        identity: bool = False,
         sku: str | None = None,
         name: str | None = None,
         active: bool | None = None,

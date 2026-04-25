@@ -19,6 +19,7 @@ class DownloadPortal(ShipStationClient):
         filename: str,
         download: str = "string",
         rotation: int = 0,
+        identity: bool = False,
     ) -> tuple[int, bytes | ErrorResponse]: ...
     @classmethod
     async def download_packing_slip(
@@ -26,6 +27,7 @@ class DownloadPortal(ShipStationClient):
         connection: ShipStationConnection,
         label: Label,
         dtype: LabelFormats = "pdf",
+        identity: bool = False,
     ) -> tuple[int, bytes | ErrorResponse]: ...
     @classmethod
     async def download_packing_slips(
@@ -36,4 +38,5 @@ class DownloadPortal(ShipStationClient):
         include_dummy_slips: bool = True,
         timeout: int | None = None,
         interval: int = 2,
+        identity: bool = False,
     ) -> tuple[int, tuple[bytes, list[DownloadError]]]: ...

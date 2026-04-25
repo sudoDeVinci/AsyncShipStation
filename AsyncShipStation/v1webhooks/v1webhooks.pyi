@@ -14,12 +14,18 @@ class V1WebhookPortal(ShipStationClient):
         target_url: str,
         store_id: int | None = None,
         friendly_name: str | None = None,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | V1WebhookSubscriptionResult]: ...
     @classmethod
     async def unsubscribe(
-        cls: type["V1WebhookPortal"], connection: ShipStationConnection, webhookId: int
+        cls: type["V1WebhookPortal"],
+        connection: ShipStationConnection,
+        webhookId: int,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | None]: ...
     @classmethod
     async def all(
-        cls: type["V1WebhookPortal"], connection: ShipStationConnection
+        cls: type["V1WebhookPortal"],
+        connection: ShipStationConnection,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | V1WebhookListResponse]: ...

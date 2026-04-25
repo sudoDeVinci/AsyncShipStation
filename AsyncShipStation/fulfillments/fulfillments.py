@@ -1,4 +1,4 @@
-from typing import List, Literal, cast
+from typing import List, Literal
 
 from ..common import (
     Endpoints,
@@ -36,6 +36,7 @@ class FulfillmentPortal(ShipStationClient):
         page_size: int = 25,
         sort_dir: Literal["asc", "desc"] = "asc",
         sort_by: Literal["created_at", "modified_at", "shipped_at"] = "created_at",
+        identity: bool = False,
     ) -> tuple[int, FulfillmentListResponse | ErrorResponse]:
         data = {
             "ship_to_name": ship_to_name,
@@ -72,6 +73,7 @@ class FulfillmentPortal(ShipStationClient):
                 res,
                 (200,),
                 FulfillmentListResponse,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -81,6 +83,7 @@ class FulfillmentPortal(ShipStationClient):
         cls: type["FulfillmentPortal"],
         connection: ShipStationConnection,
         fulfillments: List[FulfillmentGist],
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | BatchFulfillmentCreationResponse]:
         """
         Create one or more fulfillments by marking shipments as shipped with tracking information.
@@ -102,6 +105,7 @@ class FulfillmentPortal(ShipStationClient):
                 res,
                 (200,),
                 BatchFulfillmentCreationResponse,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)

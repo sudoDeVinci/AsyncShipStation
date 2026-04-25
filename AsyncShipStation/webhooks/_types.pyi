@@ -1,5 +1,6 @@
-from typing import Literal, NotRequired, TypedDict
-from ..common import Header
+from typing import Literal, NotRequired
+
+from ..common import Header, Taggable
 
 WebhookEventValues = Literal[
     "batch",
@@ -17,7 +18,7 @@ WebhookEventValues = Literal[
     "track_event_v2",
 ]
 
-class Webhook(TypedDict, total=True):
+class Webhook(Taggable, total=True):
     webhook_id: NotRequired[str]
     url: str
     event: WebhookEventValues

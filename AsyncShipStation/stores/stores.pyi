@@ -8,10 +8,13 @@ class StorePortal(ShipStationClient):
     async def all(
         cls: type["StorePortal"],
         connection: ShipStationConnection,
+        identity: bool = False,
         showInactive: bool | None = None,
         marketplaceId: int | None = None,
     ) -> tuple[int, ErrorResponse | List[V1Store]]: ...
     @classmethod
     async def list_marketplaces(
-        cls: type["StorePortal"], connection: ShipStationConnection
+        cls: type["StorePortal"],
+        connection: ShipStationConnection,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | List[V1MarketPlace]]: ...

@@ -1,9 +1,10 @@
 from typing import TypedDict
 
 from ..common import Dimensions, DisplayFormatSchemes, Error
+from ..common._types import Taggable
 
 
-class Service(TypedDict):
+class Service(Taggable):
     carrier_id: str
     carrier_code: str
     service_code: str
@@ -15,11 +16,11 @@ class Service(TypedDict):
     display_schemes: list[DisplayFormatSchemes]
 
 
-class ServiceList(TypedDict):
+class ServiceList(Taggable):
     services: list[Service]
 
 
-class PackageGist(TypedDict):
+class PackageGist(Taggable):
     package_id: str
     package_code: str
     name: str
@@ -27,21 +28,21 @@ class PackageGist(TypedDict):
     description: str | None
 
 
-class PackageList(TypedDict):
+class PackageList(Taggable):
     packages: list[PackageGist]
 
 
-class AdvancedCarrierOption(TypedDict):
+class AdvancedCarrierOption(Taggable):
     name: str
     default_value: str | None
     description: str
 
 
-class AdvancedCarrierOptionList(TypedDict):
+class AdvancedCarrierOptionList(Taggable):
     options: list[AdvancedCarrierOption]
 
 
-class Carrier(TypedDict):
+class Carrier(Taggable):
     allows_returns: bool
     carrier_id: str
     carrier_code: str
@@ -62,7 +63,7 @@ class Carrier(TypedDict):
     supports_user_managed_rates: bool
 
 
-class CarrierListResponse(TypedDict):
+class CarrierListResponse(Taggable):
     carriers: list[Carrier]
     request_id: str
     errors: list[Error]

@@ -41,6 +41,7 @@ class ShipmentPortal(ShipStationClient):
         sort_by: Literal["modified_at", "created_at"] | None = None,
         page: int = 1,
         page_size: int = 25,
+        identity: bool = False,
     ) -> tuple[int, ShipmentListResponse | ErrorResponse]:
         """
         Get a list of shipments.
@@ -104,6 +105,7 @@ class ShipmentPortal(ShipStationClient):
                 res,
                 (200,),
                 ShipmentListResponse,
+                identity=identity,
             )
 
         except Exception as e:
@@ -114,6 +116,7 @@ class ShipmentPortal(ShipStationClient):
         cls: type["ShipmentPortal"],
         connection: ShipStationConnection,
         shipments: List[ShipmentCreationRequest],
+        identity: bool = False,
     ) -> tuple[int, ShipmentCreationResponse | ErrorResponse]:
         """
         Create one or more shipments.
@@ -139,6 +142,7 @@ class ShipmentPortal(ShipStationClient):
                 res,
                 (200, 207),
                 ShipmentCreationResponse,
+                identity=identity,
             )
 
         except Exception as e:
@@ -149,6 +153,7 @@ class ShipmentPortal(ShipStationClient):
         cls: type["ShipmentPortal"],
         connection: ShipStationConnection,
         external_shipment_id: str,
+        identity: bool = False,
     ) -> tuple[int, Shipment | ErrorResponse]:
         """
         Retrieve a shipment by its external ID.
@@ -170,6 +175,7 @@ class ShipmentPortal(ShipStationClient):
                 res,
                 (200,),
                 Shipment,
+                identity=identity,
             )
 
         except Exception as e:
@@ -180,6 +186,7 @@ class ShipmentPortal(ShipStationClient):
         cls: type["ShipmentPortal"],
         connection: ShipStationConnection,
         shipment_id: str,
+        identity: bool = False,
     ) -> tuple[int, Shipment | ErrorResponse]:
         """
         Retrieve a shipment by its ID.
@@ -201,6 +208,7 @@ class ShipmentPortal(ShipStationClient):
                 res,
                 (200,),
                 Shipment,
+                identity=identity,
             )
 
         except Exception as e:
@@ -211,6 +219,7 @@ class ShipmentPortal(ShipStationClient):
         cls: type["ShipmentPortal"],
         connection: ShipStationConnection,
         shipment_id: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]:
         """
         Cancel a shipment by its ID.
@@ -240,6 +249,7 @@ class ShipmentPortal(ShipStationClient):
                 res,
                 (204,),
                 type(None),
+                identity=identity,
             )
 
         except Exception as e:
@@ -251,6 +261,7 @@ class ShipmentPortal(ShipStationClient):
         connection: ShipStationConnection,
         shipment_id: str,
         created_at_start: str | None = None,
+        identity: bool = False,
     ) -> tuple[int, RateQueryResponse | ErrorResponse]:
         """
         Get shipping rates for a shipment.
@@ -283,6 +294,7 @@ class ShipmentPortal(ShipStationClient):
                 res,
                 (200,),
                 RateQueryResponse,
+                identity=identity,
             )
 
         except Exception as e:
@@ -294,6 +306,7 @@ class ShipmentPortal(ShipStationClient):
         connection: ShipStationConnection,
         shipment_id: str,
         tag_name: str,
+        identity: bool = False,
     ) -> tuple[int, ShipmentTag | ErrorResponse]:
         """
         Add a tag to a shipment.
@@ -316,6 +329,7 @@ class ShipmentPortal(ShipStationClient):
                 res,
                 (200, 201),
                 ShipmentTag,
+                identity=identity,
             )
 
         except Exception as e:
@@ -327,6 +341,7 @@ class ShipmentPortal(ShipStationClient):
         connection: ShipStationConnection,
         shipment_id: str,
         tag_name: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]:
         """
         Remove a tag from a shipment.
@@ -352,6 +367,7 @@ class ShipmentPortal(ShipStationClient):
                 res,
                 (204,),
                 type(None),
+                identity=identity,
             )
 
         except Exception as e:

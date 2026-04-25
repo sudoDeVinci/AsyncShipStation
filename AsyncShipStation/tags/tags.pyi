@@ -8,7 +8,9 @@ class TagsPortal(ShipStationClient):
 
     @classmethod
     async def all(
-        cls: type["TagsPortal"], connection: ShipStationConnection
+        cls: type["TagsPortal"],
+        connection: ShipStationConnection,
+        identity: bool = False,
     ) -> tuple[int, TagListResponse | ErrorResponse]: ...
     @classmethod
     async def create(
@@ -21,14 +23,21 @@ class TagsPortal(ShipStationClient):
             ]
             | None
         ) = None,
+        identity: bool = False,
     ) -> tuple[int, TagCreateResponse | ErrorResponse]: ...
     @classmethod
     async def delete(
-        cls: type["TagsPortal"], connection: ShipStationConnection, tag_name: str
+        cls: type["TagsPortal"],
+        connection: ShipStationConnection,
+        tag_name: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]: ...
     @classmethod
     async def get_by_name(
-        cls: type["TagsPortal"], connection: ShipStationConnection, tag_name: str
+        cls: type["TagsPortal"],
+        connection: ShipStationConnection,
+        tag_name: str,
+        identity: bool = False,
     ) -> tuple[int, TagInfo | None | ErrorResponse]: ...
 
 __all__ = ["TagsPortal"]

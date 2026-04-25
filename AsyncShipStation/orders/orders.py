@@ -57,6 +57,7 @@ class OrderPortal(ShipStationClient):
         sortDir: Literal["DESC", "ASC"] | None = None,
         page: int | None = None,
         pageSize: int | None = None,
+        identity: bool = False,
     ) -> tuple[int, ErrorResponse | V1OrderListResponse]:
         params = {
             "customerName": customerName,
@@ -89,6 +90,7 @@ class OrderPortal(ShipStationClient):
                 res,
                 (200, 201),
                 V1OrderListResponse,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -110,6 +112,7 @@ class OrderPortal(ShipStationClient):
         internationalOptions: V1InternationalOptions | None = None,
         advancedOptions: V1AdvancedOptions | None = None,
         testLabel: bool = False,
+        identity: bool = False,
     ) -> tuple[int, V1OrderLabel | ErrorResponse]:
         payload = {
             "orderId": orderId,
@@ -137,6 +140,7 @@ class OrderPortal(ShipStationClient):
                 res,
                 (200, 201),
                 V1OrderLabel,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -189,6 +193,7 @@ class OrderPortal(ShipStationClient):
         ) = None,  # default two-letter ISO Origin Country code for the Product.
         advancedOptions: V1AdvancedOptions | None = None,
         tagIds: Sequence[int] | None = None,
+        identity: bool = False,
     ) -> tuple[int, V1Order | ErrorResponse]:
         """
         You can use this method to create a new order or update an existing order.
@@ -251,6 +256,7 @@ class OrderPortal(ShipStationClient):
                 res,
                 (200, 201),
                 V1Order,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)
@@ -302,6 +308,7 @@ class OrderPortal(ShipStationClient):
         ) = None,  # default two-letter ISO Origin Country code for the Product.
         advancedOptions: V1AdvancedOptions | None = None,
         tagIds: Sequence[int] | None = None,
+        identity: bool = False,
     ) -> tuple[int, V1Order | ErrorResponse]:
         """
         You can use this method to create/update a new order.
@@ -359,6 +366,7 @@ class OrderPortal(ShipStationClient):
         cls: type["OrderPortal"],
         connection: ShipStationConnection,
         orders: Sequence[V1Order],
+        identity: bool = False,
     ) -> tuple[int, V1BatchOrderCreationResponse | ErrorResponse]:
         """
         This endpoint can be used to create or update multiple orders in one request. If the orderKey is specified, ShipStation will attempt to locate the order with the specified orderKey. If found, the existing order with that key will be updated. If the orderKey is not found, a new order will be created with that orderKey.
@@ -376,6 +384,7 @@ class OrderPortal(ShipStationClient):
                 res,
                 (200, 201),
                 V1BatchOrderCreationResponse,
+                identity=identity,
             )
         except Exception as e:
             return cls.parse_unknown_exception(e)

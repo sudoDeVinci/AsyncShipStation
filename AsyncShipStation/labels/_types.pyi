@@ -339,7 +339,7 @@ class InvoiceAdditionalDetails(Taggable):
     other_charge_description: str
 
 class InternationalShipmentOptions(Taggable):
-    contents: ShipmentContents
+    contents: ShipmentContents  # default "merchandise"
     contents_explanations: str
     non_delivery: Literal["return_to_sender", "treat_as_abandoned"]
     terms_of_trade_code: IncoTerms
@@ -360,31 +360,31 @@ class AdvancedShipmentOptions(Taggable):
     bill_to_country_code: str | None
     bill_to_party: Literal["recipient", "third_party"]
     bill_to_postal_code: str | None
-    contains_alcohol: bool
-    delivered_duty_paid: bool
-    dry_ice: bool
+    contains_alcohol: bool  # default false
+    delivered_duty_paid: bool  # default false
+    dry_ice: bool  # default false
     dry_ice_weight: Weight | None
-    non_machinable: bool
-    saturday_delivery: bool
+    non_machinable: bool  # default false
+    saturday_delivery: bool  # default false
     fedex_freight: FedexFreightOptions
-    use_ups_ground_freight_pricing: bool | None
+    use_ups_ground_freight_pricing: bool | None  # default null
     freight_class: str | None
     custom_field1: str | None
     custom_field2: str | None
     custom_field3: str | None
     origin_type: str | None
-    additional_handling: bool | None
-    shipper_release: bool | None
+    additional_handling: bool | None  # default null
+    shipper_release: bool | None  # default null
     collect_on_delivery: ShipmentPayment
-    third_party_consignee: bool
-    dangerous_goods: bool
+    third_party_consignee: bool  # default false
+    dangerous_goods: bool  # default false
     dangerous_goods_contact: Contact
     windsor_framework_details: WindsorFrameworkDetails
     ancillary_endorsements_option: str | None
     return_pickup_attempts: int | None
-    own_document_upload: bool
-    limited_quantity: bool
-    event_notification: bool
+    own_document_upload: bool  # default false
+    limited_quantity: bool  # default false
+    event_notification: bool  # default false
 
 class LabelShipment(Taggable):
     carrier_id: str | None
@@ -394,12 +394,15 @@ class LabelShipment(Taggable):
     external_order_id: str | None
     hold_until_date: str | None
     ship_by_date: str | None
+    deliver_by_date: str | None
+    created_at: str | None
+    modified_at: str | None
     retail_rate: Fee | None
     store_id: str | None
     items: list[ShipmentItem]
     notes_from_buyer: str | None
     notes_for_gift: str | None
-    is_gift: bool
+    is_gift: bool  # default false
     assigned_user: str | None
     amount_paid: Fee
     tax_paid: Fee
@@ -413,11 +416,13 @@ class LabelShipment(Taggable):
     ship_from: ShippingAddress
     warehouse_id: str | None
     return_to: ShippingAddress
-    is_return: bool | None
+    is_return: bool | None  # default false
     confirmation: DeliveryConfirmationMethods
     customs: InternationalShipmentOptions
     advanced_options: AdvancedShipmentOptions
-    insurance_provider: Literal["none", "shipsurance", "carrier", "third_party"]
+    insurance_provider: Literal[
+        "none", "shipsurance", "carrier", "third_party"
+    ]  # default "none"
     tags: list[Tag]
     order_source_code: OrderSources
     packages: list[LabelPackage]

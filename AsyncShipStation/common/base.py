@@ -6,7 +6,7 @@ from hashlib import sha256
 from json import JSONDecodeError, dump, dumps, load
 from logging import Logger, getLogger
 from pathlib import Path
-from typing import Any, AsyncGenerator, ClassVar, Final, Literal, TypeVar, cast
+from typing import Any, AsyncGenerator, ClassVar, Final, Generic, Literal, TypeVar, cast
 from uuid import uuid4
 
 from httpx import AsyncClient, Limits, Response
@@ -400,7 +400,7 @@ class ShipStationClient:
         cls: type["ShipStationClient"],
         res: Response | APIError,
         accepted_statuses: tuple[int, ...],
-        return_type: GenType[T],
+        return_type: type[T],
         identity: bool = False,
     ) -> tuple[int, ErrorResponse | T]:
         try:
@@ -416,7 +416,7 @@ class ShipStationClient:
             raise APIError(res.status_code, cast(str | dict[str, object], payload))
 
         if identity:
-            payload = cls._apply_identity_tag(payload, cast(type[object], return_type))
+            payload = cls._apply_identity_tag(payload, return_type)
 
         return res.status_code, cast(T, payload)
 

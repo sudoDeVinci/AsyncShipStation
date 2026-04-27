@@ -142,3 +142,9 @@ class RateQueryResponse(Taggable):
 
 class ShipmentTag(Tag):
     shipment_id: str
+
+
+class ShipmentFilterResult(Taggable):
+    shipments: list[Shipment]
+    pages: int
+    page_stop: int

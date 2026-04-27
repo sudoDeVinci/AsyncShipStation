@@ -1,3 +1,4 @@
+from re import Pattern
 from typing import List, Literal
 
 from ..common import ErrorResponse, ShipStationClient, ShipStationConnection
@@ -6,6 +7,7 @@ from ._types import (
     Shipment,
     ShipmentCreationRequest,
     ShipmentCreationResponse,
+    ShipmentFilterResult,
     ShipmentListResponse,
     ShipmentStatuses,
     ShipmentTag,
@@ -44,6 +46,16 @@ class ShipmentPortal(ShipStationClient):
         shipments: List[ShipmentCreationRequest],
         identity: bool = False,
     ) -> tuple[int, ShipmentCreationResponse | ErrorResponse]: ...
+    @classmethod
+    async def get_by_sku(
+        cls: type["ShipmentPortal"],
+        connection: ShipStationConnection,
+        sku: Pattern[str] | str,
+        identity: bool = False,
+        limit: int = 10,
+        page_size: int = 25,
+        page: int = 1,
+    ) -> tuple[int, ShipmentFilterResult | ErrorResponse]: ...
     @classmethod
     async def get_by_external_id(
         cls: type["ShipmentPortal"],

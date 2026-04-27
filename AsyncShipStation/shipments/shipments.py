@@ -1,4 +1,6 @@
-from typing import List, Literal
+from re import Pattern
+from re import match as re_match
+from typing import List, Literal, cast
 
 from ..common import (
     Endpoints,
@@ -11,6 +13,7 @@ from ._types import (
     Shipment,
     ShipmentCreationRequest,
     ShipmentCreationResponse,
+    ShipmentFilterResult,
     ShipmentListResponse,
     ShipmentStatuses,
     ShipmentTag,
@@ -213,6 +216,73 @@ class ShipmentPortal(ShipStationClient):
 
         except Exception as e:
             return cls.parse_unknown_exception(e)
+
+    @classmethod
+    async def get_by_sku(
+        cls: type["ShipmentPortal"],
+        connection: ShipStationConnection,
+        sku: Pattern[str] | str,
+        identity: bool = False,
+        limit: int = 10,
+        page_size: int = 25,
+        page: int = 1,
+    ) -> tuple[int, ShipmentFilterResult | ErrorResponse]:
+        """
+        Retrieve shipments that contain items matching a SKU pattern.
+
+        Args:
+            connection: The ShipStationConnection to use for the request.
+            sku: A regex pattern or exact string to match against item SKUs in shipments.
+        """
+
+        outputs: list[Shipment] = []
+        page = max(1, page)
+        page_size = max(1, min(1000, page_size))
+        page_offset = 0
+        page_number = 1
+        sufficient = False
+        while not sufficient:
+            page_number = page + page_offset
+            status_code, shipments_response = await cls.where(
+                connection, page=page_number, identity=identity, page_size=page_size
+            )
+
+            if status_code != 200:
+                return (status_code, cast(ErrorResponse, shipments_response))
+
+            if shipments_response.get("__kind__", None) != "ShipmentListResponse":
+                return (status_code, cast(ErrorResponse, shipments_response))
+
+            shipments = cast(list[Shipment], shipments_response.get("shipments", None))
+            print(
+                f"Page {page_number} :: Retrieved {len(shipments)} shipments :: {len(outputs)} matches so far"
+            )
+            for shipment in shipments:
+                for item in shipment["items"]:
+                    item_sku = item.get("sku", "")
+                    if not item_sku:
+                        continue
+                    if re_match(pattern=sku, string=item_sku):
+                        outputs.append(shipment)
+
+                    if len(outputs) >= limit:
+                        sufficient = True
+                        break
+
+                if len(outputs) >= limit:
+                    sufficient = True
+                    break
+
+            page_offset += 1
+
+        out: ShipmentFilterResult = {
+            "shipments": outputs,
+            "page_stop": page_number,
+            "pages": max(1, page_offset),
+        }
+        if identity:
+            out["__kind__"] = "ShipmentFilterResult"
+        return (200, out)
 
     @classmethod
     async def cancel_by_id(

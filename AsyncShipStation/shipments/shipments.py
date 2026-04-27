@@ -254,9 +254,7 @@ class ShipmentPortal(ShipStationClient):
                 return (status_code, cast(ErrorResponse, shipments_response))
 
             shipments = cast(list[Shipment], shipments_response.get("shipments", None))
-            print(
-                f"Page {page_number} :: Retrieved {len(shipments)} shipments :: {len(outputs)} matches so far"
-            )
+
             for shipment in shipments:
                 for item in shipment["items"]:
                     item_sku = item.get("sku", "")

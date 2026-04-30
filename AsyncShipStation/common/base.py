@@ -391,7 +391,6 @@ class ShipStationClient:
         if isinstance(payload, dict):
             tagged = dict(payload)
             tagged["__kind__"] = return_type.__name__
-            return tagged
 
         return payload
 
@@ -417,6 +416,12 @@ class ShipStationClient:
 
         if identity:
             payload = cls._apply_identity_tag(payload, return_type)
+            if "shipments" in payload:
+                for shipment in payload["shipments"]:
+                    shipment["__kind__"] = "Shipment"
+            if "orders" in payload:
+                for order in payload["orders"]:
+                    order["__kind__"] = "V1Order"
 
         return res.status_code, cast(T, payload)
 

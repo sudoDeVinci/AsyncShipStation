@@ -1,4 +1,3 @@
-from typing import TypedDict
 from ..common._types import Taggable
 
 

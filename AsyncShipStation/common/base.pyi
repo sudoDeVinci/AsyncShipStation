@@ -8,7 +8,7 @@ from typing import Any, ClassVar, Final, Literal, TypeVar
 from httpx import Response
 from pydantic import EmailStr, HttpUrl
 
-from ._types import ErrorResponse, Taggable
+from ._types import ErrorResponse
 
 LOGGER: Logger
 VERSION: Final[str]
@@ -143,12 +143,13 @@ class ShipStationClient:
 
     @classmethod
     def _apply_identity_tag(
+        cls: type["ShipStationClient"],
         payload: object,
         return_type: type[object],
     ) -> object: ...
     @classmethod
     def validate_response(
-        cls,
+        cls: type["ShipStationClient"],
         res: Response | APIError,
         accepted_statuses: tuple[int, ...],
         return_type: type[T],

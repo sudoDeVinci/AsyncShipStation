@@ -4,9 +4,9 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from hashlib import sha256
 from json import JSONDecodeError, dump, dumps, load
-from logging import Logger, getLogger
+from logging import DEBUG, ERROR, INFO, WARNING, Logger, getLogger
 from pathlib import Path
-from typing import Any, AsyncGenerator, ClassVar, Final, Generic, Literal, TypeVar, cast
+from typing import Any, AsyncGenerator, ClassVar, Final, Literal, TypeVar, cast
 from uuid import uuid4
 
 from httpx import AsyncClient, Limits, Response
@@ -61,6 +61,58 @@ class APIError(Exception):
     @property
     def content(self) -> bytes:
         return self.__str__().encode("utf-8")
+
+
+class Loggable:
+    __slots__ = ()
+    _debug: ClassVar[bool] = False
+
+    @classmethod
+    def debug_on(cls: "type[Loggable]") -> bool:
+        """
+        Enables debug logging for this class and all subclasses. When enabled, log messages will be emitted at the DEBUG level.
+        Returns:
+            bool: The new debug state (True if debug is now enabled).
+        """
+        return cls._debug
+
+    @classmethod
+    def debug_off(cls: "type[Loggable]") -> bool:
+        """
+        Disables debug logging for this class and all subclasses. When disabled, log messages will not be emitted at the DEBUG level.
+        Returns:
+            bool: The new debug state (False if debug is now disabled).
+        """
+        return cls._debug
+
+    @classmethod
+    def log(
+        cls: "type[Loggable]", message: str, level: Literal[10, 20, 30, 40] = INFO
+    ) -> None:
+        """
+        Logs a message at the specified level if debugging is enabled.
+        Args:
+            message (str): The message to log.
+            level (Literal[10, 20, 30, 40], optional): The logging level (DEBUG=10, INFO=20, WARNING=30, ERROR=40). Defaults to INFO.
+        """
+        if cls._debug:
+            LOGGER.log(level, message)
+
+    @classmethod
+    def debug(cls: "type[Loggable]", message: str) -> None:
+        cls.log(message, level=DEBUG)
+
+    @classmethod
+    def info(cls: "type[Loggable]", message: str) -> None:
+        cls.log(message, level=INFO)
+
+    @classmethod
+    def warning(cls: "type[Loggable]", message: str) -> None:
+        cls.log(message, level=WARNING)
+
+    @classmethod
+    def error(cls: "type[Loggable]", message: str) -> None:
+        cls.log(message, level=ERROR)
 
 
 @dataclass(slots=True, frozen=True)
@@ -367,7 +419,7 @@ class ShipStationConnection:
         return self._pool_key
 
 
-class ShipStationClient:
+class ShipStationClient(Loggable):
     __slots__ = ()
 
     _physical_pool: ClassVar[dict[int, ShipStationConnection]] = {}
@@ -389,8 +441,15 @@ class ShipStationClient:
         return_type: type[object],
     ) -> object:
         if isinstance(payload, dict):
-            tagged = dict(payload)
-            tagged["__kind__"] = return_type.__name__
+            payload = cast(Taggable, payload)
+            payload["__kind__"] = return_type.__name__
+
+            if "shipments" in payload:
+                for shipment in payload["shipments"]:
+                    shipment["__kind__"] = "Shipment"
+            if "orders" in payload:
+                for order in payload["orders"]:
+                    order["__kind__"] = "V1Order"
 
         return payload
 
@@ -416,12 +475,6 @@ class ShipStationClient:
 
         if identity:
             payload = cls._apply_identity_tag(payload, return_type)
-            if "shipments" in payload:
-                for shipment in payload["shipments"]:
-                    shipment["__kind__"] = "Shipment"
-            if "orders" in payload:
-                for order in payload["orders"]:
-                    order["__kind__"] = "V1Order"
 
         return res.status_code, cast(T, payload)
 
@@ -459,16 +512,14 @@ class ShipStationClient:
         async with cls._pool_lock:
             physical_addr = cls._virtual_pool.get(uid, None)
             if not physical_addr:
-                LOGGER.info(
+                cls.info(
                     f"evict_connection:::Could not find any connection with uuid {uid}"
                 )
                 return
 
             del cls._physical_pool[physical_addr]
             del cls._virtual_pool[uid]
-            LOGGER.info(
-                f"evict_connection:::Connection with uuid {uid} evicted from pool"
-            )
+            cls.info(f"evict_connection:::Connection with uuid {uid} evicted from pool")
 
     @classmethod
     async def _add_connection(
@@ -478,7 +529,7 @@ class ShipStationClient:
         async with cls._pool_lock:
             cls._physical_pool[connection.pool_key] = connection
             cls._virtual_pool[uid] = connection.pool_key
-            LOGGER.info(
+            cls.info(
                 f"_add_connection:::Connection with uid {connection.uid} added to pool"
             )
             return uid
@@ -497,7 +548,7 @@ class ShipStationClient:
             if uid is not None:
                 physical = cls._virtual_pool.get(uid, None)
                 if physical is None:
-                    LOGGER.info(
+                    cls.info(
                         f"get_connection:::No connection object with uuid {uid} found."
                     )
                     return None
@@ -525,7 +576,7 @@ class ShipStationClient:
         if out is None:
             out = ShipStationConnection(v2_key, v1_key, v1_secret, config)
             uid = await cls._add_connection(out)
-            LOGGER.info(f"configure:::New connection entry created with uid {uid}")
+            cls.info(f"configure:::New connection entry created with uid {uid}")
 
         return out
 

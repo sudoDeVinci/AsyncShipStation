@@ -16,16 +16,20 @@ class CustomPackagePortal(ShipStationClient):
         dimensions: Dimensions,
         package_id: str | None = None,
         description: str | None = None,
+        identity: bool = False,
     ) -> tuple[int, PackageGist | ErrorResponse]: ...
     @classmethod
     async def all(
-        cls: type["CustomPackagePortal"], connection: ShipStationConnection
+        cls: type["CustomPackagePortal"],
+        connection: ShipStationConnection,
+        identity: bool = False,
     ) -> tuple[int, PackageList | ErrorResponse]: ...
     @classmethod
     async def get_by_id(
         cls: type["CustomPackagePortal"],
         connection: ShipStationConnection,
         package_id: str,
+        identity: bool = False,
     ) -> tuple[int, PackageGist | ErrorResponse]: ...
     @classmethod
     async def update(
@@ -33,12 +37,14 @@ class CustomPackagePortal(ShipStationClient):
         connection: ShipStationConnection,
         package_id: str,
         new_values: PackageGist,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]: ...
     @classmethod
     async def delete(
         cls: type["CustomPackagePortal"],
         connection: ShipStationConnection,
         package_id: str,
+        identity: bool = False,
     ) -> tuple[int, None | ErrorResponse]: ...
 
 __all__ = ["CustomPackagePortal"]

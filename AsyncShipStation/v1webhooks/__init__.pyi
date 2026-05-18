@@ -5,6 +5,7 @@ from ._types import (
     V1WebhookListResponse,
     V1WebhookSubscriptionResult,
 )
+from .v1webhooks import V1WebhookPortal as V1WebhookPortal
 
 __all__ = (
     "V1WebhookEventValues",
@@ -12,4 +13,5 @@ __all__ = (
     "V1WebhookListResponse",
     "V1WebhookSubscriptionResult",
     "V1Webhook",
+    "V1WebhookPortal",
 )

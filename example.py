@@ -1,27 +1,20 @@
-from asyncio import gather
 from asyncio import run as asyncrun
 from json import dumps
 from os import getenv
 from pathlib import Path
-from typing import cast
 
 from dotenv import load_dotenv
 
 from AsyncShipStation import (
-    BatchListResponse,
-    BatchPortal,
-    DownloadPortal,
-    LabelListResponse,
-    LabelPortal,
     OrderPortal,
     ShipmentPortal,
     ShipStationClient,
 )
 
 load_dotenv()
-V1_API_KEY: str | None = getenv("SHIP_STATION_V1")
-V2_API_KEY: str | None = getenv("SHIP_STATION_V2")
-V1_SECRET: str | None = getenv("SHIP_STATION_SECRET")
+V1_API_KEY: str | None = getenv("SPENCER_V1")
+V2_API_KEY: str | None = getenv("SPENCER_V2")
+V1_SECRET: str | None = getenv("SPENCER_SECRET")
 
 CWD: Path = Path(__file__).parent.resolve()
 TEST: Path = CWD / "__cache__"
@@ -47,8 +40,6 @@ async def main() -> None:
     if not V1_SECRET:
         raise ValueError("SHIP_STATION_SECRET environment variable not set")
 
-    shipment_number = "2844843368"
-
     async with ShipStationClient.scoped_client(
         v2_key=V2_API_KEY, v1_key=V1_API_KEY, v1_secret=V1_SECRET, version="both"
     ) as connection:
@@ -56,14 +47,13 @@ async def main() -> None:
             raise ValueError("Failed to create ShipStationClient")
 
         _, orders = await OrderPortal.where(
-            connection, orderNumber=shipment_number, pageSize=1, page=1, identity=True
+            connection, pageSize=1, page=1, identity=True
         )
         if not orders:
             raise ValueError("No orders found")
 
         _, shipments = await ShipmentPortal.where(
             connection,
-            external_shipment_id=shipment_number,
             page_size=1,
             page=1,
             identity=True,

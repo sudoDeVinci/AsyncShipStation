@@ -101,10 +101,12 @@ from .manifests import ManifestListResponse as ManifestListResponse
 from .manifests import ManifestsPortal as ManifestsPortal
 from .orders import OrderPortal as OrderPortal
 from .orders import V1AdvancedOptions as V1AdvancedOptions
+from .orders import V1BatchOrderCreationResponse as V1BatchOrderCreationResponse
 from .orders import V1Customsitem as V1Customsitem
 from .orders import V1InsuranceOptions as V1InsuranceOptions
 from .orders import V1InternationalOptions as V1InternationalOptions
 from .orders import V1Order as V1Order
+from .orders import V1OrderCreationResponseResult as V1OrderCreationResponseResult
 from .orders import V1OrderItem as V1OrderItem
 from .orders import V1OrderLabel as V1OrderLabel
 from .orders import V1OrderListResponse as V1OrderListResponse
@@ -146,6 +148,7 @@ from .v1webhooks import V1Webhook as V1Webhook
 from .v1webhooks import V1WebhookEventValues as V1WebhookEventValues
 from .v1webhooks import V1WebhookGist as V1WebhookGist
 from .v1webhooks import V1WebhookListResponse as V1WebhookListResponse
+from .v1webhooks import V1WebhookPortal as V1WebhookPortal
 from .v1webhooks import V1WebhookSubscriptionResult as V1WebhookSubscriptionResult
 from .warehouses import Warehouse as Warehouse
 from .warehouses import WarehouseListResponse as WarehouseListResponse
@@ -159,6 +162,7 @@ __all__ = (
     "V1WebhookEventValues",
     "V1WebhookGist",
     "V1WebhookListResponse",
+    "V1WebhookPortal",
     "V1WebhookSubscriptionResult",
     "V1Warehouse",
     "V1WarehousePortal",
@@ -192,11 +196,13 @@ __all__ = (
     "OrderPortal",
     "V1Address",
     "V1AdvancedOptions",
+    "V1BatchOrderCreationResponse",
     "V1Customsitem",
     "V1Dimensions",
     "V1InsuranceOptions",
     "V1InternationalOptions",
     "V1Order",
+    "V1OrderCreationResponseResult",
     "V1OrderItem",
     "V1OrderLabel",
     "V1OrderListResponse",

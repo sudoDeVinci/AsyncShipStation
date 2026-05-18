@@ -1,5 +1,3 @@
-from typing import TypedDict
-
 from ..common import Dimensions, Fee, PaginatinatedResponse, Weight
 from ..common._types import Taggable
 

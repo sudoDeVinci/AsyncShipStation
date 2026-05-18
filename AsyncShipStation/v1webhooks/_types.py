@@ -1,4 +1,5 @@
-from typing import Literal, TypedDict
+from typing import Literal
+
 from ..common._types import Taggable
 
 V1WebhookEventValues = Literal[

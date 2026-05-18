@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Literal, TypedDict
+from typing import Literal
 
 from ..common import (
     URL,

@@ -1,4 +1,4 @@
-from typing import Literal, NotRequired, TypedDict
+from typing import Literal, NotRequired
 
 from ..common import Header
 from ..common._types import Taggable

@@ -1,4 +1,4 @@
-from typing import NotRequired, TypedDict
+from typing import NotRequired
 
 from ..common import Address, Fee, PaginatinatedResponse
 from ..common._types import Taggable

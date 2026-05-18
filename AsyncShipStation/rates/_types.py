@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Literal, NotRequired, Required, TypedDict
+from typing import Literal, NotRequired, Required
 
 from ..common import (
     DeliveryConfirmationMethods,
@@ -11,8 +11,8 @@ from ..common import (
     Tag,
     Weight,
 )
-from ..shipments import Shipment
 from ..common._types import Taggable
+from ..shipments import Shipment
 
 RateTypes = Literal["check", "shipment"]
 RateResponseStatuses = Literal["working", "completed", "partial", "error"]

@@ -16,7 +16,7 @@ from pydantic import EmailStr, HttpUrl, SecretStr
 from ._types import ErrorResponse, Taggable
 
 LOGGER: Logger = getLogger("AsyncShipStation")
-VERSION: Final[str] = "0.2.0.9"
+VERSION: Final[str] = "0.2.2.0"
 T = TypeVar("T")
 
 
@@ -61,6 +61,26 @@ class APIError(Exception):
     @property
     def content(self) -> bytes:
         return self.__str__().encode("utf-8")
+
+
+class RateLimitError(APIError):
+    """
+    Raised when the ShipStation API returns HTTP 429 Too Many Requests.
+
+    Carries the server's ``Retry-After`` value (seconds) when present so
+    callers can back off accordingly.
+    """
+
+    __slots__ = ("retry_after",)
+
+    def __init__(
+        self,
+        status: int,
+        detail: str | dict[str, object],
+        retry_after: float | None,
+    ) -> None:
+        super().__init__(status, detail)
+        self.retry_after = retry_after
 
 
 class Loggable:
@@ -118,7 +138,7 @@ class Loggable:
 @dataclass(slots=True, frozen=True)
 class ConnectionConfig:
     version: Literal["v1", "v2", "both"] = "v2"
-    timeout: int = 500
+    timeout: int = 60
     max_connections: int = 20
     max_keepalive_connections: int = 10
     http2: bool = False
@@ -468,6 +488,13 @@ class ShipStationClient(Loggable):
                 Exception(f"JSON decode error: {e}. Raw response: {res.text[:500]}")
             )
 
+        if res.status_code == 429:
+            raise RateLimitError(
+                res.status_code,
+                cast(str | dict[str, object], payload),
+                cls._parse_retry_after(res),
+            )
+
         if res.status_code not in accepted_statuses:
             if isinstance(payload, dict) and "errors" in payload:
                 return res.status_code, cast(ErrorResponse, payload)
@@ -477,6 +504,21 @@ class ShipStationClient(Loggable):
             payload = cls._apply_identity_tag(payload, return_type)
 
         return res.status_code, cast(T, payload)
+
+    @staticmethod
+    def _parse_retry_after(res: Response | APIError) -> float | None:
+        """
+        Extract the ``Retry-After`` header (seconds), if present.
+        """
+        if not isinstance(res, Response):
+            return None
+        raw = res.headers.get("Retry-After")
+        if raw is None:
+            return None
+        try:
+            return float(raw)
+        except ValueError:
+            return None
 
     @staticmethod
     def parse_unknown_exception(
@@ -704,8 +746,8 @@ def write_json(fp: Path, data: dict[str, Any] | None) -> bool:
     """
     Writes a dictionary to a JSON file at the specified path.
     Args:
-        fp (Path): The file path where the JSON data should be written.
-        data (dict[str, Any] | None): The data to write to the JSON file. If None, no action is taken.
+        fp (Path): The path where the JSON data should be written.
+        data (dict[str, Any] | None): The data to write. If None, no action is taken.
     Returns:
         bool: True if the data was written successfully, False otherwise.
     """
